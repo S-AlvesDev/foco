@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 export const BRAND_NAME = "Missão Alpha-01";
 
-/** Marca reduzida (a caveira do emblema), para tamanhos pequenos: menu, topo do celular. */
+/** Marca reduzida (o escudo com a caveira), para tamanhos pequenos: menu, topo do celular. */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <img
@@ -13,7 +13,7 @@ export function BrandMark({ className }: { className?: string }) {
       width={80}
       height={80}
       decoding="async"
-      className={cn("size-8 shrink-0 object-contain", className)}
+      className={cn("size-9 shrink-0 object-contain", className)}
     />
   );
 }
