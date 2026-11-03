@@ -6,17 +6,23 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter } from "@/components/ui/dialog";
 import { Field, Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import { saveFocusAction } from "../actions";
 
 /** Objetivo atual no topo do painel; toque para editar. */
-export function FocusChip({ title }: { title: string | null }) {
+export function FocusChip({ title, onImage = false }: { title: string | null; onImage?: boolean }) {
   const [open, setOpen] = useState(false);
   return (
     <>
       <button
         type="button"
         onClick={() => setOpen(true)}
-        className="group inline-flex h-10 max-w-full cursor-pointer items-center gap-2.5 rounded-full border border-border bg-surface-1 pr-3.5 pl-3 text-[13.5px] transition-colors hover:border-border-strong hover:bg-surface-2"
+        className={cn(
+          "group inline-flex h-10 max-w-full cursor-pointer items-center gap-2.5 rounded-full border pr-3.5 pl-3 text-[13.5px] transition-colors",
+          onImage
+            ? "border-white/15 bg-black/30 backdrop-blur-md hover:bg-black/45"
+            : "border-border bg-surface-1 hover:border-border-strong hover:bg-surface-2",
+        )}
         aria-label={title ? `Objetivo atual: ${title}. Editar` : "Definir objetivo atual"}
       >
         <Crosshair className="size-[18px] shrink-0 text-accent" strokeWidth={1.9} />

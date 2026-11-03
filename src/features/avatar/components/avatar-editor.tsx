@@ -55,7 +55,7 @@ export function AvatarEditor({ userId, name, src }: { userId: string; name: stri
             }
           >
             {!removing && <Trash2 />}
-            Remover
+            Remover foto
           </Button>
         )}
         <input

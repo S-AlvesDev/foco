@@ -228,7 +228,7 @@ export function SubjectStudyActions({ subjectId }: { subjectId: string }) {
 }
 
 /** Ações do painel. */
-export function DashboardStudyActions() {
+export function DashboardStudyActions({ onImage = false }: { onImage?: boolean }) {
   const { timer, openStart, openManual, openFinish, ready, data } = useStudy();
   const noSubjects = data?.subjects.length === 0;
   const big = "h-12 rounded-xl text-[14.5px] [&_svg]:size-[18px]";
@@ -261,7 +261,12 @@ export function DashboardStudyActions() {
         variant="secondary"
         onClick={() => openManual()}
         disabled={!ready || noSubjects}
-        className={cn(big, "bg-surface-1")}
+        className={cn(
+          big,
+          onImage
+            ? "border-white/15 bg-black/30 backdrop-blur-md hover:border-white/25 hover:bg-black/45"
+            : "bg-surface-1",
+        )}
       >
         <PencilLine />
         Registrar sessão

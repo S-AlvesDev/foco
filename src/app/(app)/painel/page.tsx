@@ -22,6 +22,9 @@ import {
 import { Card, CardHeader } from "@/components/ui/card";
 import { FocusChip } from "@/features/focus/components/focus-chip";
 import { getStudyFocus } from "@/features/focus/queries";
+import { BannerBackdrop } from "@/features/banner/components/banner-backdrop";
+import { readBanner } from "@/features/banner/model";
+import { bannerUrl } from "@/features/banner/server";
 import { cn } from "@/lib/utils";
 import { Page } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
@@ -79,6 +82,8 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
     getUpcomingReviews(today, 5),
     getStudyFocus(),
   ]);
+  const banner = readBanner(profile);
+  const bannerSrc = banner.style === "custom" ? await bannerUrl(banner.path) : null;
   const cmp = compareWithPrevious(rows, { today, weekStartsOn: profile.week_starts_on });
   const d = aggregateDashboard(rows, { today, weekStartsOn: profile.week_starts_on, period });
   const goals = await getGoalsProgress({
@@ -97,25 +102,55 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
   const periodLabel = DASHBOARD_PERIODS.find((p) => p.value === period)!.label;
   const top = d.bySubject[0];
 
+  const hero = (onImage: boolean) => (
+    <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+      <div className="min-w-0">
+        <p className={cn("text-[13px] first-letter:uppercase", onImage ? "text-fg-2" : "text-fg-3")}>
+          {longDate(tz, now)}
+        </p>
+        <h1 className="mt-1.5 text-[28px] leading-[1.15] font-semibold tracking-[-0.025em] text-fg sm:text-[34px]">
+          {greeting(tz, now)}, {firstName}.
+        </h1>
+        <div className="mt-4">
+          <FocusChip title={focus.title} onImage={onImage} />
+        </div>
+      </div>
+      {activeSubjects > 0 && <DashboardStudyActions onImage={onImage} />}
+    </header>
+  );
+
   return (
     <>
-      {/* Brilho discreto atrás da saudação. */}
-      <div
-        aria-hidden
-        className="pointer-events-none absolute top-0 left-1/2 -z-10 h-[380px] w-[100vw] -translate-x-1/2 bg-[radial-gradient(55%_70%_at_88%_0%,color-mix(in_oklab,var(--accent)_14%,transparent),transparent_70%),radial-gradient(40%_60%_at_60%_0%,color-mix(in_oklab,var(--steel)_8%,transparent),transparent_70%)]"
-      />
-      <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
-        <div className="min-w-0">
-          <p className="text-[13px] text-fg-3 first-letter:uppercase">{longDate(tz, now)}</p>
-          <h1 className="mt-1.5 text-[28px] leading-[1.15] font-semibold tracking-[-0.025em] text-fg sm:text-[34px]">
-            {greeting(tz, now)}, {firstName}.
-          </h1>
-          <div className="mt-4">
-            <FocusChip title={focus.title} />
+      {banner.style === "none" ? (
+        <>
+          {/* Sem imagem: só um brilho discreto atrás da saudação. */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute top-0 left-1/2 -z-10 h-[380px] w-[100vw] -translate-x-1/2 bg-[radial-gradient(55%_70%_at_88%_0%,color-mix(in_oklab,var(--accent)_14%,transparent),transparent_70%),radial-gradient(40%_60%_at_60%_0%,color-mix(in_oklab,var(--steel)_8%,transparent),transparent_70%)]"
+          />
+          {hero(false)}
+        </>
+      ) : (
+        // Sempre escuro por cima da imagem, mesmo no tema claro, para o texto continuar legível.
+        <section
+          aria-label="Boas-vindas"
+          data-banner={banner.style}
+          className="dark relative -mx-4 -mt-6 overflow-hidden text-fg sm:mx-0 sm:mt-0 sm:rounded-3xl sm:border sm:border-white/[0.07]"
+        >
+          <BannerBackdrop
+            style={banner.style}
+            path={banner.path}
+            src={bannerSrc}
+            focusX={banner.focusX}
+            focusY={banner.focusY}
+            zoom={banner.zoom}
+            overlay={banner.overlay}
+          />
+          <div className="relative flex min-h-[360px] flex-col justify-end px-4 pt-16 pb-6 sm:min-h-[300px] sm:px-8 sm:pt-20 sm:pb-8">
+            {hero(true)}
           </div>
-        </div>
-        {activeSubjects > 0 && <DashboardStudyActions />}
-      </header>
+        </section>
+      )}
 
       {activeSubjects === 0 && (
         <section className="mt-8 flex flex-col items-start gap-4 rounded-2xl border border-border bg-surface-1 p-5 sm:flex-row sm:items-center sm:justify-between">

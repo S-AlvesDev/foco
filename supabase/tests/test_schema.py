@@ -291,4 +291,21 @@ check("não cria objetivo para outra pessoa",
       fails(b, "insert into study_focus (user_id, title) values (%s, 'x')", (A,)))
 check("objetivo vazio é recusado", fails(a, "update study_focus set title='' where user_id=%s", (A,)))
 
+# --- Banner do painel
+check("bucket banners privado", one(root, "select public from storage.buckets where id='banners'")[0] is False)
+check("banner padrão por omissão", one(a, "select banner_style, banner_overlay from profiles where id=%s", (A,)) == ("default", 35))
+a.execute("insert into storage.objects (bucket_id, name) values ('banners', %s)", (f"{A}/capa.webp",))
+check("só o dono vê o próprio banner", one(a, "select count(*) from storage.objects where bucket_id='banners'")[0] == 1
+      and one(b, "select count(*) from storage.objects where bucket_id='banners'")[0] == 0
+      and one(c3, "select count(*) from storage.objects where bucket_id='banners'")[0] == 0)
+check("não grava banner na pasta de outra pessoa",
+      fails(b, "insert into storage.objects (bucket_id, name) values ('banners', %s)", (f"{A}/x.webp",)))
+check("não apaga o banner de outra pessoa", b.execute("delete from storage.objects where bucket_id='banners'").rowcount == 0)
+a.execute("update profiles set banner_style='custom', banner_path=%s, banner_focus_x=30, banner_zoom=1.4, banner_overlay=60 where id=%s", (f"{A}/capa.webp", A))
+check("não altera o banner de outra pessoa", b.execute("update profiles set banner_style='none', banner_path=null where id=%s", (A,)).rowcount == 0)
+check("perfil não aponta banner para pasta alheia", fails(b, "update profiles set banner_style='custom', banner_path=%s where id=%s", (f"{A}/capa.webp", B)))
+check("imagem própria exige arquivo", fails(a, "update profiles set banner_path=null where id=%s", (A,)))
+check("enquadramento fora dos limites é recusado", fails(a, "update profiles set banner_zoom=5 where id=%s", (A,))
+      and fails(a, "update profiles set banner_overlay=95 where id=%s", (A,)))
+
 print(f"\n{ok} checks passed")

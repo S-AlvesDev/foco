@@ -211,6 +211,12 @@ export type Database = {
       profiles: {
         Row: {
           avatar_path: string | null;
+          banner_focus_x: number;
+          banner_focus_y: number;
+          banner_overlay: number;
+          banner_path: string | null;
+          banner_style: string;
+          banner_zoom: number;
           created_at: string;
           display_name: string;
           id: string;
@@ -221,6 +227,12 @@ export type Database = {
         };
         Insert: {
           avatar_path?: string | null;
+          banner_focus_x?: number;
+          banner_focus_y?: number;
+          banner_overlay?: number;
+          banner_path?: string | null;
+          banner_style?: string;
+          banner_zoom?: number;
           created_at?: string;
           display_name?: string;
           id: string;
@@ -231,6 +243,12 @@ export type Database = {
         };
         Update: {
           avatar_path?: string | null;
+          banner_focus_x?: number;
+          banner_focus_y?: number;
+          banner_overlay?: number;
+          banner_path?: string | null;
+          banner_style?: string;
+          banner_zoom?: number;
           created_at?: string;
           display_name?: string;
           id?: string;

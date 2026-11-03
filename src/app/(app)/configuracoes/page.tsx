@@ -11,6 +11,9 @@ import { getProfile } from "@/lib/auth";
 import { avatarUrl } from "@/features/avatar/server";
 import { FocusChip } from "@/features/focus/components/focus-chip";
 import { getStudyFocus } from "@/features/focus/queries";
+import { BannerEditor } from "@/features/banner/components/banner-editor";
+import { readBanner } from "@/features/banner/model";
+import { bannerUrl } from "@/features/banner/server";
 
 export const metadata: Metadata = { title: "Configurações" };
 
@@ -27,6 +30,8 @@ export default function SettingsPage() {
 
 async function Settings() {
   const [profile, focus] = await Promise.all([getProfile(), getStudyFocus()]);
+  const banner = readBanner(profile);
+  const bannerSrc = await bannerUrl(banner.path);
   return (
     <>
       <Section title="Perfil" description="Como você aparece no app.">
@@ -40,6 +45,22 @@ async function Settings() {
 
       <Section title="Objetivo atual" description="Aparece no topo do painel. Só você vê.">
         <FocusChip title={focus.title} />
+      </Section>
+
+      <Section title="Aparência" description="Como o painel aparece para você, em todos os aparelhos.">
+        <div id="banner">
+          <h3 className="text-[13.5px] font-medium text-fg">Banner do painel</h3>
+          <p className="mt-1 mb-4 text-[13px] leading-relaxed text-fg-3">
+            Imagem no topo do painel, atrás da saudação. Só você vê.
+          </p>
+          <BannerEditor
+            key={JSON.stringify(banner)}
+            userId={profile.id}
+            firstName={(profile.display_name || profile.email).split(" ")[0]}
+            initial={banner}
+            initialSrc={bannerSrc}
+          />
+        </div>
       </Section>
 
       <Section title="Preferências" description="Valem para todos os seus aparelhos.">
