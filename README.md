@@ -12,7 +12,7 @@ Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind CSS v4 · Su
 | 2 | Matérias e personalização | Pronta |
 | 3 | Registro manual e cronômetro | Pronta |
 | 4 | Painel e gráficos | Pronta |
-| 5 | Calendário e metas | — |
+| 5 | Calendário e metas | Pronta |
 | 6 | Anotações e diário | — |
 | 7 | Revisões | — |
 | 8 | Desempenho | — |

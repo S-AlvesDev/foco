@@ -1,4 +1,4 @@
-import { BookOpen, History, LayoutGrid, Settings, type LucideIcon } from "lucide-react";
+import { BookOpen, CalendarDays, History, LayoutGrid, Settings, Target, type LucideIcon } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon; short?: string };
 
@@ -10,7 +10,12 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/painel", label: "Painel", icon: LayoutGrid },
   { href: "/sessoes", label: "Sessões", icon: History },
   { href: "/materias", label: "Matérias", icon: BookOpen },
+  { href: "/calendario", label: "Calendário", icon: CalendarDays },
+  { href: "/metas", label: "Metas", icon: Target },
 ];
+
+/** Na barra inferior do celular: os dois primeiros, o botão +, Matérias e "Mais". */
+export const TAB_BAR_PRIMARY = ["/painel", "/sessoes", "/materias"];
 
 export const SETTINGS_NAV: NavItem = {
   href: "/configuracoes",

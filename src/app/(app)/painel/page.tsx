@@ -13,6 +13,8 @@ import {
 import { EvolutionChart } from "@/features/dashboard/components/evolution-chart";
 import { PeriodTabs } from "@/features/dashboard/components/period-tabs";
 import { getAllTimeTotals, getRecentSessions, getStatRows, getStreak } from "@/features/dashboard/queries";
+import { GoalList } from "@/features/goals/components/goal-list";
+import { getGoalsProgress } from "@/features/goals/queries";
 import { listSubjects } from "@/features/subjects/queries";
 import { DashboardStudyActions } from "@/features/timer/components/timer-widgets";
 import { getProfile } from "@/lib/auth";
@@ -49,6 +51,16 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
     getRecentSessions(5),
   ]);
   const d = aggregateDashboard(rows, { today, weekStartsOn: profile.week_starts_on, period });
+  const goals = await getGoalsProgress({
+    today,
+    weekStartsOn: profile.week_starts_on,
+    subjectOrder: subjects.map((s) => s.id),
+    rows,
+  });
+  const dailyGoal = goals.find((g) => g.period === "daily" && g.metric === "minutes" && !g.subject_id);
+  const activeList = subjects
+    .filter((s) => !s.archived_at)
+    .map((s) => ({ id: s.id, name: s.name, color: s.color }));
   const meta = Object.fromEntries(subjects.map((s) => [s.id, { name: s.name, color: s.color }]));
   const firstName = (profile.display_name || profile.email).split(" ")[0];
   const activeSubjects = subjects.filter((s) => !s.archived_at).length;
@@ -122,12 +134,32 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
           <EvolutionChart
             buckets={d.buckets}
             subjects={meta}
+            goalSeconds={d.granularity === "day" && dailyGoal ? dailyGoal.target * 60 : undefined}
             caption={`Horas estudadas por ${d.granularity === "day" ? "dia" : d.granularity === "week" ? "semana" : "mês"}, últimos ${periodLabel}`}
           />
         </div>
       </section>
 
       <div className="mt-10 grid gap-10 md:grid-cols-2">
+        <section aria-labelledby="goals-title">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="goals-title" className="text-[14px] font-semibold text-fg">
+              Metas
+            </h2>
+            <Link href="/metas" className="text-[13px] text-fg-2 transition-colors hover:text-fg">
+              {goals.length ? "Ver todas" : "Criar meta"}
+            </Link>
+          </div>
+          <div className="mt-1">
+            <GoalList
+              goals={goals.slice(0, 4)}
+              subjects={activeList}
+              editable={false}
+              emptyText="Defina quanto quer estudar por dia, semana ou mês e acompanhe o progresso aqui."
+            />
+          </div>
+        </section>
+
         <section aria-labelledby="subjects-title">
           <div className="flex items-baseline justify-between gap-3">
             <h2 id="subjects-title" className="text-[14px] font-semibold text-fg">
@@ -176,7 +208,9 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
             </ul>
           )}
         </section>
+      </div>
 
+      <div className="mt-10 grid gap-10 md:grid-cols-2">
         <section aria-labelledby="recent-title">
           <div className="flex items-baseline justify-between gap-3">
             <h2 id="recent-title" className="text-[14px] font-semibold text-fg">

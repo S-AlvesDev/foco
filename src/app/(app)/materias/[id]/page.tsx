@@ -6,7 +6,9 @@ import { ArrowLeft } from "lucide-react";
 import { Page } from "@/components/layout/page";
 import { ColorDot } from "@/features/subjects/components/color-picker";
 import { SubjectActions } from "@/features/subjects/components/subject-actions";
-import { getSubject, listSubjectSessions } from "@/features/subjects/queries";
+import { getSubject, listSubjectSessions, listSubjects } from "@/features/subjects/queries";
+import { GoalList } from "@/features/goals/components/goal-list";
+import { getGoalsProgress } from "@/features/goals/queries";
 import { uuid } from "@/features/subjects/schemas";
 import { getProfile } from "@/lib/auth";
 import { formatDuration, localDateISO, relativeDay } from "@/lib/format";
@@ -37,8 +39,16 @@ async function SubjectDetail({ params }: { params: PageProps<"/materias/[id]">["
   if (!uuid.safeParse(id).success) notFound();
   const [profile, subject] = await Promise.all([getProfile(), getSubject(id)]);
   if (!subject) notFound();
-  const sessions = await listSubjectSessions(id);
   const todayISO = localDateISO(profile.timezone, new Date());
+  const [sessions, all, allGoals] = await Promise.all([
+    listSubjectSessions(id),
+    listSubjects(),
+    getGoalsProgress({ today: todayISO, weekStartsOn: profile.week_starts_on, subjectOrder: [] }),
+  ]);
+  const goals = allGoals.filter((g) => g.subject_id === id);
+  const activeList = all
+    .filter((s) => !s.archived_at)
+    .map((s) => ({ id: s.id, name: s.name, color: s.color }));
   const archived = Boolean(subject.archived_at);
   const average = subject.sessions ? subject.seconds / subject.sessions : 0;
 
@@ -91,6 +101,20 @@ async function SubjectDetail({ params }: { params: PageProps<"/materias/[id]">["
           value={subject.lastDate ? relativeDay(subject.lastDate, todayISO) : "—"}
         />
       </dl>
+
+      {!archived && (
+        <section aria-labelledby="goals-title" className="mt-10">
+          <h2 id="goals-title" className="mb-1 text-[14px] font-semibold text-fg">
+            Metas
+          </h2>
+          <GoalList
+            goals={goals}
+            subjects={activeList}
+            newSubjectId={subject.id}
+            emptyText="Nenhuma meta para esta matéria."
+          />
+        </section>
+      )}
 
       <section aria-labelledby="history-title" className="mt-10">
         <div className="flex items-baseline justify-between gap-4">

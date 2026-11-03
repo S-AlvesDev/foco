@@ -107,6 +107,18 @@
   }
 }
 
+/* Intensidade de estudo: um só tom (o destaque), do mais claro ao mais forte. */
+.level-0 { background: var(--surface-2); }
+.level-1 { background: color-mix(in oklab, var(--accent) 22%, var(--surface-2)); }
+.level-2 { background: color-mix(in oklab, var(--accent) 45%, var(--surface-2)); }
+.level-3 { background: color-mix(in oklab, var(--accent) 70%, var(--surface-2)); }
+.level-4 { background: var(--accent); }
+/* Versão suave para células com texto por cima. */
+.tint-1 { background: color-mix(in oklab, var(--accent) 10%, var(--bg)); }
+.tint-2 { background: color-mix(in oklab, var(--accent) 20%, var(--bg)); }
+.tint-3 { background: color-mix(in oklab, var(--accent) 32%, var(--bg)); }
+.tint-4 { background: color-mix(in oklab, var(--accent) 46%, var(--bg)); }
+
 @layer base {
   html {
     -webkit-text-size-adjust: 100%;

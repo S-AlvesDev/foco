@@ -103,3 +103,12 @@ export function clock(seconds: number) {
   const m = Math.floor((s % 3600) / 60);
   return `${h}:${String(m).padStart(2, "0")}:${String(s % 60).padStart(2, "0")}`;
 }
+
+/** Versão curta para espaços pequenos: "45m", "1h30", "2h". */
+export function compactDuration(seconds: number) {
+  const minutes = Math.round(Math.max(0, seconds) / 60);
+  if (minutes < 60) return `${minutes}m`;
+  const h = Math.floor(minutes / 60);
+  const m = minutes % 60;
+  return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
+}
