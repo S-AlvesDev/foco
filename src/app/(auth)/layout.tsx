@@ -1,17 +1,21 @@
 import Link from "next/link";
-import { BrandWordmark } from "@/components/brand";
+import { BRAND_NAME, BrandEmblem } from "@/components/brand";
 
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-hidden">
       <FocusRings />
-      <header className="px-5 pt-[max(1.25rem,env(safe-area-inset-top))] sm:px-8 sm:pt-7">
-        <Link href="/entrar" className="inline-flex rounded-md" aria-label="Foco aí, início">
-          <BrandWordmark />
-        </Link>
-      </header>
-      <main className="flex flex-1 items-start justify-center px-5 pt-[9vh] pb-16 sm:items-center sm:pt-0">
-        <div className="w-full max-w-[368px]">{children}</div>
+      <main className="flex flex-1 items-start justify-center px-5 pt-[max(2.5rem,env(safe-area-inset-top))] pb-16 sm:items-center sm:pt-10">
+        <div className="w-full max-w-[368px]">
+          <Link
+            href="/entrar"
+            className="mx-auto mb-8 flex w-fit rounded-md"
+            aria-label={`${BRAND_NAME}, início`}
+          >
+            <BrandEmblem className="w-[112px] sm:w-[132px]" />
+          </Link>
+          {children}
+        </div>
       </main>
     </div>
   );

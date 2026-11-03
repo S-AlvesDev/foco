@@ -1,4 +1,4 @@
-# Foco aí
+# Missão Alpha-01
 
 Gerenciador pessoal de estudos: matérias, sessões, cronômetro, metas, anotações, revisões e um espaço compartilhado para duas pessoas.
 
@@ -28,8 +28,8 @@ O banco completo (todas as etapas) está em `supabase/migrations/0001_init.sql`;
    - *Site URL*: o endereço de produção (ex.: `https://foco-ai.vercel.app`).
    - *Redirect URLs*: adicione `http://localhost:3000/**` e `https://<seu-domínio>/**`. Para previews da Vercel, `https://*-<sua-conta>.vercel.app/**`.
 3. **E-mails em português.** Em *Authentication → Emails → Templates*:
-   - *Confirm signup*: assunto `Confirme seu e-mail no Foco aí`; corpo = `supabase/templates/confirmacao.html`.
-   - *Reset password*: assunto `Criar nova senha no Foco aí`; corpo = `supabase/templates/recuperacao.html`.
+   - *Confirm signup*: assunto `Confirme seu e-mail no Missão Alpha-01`; corpo = `supabase/templates/confirmacao.html`.
+   - *Reset password*: assunto `Criar nova senha no Missão Alpha-01`; corpo = `supabase/templates/recuperacao.html`.
 
    Esses modelos usam `token_hash`, então o link funciona mesmo se aberto em outro navegador ou aparelho.
 4. **Senha mínima** (opcional, o app já exige): *Authentication → Providers → Email → Minimum password length* = 8.

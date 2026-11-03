@@ -1,6 +1,6 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { BrandMark, BrandWordmark } from "@/components/brand";
+import { BrandWordmark } from "@/components/brand";
 import { SidebarNav, SidebarSettingsLink, TabBar } from "@/components/layout/nav-link";
 import { ThemeSync, UserMenu } from "@/components/layout/user-menu";
 import { getProfile } from "@/lib/auth";
@@ -15,7 +15,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         {/* Sidebar: tablet e desktop */}
         <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col border-r border-border bg-surface-1 md:flex">
           <div className="flex h-16 items-center px-5">
-            <Link href="/painel" className="rounded-md" aria-label="Foco aí, painel">
+            <Link href="/painel" className="rounded-md" aria-label="Missão Alpha-01, painel">
               <BrandWordmark />
             </Link>
           </div>
@@ -39,10 +39,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             <Link
               href="/painel"
               className="flex flex-1 items-center gap-2.5 rounded-md"
-              aria-label="Foco aí, painel"
+              aria-label="Missão Alpha-01, painel"
             >
-              <BrandMark className="size-7" />
-              <span className="text-[16px] font-semibold tracking-[0.06em]">FOCO AÍ</span>
+              <BrandWordmark />
             </Link>
             <Suspense fallback={<span className="size-7 rounded-full bg-surface-2" />}>
               <SidebarUser compact />

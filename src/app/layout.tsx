@@ -6,9 +6,9 @@ import { themeScript } from "@/components/theme-script";
 import "./globals.css";
 
 export const metadata: Metadata = {
-  title: { default: "Foco aí", template: "%s · Foco aí" },
+  title: { default: "Missão Alpha-01", template: "%s · Missão Alpha-01" },
   description: "Organize seus estudos, registre horas e acompanhe sua evolução.",
-  appleWebApp: { capable: true, title: "Foco aí", statusBarStyle: "black-translucent" },
+  appleWebApp: { capable: true, title: "Alpha-01", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {

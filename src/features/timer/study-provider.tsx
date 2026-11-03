@@ -268,7 +268,7 @@ function TitleClock() {
   const { timer, offset, data } = useStudy();
   const elapsed = useElapsed(timer, offset);
   const pageTitle = useRef("");
-  const subject = data?.subjects.find((s) => s.id === timer?.subject_id)?.name ?? "Foco aí";
+  const subject = data?.subjects.find((s) => s.id === timer?.subject_id)?.name ?? "Missão Alpha-01";
 
   useEffect(() => {
     // Um título que não é nosso foi definido pela página (navegação): guarda para restaurar depois.
