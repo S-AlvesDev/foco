@@ -3,6 +3,7 @@ import {
   CalendarClock,
   ChartColumn,
   CalendarDays,
+  HeartHandshake,
   History,
   LayoutGrid,
   NotebookPen,
@@ -28,6 +29,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/anotacoes", label: "Anotações", icon: NotebookPen },
   { href: "/diario", label: "Diário", icon: NotebookText },
   { href: "/desempenho", label: "Desempenho", icon: ChartColumn },
+  { href: "/jornada", label: "Nossa Jornada", icon: HeartHandshake },
 ];
 
 /** Na barra inferior do celular: os dois primeiros, o botão +, Matérias e "Mais". */

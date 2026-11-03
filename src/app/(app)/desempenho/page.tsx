@@ -31,6 +31,8 @@ import {
   getMonthlyTotals,
 } from "@/features/performance/queries";
 import { listSubjects } from "@/features/subjects/queries";
+import { AchievementsList } from "@/features/journey/components/space-controls";
+import { getAchievements } from "@/features/journey/queries";
 import { getProfile } from "@/lib/auth";
 import { MONTHS_LONG } from "@/lib/dates";
 import { formatDuration, localDateISO, plural, shortDate } from "@/lib/format";
@@ -62,7 +64,7 @@ async function Performance({ searchParams }: { searchParams: PageProps<"/desempe
   const r = performanceRange(period, today);
   const goalsFrom = goalHistoryStart(today, wso);
 
-  const [subjects, daily, cur, prev, monthly, goals, goalRows] = await Promise.all([
+  const [subjects, daily, cur, prev, monthly, goals, goalRows, achievements] = await Promise.all([
     listSubjects(),
     getDailyTotals(r.prevFrom, r.to),
     getBreakdown(r.from, r.to),
@@ -70,6 +72,7 @@ async function Performance({ searchParams }: { searchParams: PageProps<"/desempe
     getMonthlyTotals(),
     getGoalsWithCreation(profile.timezone),
     getStatRows(goalsFrom, today),
+    getAchievements(),
   ]);
 
   const periodLabel = PERFORMANCE_PERIODS.find((p) => p.value === period)!.label;
@@ -382,6 +385,26 @@ async function Performance({ searchParams }: { searchParams: PageProps<"/desempe
             })}
           </ul>
         )}
+      </section>
+
+      <section aria-labelledby="ach-title" className="mt-12">
+        <SectionHead
+          id="ach-title"
+          title="Conquistas"
+          aside={
+            <Link href="/jornada" className="text-[13px] text-fg-2 transition-colors hover:text-fg">
+              Compartilhar em Nossa Jornada
+            </Link>
+          }
+        />
+        <div className="mt-2">
+          <AchievementsList
+            items={achievements.filter((a) => a.user_id === profile.id)}
+            meId={profile.id}
+            canShare={false}
+            todayISO={today}
+          />
+        </div>
       </section>
     </>
   );
