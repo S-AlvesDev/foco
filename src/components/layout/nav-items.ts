@@ -1,6 +1,7 @@
 import {
   BookOpen,
   CalendarClock,
+  ChartColumn,
   CalendarDays,
   History,
   LayoutGrid,
@@ -26,6 +27,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/metas", label: "Metas", icon: Target },
   { href: "/anotacoes", label: "Anotações", icon: NotebookPen },
   { href: "/diario", label: "Diário", icon: NotebookText },
+  { href: "/desempenho", label: "Desempenho", icon: ChartColumn },
 ];
 
 /** Na barra inferior do celular: os dois primeiros, o botão +, Matérias e "Mais". */

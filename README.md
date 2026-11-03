@@ -15,7 +15,7 @@ Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind CSS v4 · Su
 | 5 | Calendário e metas | Pronta |
 | 6 | Anotações e diário | Pronta |
 | 7 | Revisões | Pronta |
-| 8 | Desempenho | — |
+| 8 | Desempenho | Pronta |
 | 9 | Nossa Jornada | — |
 
 O banco completo (todas as etapas) está em `supabase/migrations/0001_init.sql`; cada etapa pode acrescentar um arquivo novo (`0002_…`), sempre aplicado em ordem.

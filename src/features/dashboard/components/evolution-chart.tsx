@@ -12,7 +12,7 @@ const PAD = { top: 12, right: 4, bottom: 26, left: 44 };
 const STEPS_MIN = [15, 30, 60, 120, 180, 240, 360, 480, 600, 720, 1200, 1500, 3000, 6000, 12000];
 
 /** Escala com no máximo 4 linhas de grade, em passos "redondos" de horas. */
-function niceScale(maxSeconds: number) {
+export function niceScale(maxSeconds: number) {
   const maxMin = Math.max(maxSeconds / 60, 1);
   const step = STEPS_MIN.find((s) => maxMin / s <= 4) ?? Math.ceil(maxMin / 4 / 60) * 60;
   const top = Math.max(step, Math.ceil(maxMin / step) * step);
@@ -21,7 +21,7 @@ function niceScale(maxSeconds: number) {
   return { top: top * 60, ticks };
 }
 
-function tickLabel(seconds: number) {
+export function tickLabel(seconds: number) {
   if (seconds === 0) return "0";
   const m = seconds / 60;
   return m < 60 ? `${m}min` : `${Math.round((m / 60) * 10) / 10}h`.replace(".", ",");
@@ -186,25 +186,27 @@ export function EvolutionChart({
         )}
       </div>
       {/* Tabela para leitores de tela. */}
-      <table className="sr-only">
-        <caption>{caption}</caption>
-        <thead>
-          <tr>
-            <th>Período</th>
-            <th>Tempo</th>
-            <th>Sessões</th>
-          </tr>
-        </thead>
-        <tbody>
-          {buckets.map((b) => (
-            <tr key={b.key}>
-              <td>{b.title}</td>
-              <td>{formatDuration(b.seconds)}</td>
-              <td>{b.sessions}</td>
+      <div className="sr-only">
+        <table>
+          <caption>{caption}</caption>
+          <thead>
+            <tr>
+              <th>Período</th>
+              <th>Tempo</th>
+              <th>Sessões</th>
             </tr>
-          ))}
-        </tbody>
-      </table>
+          </thead>
+          <tbody>
+            {buckets.map((b) => (
+              <tr key={b.key}>
+                <td>{b.title}</td>
+                <td>{formatDuration(b.seconds)}</td>
+                <td>{b.sessions}</td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
     </figure>
   );
 }
