@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { BRAND_NAME, BrandEmblem } from "@/components/brand";
+import { ClearOfflineData } from "@/features/pwa/sw-manager";
 
 export default function AuthLayout({ children }: LayoutProps<"/">) {
   return (
     <div className="relative isolate flex min-h-dvh flex-col overflow-hidden">
       <FocusRings />
+      <ClearOfflineData />
       <main className="flex flex-1 items-start justify-center px-5 pt-[max(2.5rem,env(safe-area-inset-top))] pb-16 sm:items-center sm:pt-10">
         <div className="w-full max-w-[368px]">
           <Link

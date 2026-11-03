@@ -6,6 +6,9 @@ import { ThemeSync, UserMenu } from "@/components/layout/user-menu";
 import { getProfile } from "@/lib/auth";
 import { avatarUrl } from "@/features/avatar/server";
 import { StudyProvider } from "@/features/timer/study-provider";
+import { BellLink } from "@/features/notifications/components/bell";
+import { countUnread } from "@/features/notifications/queries";
+import { OfflineRuntime } from "@/features/pwa/offline-runtime";
 import { MobileTimerPill, MobileTimerSpacer, SidebarTimer } from "@/features/timer/components/timer-widgets";
 
 export default function AppLayout({ children }: LayoutProps<"/">) {
@@ -13,11 +16,14 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
     <StudyProvider>
       <div className="flex min-h-dvh">
         {/* Sidebar: tablet e desktop */}
-        <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col border-r border-border bg-surface-1 md:flex">
-          <div className="flex h-16 items-center px-5">
-            <Link href="/painel" className="rounded-md" aria-label="Missão Alpha-01, painel">
+        <aside className="sticky top-0 hidden h-dvh w-[264px] shrink-0 flex-col border-r border-border bg-surface-1 md:flex">
+          <div className="flex h-16 items-center justify-between gap-2 pr-2.5 pl-5">
+            <Link href="/painel" className="min-w-0 rounded-md" aria-label="Missão Alpha-01, painel">
               <BrandWordmark />
             </Link>
+            <Suspense fallback={<span className="size-10" />}>
+              <Bell />
+            </Suspense>
           </div>
           <div className="px-1 pt-1 pb-2">
             <SidebarTimer />
@@ -43,6 +49,9 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             >
               <BrandWordmark />
             </Link>
+            <Suspense fallback={<span className="size-10" />}>
+              <Bell className="mr-1" />
+            </Suspense>
             <Suspense fallback={<span className="size-7 rounded-full bg-surface-2" />}>
               <SidebarUser compact />
             </Suspense>
@@ -55,12 +64,18 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
         </div>
 
         <MobileTimerPill />
+        <OfflineRuntime />
 
         {/* Navegação inferior: celular */}
         <TabBar />
       </div>
     </StudyProvider>
   );
+}
+
+async function Bell({ className }: { className?: string }) {
+  const count = await countUnread();
+  return <BellLink count={count ?? 0} className={className} />;
 }
 
 async function SidebarUser({ compact = false }: { compact?: boolean }) {

@@ -69,3 +69,38 @@ export async function deleteSessionAction(
   refresh();
   return { ok: true };
 }
+
+/**
+ * Envia uma sessão registrada sem internet. O id vem do aparelho:
+ * reenviar a mesma sessão não cria outra (chave primária).
+ */
+export async function syncOfflineSessionAction(item: {
+  id: string;
+  createdAt: number;
+  payload: Record<string, string>;
+}): Promise<{ ok: true } | { ok: false; permanent: boolean; message: string }> {
+  const profile = await getProfile();
+  if (!uuid.safeParse(item.id).success) return { ok: false, permanent: true, message: "Registro inválido." };
+  const raw: Record<string, string> = Object.fromEntries(
+    SESSION_FIELDS.map((f) => [f, f === "id" ? "" : String(item.payload[f] ?? "")]),
+  );
+  const parsed = sessionFormSchema.safeParse(raw);
+  if (!parsed.success) return { ok: false, permanent: true, message: "Sessão com dados inválidos." };
+  const resolved = resolveSession(parsed.data, profile.timezone, new Date(item.createdAt));
+  if (!resolved.ok) return { ok: false, permanent: true, message: "Sessão com dados inválidos." };
+
+  const supabase = await createClient();
+  const { error } = await supabase
+    .from("study_sessions")
+    .insert({ ...resolved.data, id: item.id, source: "manual" });
+  if (error && error.code !== "23505") {
+    const permanent = error.code === "23503" || error.code === "23514";
+    return {
+      ok: false,
+      permanent,
+      message: error.code === "23503" ? "A matéria dessa sessão foi excluída." : dbErrorMessage(error),
+    };
+  }
+  refresh();
+  return { ok: true };
+}

@@ -25,6 +25,7 @@ import { getStudyFocus } from "@/features/focus/queries";
 import { BannerBackdrop } from "@/features/banner/components/banner-backdrop";
 import { readBanner } from "@/features/banner/model";
 import { bannerUrl } from "@/features/banner/server";
+import { ShortcutAction } from "@/features/pwa/shortcut-action";
 import { cn } from "@/lib/utils";
 import { Page } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
@@ -121,6 +122,9 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
 
   return (
     <>
+      <Suspense>
+        <ShortcutAction />
+      </Suspense>
       {banner.style === "none" ? (
         <>
           {/* Sem imagem: só um brilho discreto atrás da saudação. */}

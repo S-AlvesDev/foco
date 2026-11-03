@@ -4,7 +4,7 @@ import { env } from "@/lib/env";
 import type { Database } from "./database.types";
 
 /** Rotas acessíveis sem sessão. */
-const PUBLIC_PATHS = ["/entrar", "/cadastro", "/recuperar-senha", "/auth"];
+const PUBLIC_PATHS = ["/entrar", "/cadastro", "/recuperar-senha", "/auth", "/offline", "/api/push/dispatch"];
 /** Rotas de quem ainda não entrou; com sessão, redirecionam ao painel. */
 const GUEST_ONLY = ["/entrar", "/cadastro", "/recuperar-senha"];
 

@@ -11,6 +11,9 @@ import { getProfile } from "@/lib/auth";
 import { avatarUrl } from "@/features/avatar/server";
 import { FocusChip } from "@/features/focus/components/focus-chip";
 import { getStudyFocus } from "@/features/focus/queries";
+import { NotificationSettings } from "@/features/notifications/components/notification-settings";
+import { pushConfigured } from "@/features/notifications/dispatch";
+import { getPrefs } from "@/features/notifications/queries";
 import { BannerEditor } from "@/features/banner/components/banner-editor";
 import { readBanner } from "@/features/banner/model";
 import { bannerUrl } from "@/features/banner/server";
@@ -29,7 +32,7 @@ export default function SettingsPage() {
 }
 
 async function Settings() {
-  const [profile, focus] = await Promise.all([getProfile(), getStudyFocus()]);
+  const [profile, focus, notif] = await Promise.all([getProfile(), getStudyFocus(), getPrefs()]);
   const banner = readBanner(profile);
   const bannerSrc = await bannerUrl(banner.path);
   return (
@@ -59,6 +62,17 @@ async function Settings() {
             firstName={(profile.display_name || profile.email).split(" ")[0]}
             initial={banner}
             initialSrc={bannerSrc}
+          />
+        </div>
+      </Section>
+
+      <Section title="Notificações" description="Avisos no sino e, se quiser, no celular ou computador.">
+        <div id="notificacoes" className="scroll-mt-24">
+          <NotificationSettings
+            initial={notif.prefs}
+            available={notif.available}
+            vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null}
+            pushReady={pushConfigured()}
           />
         </div>
       </Section>

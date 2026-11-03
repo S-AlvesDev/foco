@@ -10,6 +10,7 @@ import { clock, formatDuration, minutesToInput, parseDurationInput } from "@/lib
 import { studyTypeLabel } from "@/lib/study-types";
 import { discardTimerAction, finishTimerAction } from "../actions";
 import { useElapsed, useStudy } from "../study-provider";
+import { enqueue, isOffline } from "@/features/pwa/outbox";
 
 const LONG_RUN = 6 * 3600;
 
@@ -71,14 +72,52 @@ function FinishForm({ onDone }: { onDone: () => void }) {
     if (qc !== null && (qa === null || qc > qa))
       return setError("Acertos não podem passar do total de questões.");
 
-    startTransition(async () => {
-      const res = await finishTimerAction({
-        topic,
-        notes,
-        questionsAnswered: qa,
-        questionsCorrect: qc,
-        durationSeconds,
+    /** Sem internet: guarda no aparelho com o tempo de agora; envia quando a conexão voltar. */
+    const queueOffline = () => {
+      if (!timer) return false;
+      const saved = enqueue({
+        kind: "finish",
+        payload: {
+          timerId: timer.id,
+          subjectId: timer.subject_id,
+          studyType: timer.study_type,
+          startedAt: timer.started_at,
+          endedAt: new Date(Date.now() + offset).toISOString(),
+          durationSeconds: durationSeconds ?? elapsed,
+          topic,
+          notes,
+          questionsAnswered: qa,
+          questionsCorrect: qc,
+        },
       });
+      if (!saved) {
+        setError("Sem conexão e sem como guardar neste aparelho. Tente de novo com internet.");
+        return true;
+      }
+      toast.success("Sessão guardada no aparelho", {
+        description: "Sem conexão agora. Ela será enviada sozinha quando a internet voltar.",
+      });
+      sync(null);
+      onDone();
+      return true;
+    };
+
+    startTransition(async () => {
+      if (isOffline() && queueOffline()) return;
+      let res: Awaited<ReturnType<typeof finishTimerAction>>;
+      try {
+        res = await finishTimerAction({
+          topic,
+          notes,
+          questionsAnswered: qa,
+          questionsCorrect: qc,
+          durationSeconds,
+        });
+      } catch {
+        // A rede caiu no meio do envio.
+        queueOffline();
+        return;
+      }
       if (!res.ok) {
         setError(res.message);
         return;
@@ -102,6 +141,7 @@ function FinishForm({ onDone }: { onDone: () => void }) {
 
   const discard = () =>
     startTransition(async () => {
+      if (isOffline()) return setError("Sem conexão. Descartar precisa de internet.");
       const res = await discardTimerAction();
       if (!res.ok) return setError(res.message);
       toast("Cronômetro descartado");

@@ -20,6 +20,16 @@ import { ReviewDialog, type ReviewDraft } from "@/features/reviews/components/re
 import { FinishTimerDialog } from "./components/finish-timer-dialog";
 import { StartTimerDialog } from "./components/start-timer-dialog";
 import { TIMER_COLUMNS, type StudyContext, type Timer, type TimerResult } from "./types";
+import { currentUserId, isOffline, readOutbox } from "@/features/pwa/outbox";
+
+const cacheKey = (uid: string) => `alpha:study:${uid}`;
+
+/** Cronômetro já finalizado sem internet (na fila): não deve reaparecer até o envio. */
+function withoutQueuedFinish(timer: Timer | null) {
+  if (!timer) return null;
+  const queued = readOutbox().some((i) => i.kind === "finish" && i.payload.timerId === timer.id);
+  return queued ? null : timer;
+}
 
 type Snapshot = {
   ready: boolean;
@@ -98,10 +108,33 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
 
   /** Lê direto do Supabase no navegador (o RLS limita aos dados do usuário). */
   const load = useCallback(async () => {
+    /** Sem rede: usa a última cópia salva neste aparelho (matérias e cronômetro). */
+    const restore = (uid: string | null | undefined) => {
+      if (!uid || store.get().data) return;
+      try {
+        const saved = JSON.parse(localStorage.getItem(cacheKey(uid)) ?? "null") as {
+          data: StudyContext;
+          offset: number;
+        } | null;
+        if (!saved?.data) return;
+        const serverNow = Date.now() + saved.offset;
+        store.set({
+          offset: saved.offset,
+          data: {
+            ...saved.data,
+            timer: withoutQueuedFinish(saved.data.timer),
+            todayISO: localDateISO(saved.data.timezone, new Date(serverNow)),
+            serverNow,
+          },
+        });
+      } catch {}
+    };
+    let userId: string | undefined;
     try {
       const { data: auth } = await supabase.auth.getSession();
-      const userId = auth.session?.user.id;
+      userId = auth.session?.user.id;
       if (!userId) return;
+      if (isOffline()) return restore(userId);
       const sent = Date.now();
       const [timer, subjects, last, profile, clockRes] = await Promise.all([
         supabase.from("active_timers").select(TIMER_COLUMNS).maybeSingle(),
@@ -120,22 +153,28 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         supabase.from("profiles").select("timezone").eq("id", userId).single(),
         fetch("/api/agora", { cache: "no-store" }).then((r) => r.json() as Promise<{ now: number }>),
       ]);
-      if (timer.error || subjects.error || profile.error) return;
+      if (timer.error || subjects.error || profile.error) return restore(userId);
       const received = Date.now();
       const serverNow = clockRes.now;
-      store.set({
-        offset: serverNow - (sent + received) / 2,
-        data: {
-          timer: timer.data,
-          subjects: subjects.data ?? [],
-          timezone: profile.data.timezone,
-          todayISO: localDateISO(profile.data.timezone, new Date(serverNow)),
-          lastSubjectId: last.data?.subject_id ?? null,
-          serverNow,
-        },
-      });
+      const data: StudyContext = {
+        timer: withoutQueuedFinish(timer.data),
+        subjects: subjects.data ?? [],
+        timezone: profile.data.timezone,
+        todayISO: localDateISO(profile.data.timezone, new Date(serverNow)),
+        lastSubjectId: last.data?.subject_id ?? null,
+        serverNow,
+      };
+      const offset = serverNow - (sent + received) / 2;
+      store.set({ offset, data });
+      try {
+        localStorage.setItem(
+          cacheKey(userId),
+          JSON.stringify({ data: { ...data, timer: timer.data }, offset }),
+        );
+      } catch {}
     } catch {
-      // Sem rede: mantém o último estado conhecido; tenta de novo no próximo foco.
+      // Sem rede: mantém o último estado conhecido (ou a cópia salva); tenta de novo no próximo foco.
+      restore(userId ?? currentUserId());
     }
   }, [supabase, store]);
 
@@ -170,7 +209,19 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     };
     const run = (fn: () => Promise<TimerResult>) =>
       startTransition(async () => {
-        const res = await fn();
+        if (isOffline()) {
+          toast.error(
+            "Sem conexão. Iniciar, pausar e continuar precisam de internet; o tempo continua contando.",
+          );
+          return;
+        }
+        let res: TimerResult;
+        try {
+          res = await fn();
+        } catch {
+          toast.error("Sem conexão. Tente de novo quando a internet voltar.");
+          return;
+        }
         if (res.ok) sync(res.timer, res.serverNow);
         else {
           toast.error(res.message);

@@ -1,11 +1,13 @@
 "use client";
 
 import { Toaster } from "sonner";
+import { ServiceWorkerManager } from "@/features/pwa/sw-manager";
 
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <>
       {children}
+      <ServiceWorkerManager />
       <Toaster
         position="bottom-right"
         offset={16}

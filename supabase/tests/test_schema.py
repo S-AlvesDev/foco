@@ -308,4 +308,87 @@ check("imagem própria exige arquivo", fails(a, "update profiles set banner_path
 check("enquadramento fora dos limites é recusado", fails(a, "update profiles set banner_zoom=5 where id=%s", (A,))
       and fails(a, "update profiles set banner_overlay=95 where id=%s", (A,)))
 
+# --- Cronômetro finalizado sem internet
+a.execute("insert into subjects (name) values ('Redação')")
+sr = one(a, "select id from subjects where name='Redação'")[0]
+a.execute("delete from active_timers")
+a.execute("select timer_start(%s)", (sr,))
+root.execute("update active_timers set started_at=now()-interval '30 min', segment_started_at=now()-interval '30 min' where user_id=%s", (A,))
+tid = one(a, "select id from active_timers")[0]
+args = (tid, sr, "theory", "2026-11-03 10:00+00", "2026-11-03 10:20+00", 1200)
+q = "select id, duration_seconds from timer_finish_offline(%s,%s,%s::study_type,%s,%s,%s)"
+s1 = one(a, q, args)
+check("offline: finaliza o cronômetro com o tempo do momento", s1[1] == 1200 and one(a, "select count(*) from active_timers")[0] == 0)
+s2 = one(a, q, args)
+check("offline: reenviar não duplica", s2[0] == s1[0] and one(a, "select count(*) from study_sessions where timer_id=%s", (tid,))[0] == 1)
+a.execute("select timer_start(%s)", (sr,))
+other = one(a, "select id from active_timers")[0]
+ghost = "dddddddd-0000-0000-0000-000000000004"
+one(a, q, (ghost, sr, "theory", "2026-11-03 08:00+00", "2026-11-03 08:30+00", 1800))
+check("offline: não finaliza outro cronômetro em andamento", one(a, "select id from active_timers")[0] == other)
+check("offline: cronômetro descartado em outro aparelho vira sessão",
+      one(a, "select duration_seconds from study_sessions where timer_id=%s", (ghost,))[0] == 1800)
+check("offline: B não finaliza cronômetro de A", fails(b, q, (other, sr, "theory", "2026-11-03 08:00+00", None, 600)))
+check("offline: A ainda tem o cronômetro", one(a, "select count(*) from active_timers")[0] == 1)
+a.execute("delete from active_timers")
+
+# --- Notificações
+def gen():
+    return one(root, "select generate_notifications()")[0]
+a.execute("update study_goals set is_active=false")
+a.execute("insert into study_goals (period, metric, target) values ('daily','minutes',30)")
+a.execute("insert into study_sessions (subject_id, session_date, duration_seconds) values (%s, (now() at time zone 'America/Fortaleza')::date, 2400)", (sr,))
+gen()
+check("meta alcançada gera notificação", one(a, "select count(*) from notifications where kind='goal_reached'")[0] >= 1)
+n0 = one(a, "select count(*) from notifications")[0]
+gen()
+check("rodar de novo não duplica", one(a, "select count(*) from notifications")[0] == n0)
+local_now = one(root, "select to_char(now() at time zone 'America/Fortaleza', 'HH24:MI')")[0]
+a.execute("insert into notification_prefs (reviews_time) values (%s::time - interval '1 minute')", (local_now,))
+a.execute("insert into study_reviews (subject_id, topic, due_date) values (%s, 'Dissertação', (now() at time zone 'America/Fortaleza')::date)", (sr,))
+gen()
+check("revisões de hoje no horário escolhido", one(a, "select title from notifications where kind='reviews'")[0] == "1 revisão para hoje")
+a.execute("update notification_prefs set cat_reviews=false, cat_goal_reached=false")
+a.execute("delete from notifications")
+gen()
+check("categoria desligada não gera aviso", one(a, "select count(*) from notifications where kind in ('reviews','goal_reached')")[0] == 0)
+a.execute("update notification_prefs set cat_reviews=true")
+gen()
+nid = one(a, "select id from notifications limit 1")[0]
+check("B não vê notificações de A", one(b, "select count(*) from notifications")[0] == 0)
+check("B não marca nem apaga as de A", b.execute("update notifications set read_at=now()").rowcount == 0
+      and b.execute("delete from notifications").rowcount == 0)
+check("A marca como lida", a.execute("update notifications set read_at=now() where id=%s", (nid,)).rowcount == 1)
+check("A não altera o texto", fails(a, "update notifications set title='x' where id=%s", (nid,)))
+check("ninguém cria notificação direto", fails(a, "insert into notifications (user_id, kind, title, dedupe_key) values (%s,'system','x','k')", (A,)))
+check("app não chama a geração nem o aviso geral", fails(a, "select generate_notifications()") and fails(a, "select notify_everyone('x','y')"))
+check("aviso do sistema para todas as contas", one(root, "select notify_everyone('Nova versão', 'Confira', '/painel')")[0] == 3)
+
+# --- Push
+check("app não configura o envio", fails(a, "select configure_push('https://x.dev/api', %s)", ("s" * 40,)))
+root.execute("select configure_push('https://x.dev/api/push/dispatch', %s)", ("segredo-" + "x" * 40,))
+check("segredo fica fora do alcance do app", fails(a, "select * from alpha_private.push_config"))
+anon = psycopg.connect(DSN, autocommit=True); anon.execute("set role anon")
+check("envio recusa segredo errado", fails(anon, "select * from push_claim(%s)", ("errado-" + "y" * 40,)))
+a.execute("select push_subscribe('https://push.example/abc', %s, %s, 'teste')", ("p" * 40, "a" * 16))
+check("A vê o próprio aparelho, B não", one(a, "select count(*) from push_subscriptions")[0] == 1
+      and one(b, "select count(*) from push_subscriptions")[0] == 0)
+check("app não grava inscrição direto", fails(b, "insert into push_subscriptions (user_id, endpoint, p256dh, auth) values (%s,'https://e/x',%s,%s)", (A, "p" * 40, "a" * 16)))
+root.execute("update notifications set push_state='pending', push_claimed_at=null where user_id=%s", (A,))
+rows = anon.execute("select notification_id, subscriptions from push_claim(%s)", ("segredo-" + "x" * 40,)).fetchall()
+check("sem push ligado nas preferências, nada é enviado", len(rows) == 0)
+a.execute("update notification_prefs set push_enabled=true")
+root.execute("update notifications set push_state='pending', push_claimed_at=null where user_id=%s", (A,))
+rows = anon.execute("select notification_id, subscriptions from push_claim(%s)", ("segredo-" + "x" * 40,)).fetchall()
+check("push ligado: lote com a inscrição do aparelho", len(rows) >= 1 and rows[0][1][0]["endpoint"] == "https://push.example/abc")
+check("lote já reservado não sai duas vezes", len(anon.execute("select * from push_claim(%s)", ("segredo-" + "x" * 40,)).fetchall()) == 0)
+import json as _json
+sub_id = rows[0][1][0]["id"]
+anon.execute("select push_report(%s, %s::jsonb)", ("segredo-" + "x" * 40, _json.dumps([{"id": str(rows[0][0]), "sent": False, "gone": [sub_id]}])))
+check("inscrição expirada é removida", one(a, "select count(*) from push_subscriptions")[0] == 0)
+b.execute("select push_subscribe('https://push.example/abc', %s, %s, 'teste')", ("p" * 40, "a" * 16))
+a.execute("select push_subscribe('https://push.example/abc', %s, %s, 'teste')", ("p" * 40, "a" * 16))
+check("aparelho passa para quem entrou nele", one(a, "select count(*) from push_subscriptions")[0] == 1
+      and one(b, "select count(*) from push_subscriptions")[0] == 0)
+
 print(f"\n{ok} checks passed")

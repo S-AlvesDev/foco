@@ -20,6 +20,8 @@ import { cn } from "@/lib/utils";
 import type { StudySubject } from "@/features/timer/types";
 import { useStudy } from "@/features/timer/study-provider";
 import { saveSessionAction, type SessionFormState } from "../actions";
+import { SESSION_FIELDS } from "../schemas";
+import { enqueue, isOffline } from "@/features/pwa/outbox";
 import { GroupLabel, StudyTypeChips, SubjectChips } from "./pickers";
 
 export type SessionDraft = {
@@ -152,7 +154,31 @@ function SessionForm({
   return (
     <form
       action={formAction}
-      onSubmit={() => (submittedTopic.current = topicRef.current?.value.trim() ?? "")}
+      onSubmit={(e) => {
+        submittedTopic.current = topicRef.current?.value.trim() ?? "";
+        if (!isOffline()) return;
+        // Sem internet: guarda no aparelho e envia sozinho quando a conexão voltar.
+        e.preventDefault();
+        if (editing) return void toast.error("Sem conexão. Editar uma sessão precisa de internet.");
+        const fd = new FormData(e.currentTarget);
+        const payload = Object.fromEntries(
+          SESSION_FIELDS.filter((f) => f !== "id").map((f) => [f, String(fd.get(f) ?? "")]),
+        );
+        const minutes = parseDurationInput(payload.duration ?? "");
+        if (!payload.subject_id || !payload.date || !(minutes && minutes >= 1)) {
+          return void toast.error("Preencha a matéria, a data e a duração.");
+        }
+        if (!enqueue({ kind: "session", payload })) {
+          return void toast.error(
+            "Sem conexão e sem como guardar neste aparelho. Tente de novo com internet.",
+          );
+        }
+        toast.success("Sessão guardada no aparelho", {
+          description: "Sem conexão agora. Ela será enviada sozinha quando a internet voltar.",
+        });
+        sync();
+        onDone();
+      }}
       className="flex min-h-0 flex-1 flex-col"
       noValidate
     >

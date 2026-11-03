@@ -208,6 +208,58 @@ export type Database = {
           },
         ];
       };
+      notifications: {
+        Row: {
+          body: string;
+          created_at: string;
+          dedupe_key: string;
+          id: string;
+          kind: string;
+          push_claimed_at: string | null;
+          push_state: string;
+          read_at: string | null;
+          title: string;
+          url: string;
+          user_id: string;
+        };
+        Insert: never;
+        Update: { read_at?: string | null };
+        Relationships: [];
+      };
+      notification_prefs: {
+        Row: {
+          cat_daily_goal: boolean;
+          cat_goal_reached: boolean;
+          cat_reviews: boolean;
+          cat_streak: boolean;
+          cat_study_reminder: boolean;
+          cat_system: boolean;
+          evening_check_time: string;
+          push_enabled: boolean;
+          reviews_time: string;
+          study_reminder_time: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: Partial<Database["public"]["Tables"]["notification_prefs"]["Row"]>;
+        Update: Partial<Database["public"]["Tables"]["notification_prefs"]["Row"]>;
+        Relationships: [];
+      };
+      push_subscriptions: {
+        Row: {
+          auth: string;
+          created_at: string;
+          endpoint: string;
+          id: string;
+          last_used_at: string | null;
+          p256dh: string;
+          user_agent: string | null;
+          user_id: string;
+        };
+        Insert: never;
+        Update: never;
+        Relationships: [];
+      };
       profiles: {
         Row: {
           avatar_path: string | null;
@@ -762,6 +814,38 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      push_claim: {
+        Args: { p_secret: string; p_limit?: number };
+        Returns: {
+          notification_id: string;
+          title: string;
+          body: string;
+          url: string;
+          kind: string;
+          subscriptions: { id: string; endpoint: string; p256dh: string; auth: string }[];
+        }[];
+      };
+      notify_test: { Args: never; Returns: undefined };
+      push_report: { Args: { p_secret: string; p_results: Json }; Returns: undefined };
+      push_subscribe: {
+        Args: { p_endpoint: string; p_p256dh: string; p_auth: string; p_user_agent: string };
+        Returns: undefined;
+      };
+      timer_finish_offline: {
+        Args: {
+          p_timer_id: string;
+          p_subject_id: string;
+          p_study_type: Database["public"]["Enums"]["study_type"];
+          p_started_at: string;
+          p_ended_at: string;
+          p_duration_seconds: number;
+          p_topic?: string;
+          p_notes?: string;
+          p_questions_answered?: number;
+          p_questions_correct?: number;
+        };
+        Returns: Database["public"]["Tables"]["study_sessions"]["Row"];
+      };
       challenge_progress: { Args: { p_challenge_id: string }; Returns: { user_id: string; value: number }[] };
       couple_create: { Args: { p_name?: string }; Returns: Database["public"]["Tables"]["couples"]["Row"] };
       couple_daily_totals: {

@@ -95,3 +95,45 @@ export async function discardTimerAction(): Promise<TimerResult> {
   if (error) return { ok: false, message: dbErrorMessage(error) };
   return done(null);
 }
+
+const offlineFinishSchema = z.object({
+  timerId: uuid,
+  subjectId: uuid,
+  studyType: z.enum(["theory", "questions", "review", "mock_exam", "reading"]),
+  startedAt: z.string().datetime({ offset: true }),
+  endedAt: z.string().datetime({ offset: true }),
+  durationSeconds: z.number().int().min(60).max(86400),
+  topic: z.string().trim().max(200).optional(),
+  notes: z.string().trim().max(5000).optional(),
+  questionsAnswered: z.number().int().min(0).max(10000).nullable().optional(),
+  questionsCorrect: z.number().int().min(0).max(10000).nullable().optional(),
+});
+
+/** Envia um cronômetro finalizado sem internet (idempotente: reenvio não duplica). */
+export async function syncOfflineFinishAction(
+  input: z.input<typeof offlineFinishSchema>,
+): Promise<{ ok: true } | { ok: false; permanent: boolean; message: string }> {
+  await getProfile();
+  const parsed = offlineFinishSchema.safeParse(input);
+  if (!parsed.success) return { ok: false, permanent: true, message: "Registro inválido." };
+  const v = parsed.data;
+  const supabase = await createClient();
+  const { error } = await supabase.rpc("timer_finish_offline", {
+    p_timer_id: v.timerId,
+    p_subject_id: v.subjectId,
+    p_study_type: v.studyType,
+    p_started_at: v.startedAt,
+    p_ended_at: v.endedAt,
+    p_duration_seconds: v.durationSeconds,
+    p_topic: v.topic ?? "",
+    p_notes: v.notes ?? "",
+    p_questions_answered: v.questionsAnswered ?? undefined,
+    p_questions_correct: v.questionsCorrect ?? undefined,
+  });
+  if (error) {
+    const permanent = ["P0003", "23503", "23514", "22023"].includes(error.code);
+    return { ok: false, permanent, message: error.code === "P0003" ? error.message : dbErrorMessage(error) };
+  }
+  refresh();
+  return { ok: true };
+}

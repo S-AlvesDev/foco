@@ -285,6 +285,24 @@
     line-height: 1.5;
     font-feature-settings: "cv11", "ss01";
   }
+  /* Toque sem o "flash" cinza do iOS; o foco visível continua para teclado. */
+  * {
+    -webkit-tap-highlight-color: transparent;
+  }
+  /* Instalado como app: sem o efeito elástico de página de site nem seleção acidental na navegação. */
+  @media (display-mode: standalone) {
+    html,
+    body {
+      overscroll-behavior-y: none;
+    }
+    nav,
+    header,
+    button {
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
+    }
+  }
   ::selection {
     background: var(--accent-subtle);
   }

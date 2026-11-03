@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import type { StudyType } from "@/lib/study-types";
 import { GroupLabel, StudyTypeChips, SubjectChips } from "@/features/sessions/components/pickers";
 import { startTimerAction } from "../actions";
+import { isOffline } from "@/features/pwa/outbox";
 import type { StudySubject } from "../types";
 import { useStudy } from "../study-provider";
 
@@ -60,8 +61,20 @@ function StartForm({
 
   const start = () => {
     if (!subjectId) return;
+    if (isOffline()) {
+      toast.error(
+        "Sem conexão. O cronômetro precisa de internet para começar; você pode registrar a sessão depois.",
+      );
+      return;
+    }
     startTransition(async () => {
-      const res = await startTimerAction({ subjectId, topic, studyType });
+      let res: Awaited<ReturnType<typeof startTimerAction>>;
+      try {
+        res = await startTimerAction({ subjectId, topic, studyType });
+      } catch {
+        toast.error("Sem conexão. Tente de novo quando a internet voltar.");
+        return;
+      }
       if (!res.ok) {
         toast.error(res.message);
         sync();
