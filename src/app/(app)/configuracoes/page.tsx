@@ -9,6 +9,8 @@ import { PreferencesForm } from "@/features/profile/components/preferences-form"
 import { ProfileForm } from "@/features/profile/components/profile-form";
 import { getProfile } from "@/lib/auth";
 import { avatarUrl } from "@/features/avatar/server";
+import { FocusChip } from "@/features/focus/components/focus-chip";
+import { getStudyFocus } from "@/features/focus/queries";
 
 export const metadata: Metadata = { title: "Configurações" };
 
@@ -24,7 +26,7 @@ export default function SettingsPage() {
 }
 
 async function Settings() {
-  const profile = await getProfile();
+  const [profile, focus] = await Promise.all([getProfile(), getStudyFocus()]);
   return (
     <>
       <Section title="Perfil" description="Como você aparece no app.">
@@ -34,6 +36,10 @@ async function Settings() {
           userId={profile.id}
           avatarUrl={await avatarUrl(profile.avatar_path)}
         />
+      </Section>
+
+      <Section title="Objetivo atual" description="Aparece no topo do painel. Só você vê.">
+        <FocusChip title={focus.title} />
       </Section>
 
       <Section title="Preferências" description="Valem para todos os seus aparelhos.">

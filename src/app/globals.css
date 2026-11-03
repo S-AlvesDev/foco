@@ -6,46 +6,53 @@
    Tokens. Claro em :root, escuro em .dark (padrão do app).
    ------------------------------------------------------------------ */
 :root {
-  --bg: #fbfbfc;
+  --bg: #f6f7f9;
   --surface-1: #ffffff;
-  --surface-2: #f4f5f7;
-  --surface-3: #ecedf0;
-  --border: #e4e5ea;
-  --border-strong: #d3d5dc;
-  --text-1: #16181d;
-  --text-2: #5b6170;
-  --text-3: #8c91a0;
-  --accent: #5b60d6;
-  --accent-hover: #4e53c8;
+  --surface-2: #f1f2f5;
+  --surface-3: #e8eaef;
+  --border: #e2e4ea;
+  --border-strong: #cfd3dc;
+  --text-1: #12141a;
+  --text-2: #565d6d;
+  --text-3: #868c9b;
+  --accent: #5d50dc;
+  --accent-hover: #4f42cf;
   --accent-fg: #ffffff;
-  --accent-subtle: rgb(91 96 214 / 0.1);
-  --success: #2f9a68;
-  --warning: #b9801f;
+  --accent-subtle: rgb(93 80 220 / 0.09);
+  --steel: #3d6fd1;
+  --steel-soft: #7fa3e8;
+  --success: #23905e;
+  --warning: #b07816;
   --danger: #cf3f37;
   --danger-subtle: rgb(207 63 55 / 0.08);
-  --pop-shadow: 0 8px 24px -8px rgb(22 24 29 / 0.16), 0 0 0 1px var(--border);
+  --card-shadow: 0 1px 2px rgb(18 20 26 / 0.04);
+  --pop-shadow: 0 8px 24px -8px rgb(18 20 26 / 0.16), 0 0 0 1px var(--border);
   color-scheme: light;
 }
 
+/* Grafite profundo; violeta para ação, azul aço para dados. */
 .dark {
-  --bg: #0b0d12;
-  --surface-1: #111319;
-  --surface-2: #171a22;
-  --surface-3: #1e222c;
-  --border: #232733;
-  --border-strong: #2e3341;
-  --text-1: #e7e9ee;
-  --text-2: #9ca2b0;
-  --text-3: #676d7c;
-  --accent: #6e73e8;
-  --accent-hover: #8186f0;
+  --bg: #08090d;
+  --surface-1: #0f1117;
+  --surface-2: #151821;
+  --surface-3: #1c202b;
+  --border: #1d212b;
+  --border-strong: #2a2f3c;
+  --text-1: #eceef3;
+  --text-2: #a0a6b4;
+  --text-3: #6a7081;
+  --accent: #7366ef;
+  --accent-hover: #8478f4;
   --accent-fg: #ffffff;
-  --accent-subtle: rgb(110 115 232 / 0.14);
+  --accent-subtle: rgb(115 102 239 / 0.14);
+  --steel: #5b8de6;
+  --steel-soft: #3b62b8;
   --success: #4cb782;
   --warning: #e2a33d;
   --danger: #e5534b;
   --danger-subtle: rgb(229 83 75 / 0.12);
-  --pop-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.6), 0 0 0 1px var(--border);
+  --card-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset;
+  --pop-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.7), 0 0 0 1px var(--border);
   color-scheme: dark;
 }
 
@@ -63,6 +70,8 @@
   --color-accent-hover: var(--accent-hover);
   --color-accent-fg: var(--accent-fg);
   --color-accent-subtle: var(--accent-subtle);
+  --color-steel: var(--steel);
+  --color-steel-soft: var(--steel-soft);
   --color-success: var(--success);
   --color-warning: var(--warning);
   --color-danger: var(--danger);
@@ -72,6 +81,7 @@
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;
 
   --shadow-pop: var(--pop-shadow);
+  --shadow-card: var(--card-shadow);
   --ease-out-soft: cubic-bezier(0.2, 0, 0, 1);
 
   --animate-pop: pop-in 140ms cubic-bezier(0.2, 0, 0, 1);

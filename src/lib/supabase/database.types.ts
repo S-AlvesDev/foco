@@ -383,6 +383,12 @@ export type Database = {
           },
         ];
       };
+      study_focus: {
+        Row: { title: string; updated_at: string; user_id: string };
+        Insert: { title: string; updated_at?: string; user_id: string };
+        Update: { title?: string; updated_at?: string; user_id?: string };
+        Relationships: [];
+      };
       study_goals: {
         Row: {
           created_at: string;

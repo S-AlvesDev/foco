@@ -174,9 +174,9 @@ export function MobileAddButton() {
       <Menu>
         <MenuTrigger
           aria-label="Estudar"
-          className="flex size-11 cursor-pointer items-center justify-center rounded-full bg-accent text-accent-fg shadow-[0_4px_14px_-4px_var(--accent)] transition-transform active:scale-95 data-[state=open]:rotate-45"
+          className="-mt-6 flex size-14 cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(150deg,var(--accent-hover),var(--accent))] text-accent-fg shadow-[0_8px_24px_-6px_var(--accent),0_0_0_5px_var(--bg)] transition-transform active:scale-95 data-[state=open]:rotate-45"
         >
-          <Plus className="size-5" strokeWidth={2.25} />
+          <Plus className="size-6" strokeWidth={2.25} />
         </MenuTrigger>
         <MenuContent side="top" align="center" sideOffset={10} className="min-w-[220px]">
           <MenuItem onSelect={() => openStart()} disabled={Boolean(timer) || noSubjects}>
@@ -231,20 +231,38 @@ export function SubjectStudyActions({ subjectId }: { subjectId: string }) {
 export function DashboardStudyActions() {
   const { timer, openStart, openManual, openFinish, ready, data } = useStudy();
   const noSubjects = data?.subjects.length === 0;
+  const big = "h-12 rounded-xl text-[14.5px] [&_svg]:size-[18px]";
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="grid w-full grid-cols-2 gap-3 md:w-auto md:min-w-[400px]">
       {timer ? (
-        <Button variant="primary" onClick={openFinish}>
+        <Button
+          variant="primary"
+          onClick={openFinish}
+          className={cn(big, "shadow-[0_10px_28px_-12px_var(--accent)]")}
+        >
           <Square fill="currentColor" className="!size-3.5" />
           Finalizar sessão
         </Button>
       ) : (
-        <Button variant="primary" onClick={() => openStart()} disabled={!ready || noSubjects}>
+        <Button
+          variant="primary"
+          onClick={() => openStart()}
+          disabled={!ready || noSubjects}
+          className={cn(
+            big,
+            "bg-[linear-gradient(160deg,var(--accent-hover),var(--accent))] shadow-[0_10px_28px_-12px_var(--accent)]",
+          )}
+        >
           <Play fill="currentColor" className="!size-3.5" />
           Iniciar cronômetro
         </Button>
       )}
-      <Button variant="secondary" onClick={() => openManual()} disabled={!ready || noSubjects}>
+      <Button
+        variant="secondary"
+        onClick={() => openManual()}
+        disabled={!ready || noSubjects}
+        className={cn(big, "bg-surface-1")}
+      >
         <PencilLine />
         Registrar sessão
       </Button>

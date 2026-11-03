@@ -13,19 +13,19 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
     <StudyProvider>
       <div className="flex min-h-dvh">
         {/* Sidebar: tablet e desktop */}
-        <aside className="sticky top-0 hidden h-dvh w-[232px] shrink-0 flex-col border-r border-border bg-surface-1 md:flex">
-          <div className="flex h-14 items-center px-4">
+        <aside className="sticky top-0 hidden h-dvh w-[248px] shrink-0 flex-col border-r border-border bg-surface-1 md:flex">
+          <div className="flex h-16 items-center px-5">
             <Link href="/painel" className="rounded-md" aria-label="Foco aí, painel">
               <BrandWordmark />
             </Link>
           </div>
-          <div className="pt-1 pb-3">
+          <div className="px-1 pt-1 pb-2">
             <SidebarTimer />
           </div>
           <SidebarNav />
-          <div className="flex flex-col gap-0.5 px-2 pb-2">
+          <div className="flex flex-col gap-0.5 border-t border-border px-3 pt-3 pb-3">
             <SidebarSettingsLink />
-            <div className="mt-1 border-t border-border pt-2">
+            <div className="mt-1">
               <Suspense fallback={<UserSkeleton />}>
                 <SidebarUser />
               </Suspense>
@@ -35,21 +35,21 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
 
         <div className="flex min-w-0 flex-1 flex-col">
           {/* Barra superior: celular */}
-          <header className="sticky top-0 z-30 flex h-[calc(52px+env(safe-area-inset-top))] items-end border-b border-border bg-bg/85 px-4 pb-2.5 backdrop-blur-md md:hidden">
+          <header className="sticky top-0 z-30 flex h-[calc(56px+env(safe-area-inset-top))] items-end border-b border-border/70 bg-bg/80 px-4 pb-2.5 backdrop-blur-xl md:hidden">
             <Link
               href="/painel"
-              className="flex flex-1 items-center gap-2 rounded-md"
+              className="flex flex-1 items-center gap-2.5 rounded-md"
               aria-label="Foco aí, painel"
             >
-              <BrandMark />
-              <span className="text-[15px] font-semibold tracking-[-0.01em]">Foco aí</span>
+              <BrandMark className="size-7" />
+              <span className="text-[16px] font-semibold tracking-[0.06em]">FOCO AÍ</span>
             </Link>
             <Suspense fallback={<span className="size-7 rounded-full bg-surface-2" />}>
               <SidebarUser compact />
             </Suspense>
           </header>
 
-          <main className="flex-1 pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
+          <main className="flex-1 overflow-x-clip pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
             {children}
             <MobileTimerSpacer />
           </main>

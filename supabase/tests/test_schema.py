@@ -283,4 +283,12 @@ check("parceiro não apaga a foto do outro", b.execute("delete from storage.obje
 a.execute("update profiles set avatar_path=%s where id=%s", (f"{A}/foto.webp", A))
 check("perfil não aponta para pasta alheia", fails(b, "update profiles set avatar_path=%s where id=%s", (f"{A}/foto.webp", B)))
 
+# --- Objetivo atual (privado, mesmo com conta vinculada)
+a.execute("insert into study_focus (user_id, title) values (%s, 'Preparação PRF')", (A,))
+check("dono lê o próprio objetivo", one(a, "select title from study_focus")[0] == "Preparação PRF")
+check("parceiro vinculado não vê o objetivo", one(b, "select count(*) from study_focus")[0] == 0)
+check("não cria objetivo para outra pessoa",
+      fails(b, "insert into study_focus (user_id, title) values (%s, 'x')", (A,)))
+check("objetivo vazio é recusado", fails(a, "update study_focus set title='' where user_id=%s", (A,)))
+
 print(f"\n{ok} checks passed")

@@ -14,6 +14,7 @@ import {
 } from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon; short?: string };
+export type NavGroup = { label: string; items: NavItem[] };
 
 /**
  * Só entram aqui módulos já construídos: nenhum item leva a uma tela vazia.
@@ -41,3 +42,10 @@ export const SETTINGS_NAV: NavItem = {
   short: "Ajustes",
   icon: Settings,
 };
+
+/** Grupos da sidebar no desktop. */
+export const NAV_GROUPS: NavGroup[] = [
+  { label: "Estudo", items: PRIMARY_NAV.slice(0, 6) },
+  { label: "Registros", items: PRIMARY_NAV.slice(6, 8) },
+  { label: "Análise", items: PRIMARY_NAV.slice(8) },
+];

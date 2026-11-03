@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { addMonths, daysInMonth, weekStartOf } from "@/lib/dates";
-import { aggregateDashboard, periodStart, statsRange, type StatRow } from "./aggregate";
+import { aggregateDashboard, compareWithPrevious, periodStart, statsRange, type StatRow } from "./aggregate";
 
 const A = "a";
 const B = "b";
@@ -87,9 +87,43 @@ describe("aggregateDashboard", () => {
     expect(d.buckets).toHaveLength(30);
   });
 
-  it("uma consulta cobre período, semana e mês", () => {
-    expect(statsRange("7", today, 1).from).toBe("2026-10-28");
-    expect(statsRange("7", "2026-11-25", 1).from).toBe("2026-11-01");
+  it("uma consulta cobre período, semana, mês e as comparações", () => {
+    expect(statsRange("7", "2026-11-25", 1).from).toBe("2026-10-01");
+    expect(statsRange("7", "2026-11-03", 1).from).toBe("2026-10-01");
+    expect(statsRange("365", "2026-11-03", 1).from).toBe("2025-12-01");
     expect(periodStart("90", today, 1) <= "2026-08-06").toBe(true);
+  });
+});
+
+describe("compareWithPrevious", () => {
+  // Terça, 3 nov 2026; semana começa na segunda (2 nov).
+  const t = "2026-11-03";
+  it("compara com ontem, a semana passada e o mês passado até o mesmo dia", () => {
+    const rows = [
+      row("2026-11-03", A, 60),
+      row("2026-11-02", A, 30),
+      row("2026-10-27", A, 45), // terça passada: entra na semana anterior
+      row("2026-10-28", A, 100), // quarta passada: fora (depois do mesmo dia)
+      row("2026-10-01", A, 20), // mês passado, dentro dos 3 primeiros dias
+      row("2026-10-04", A, 999), // mês passado, fora
+    ];
+    const c = compareWithPrevious(rows, { today: t, weekStartsOn: 1 });
+    expect(c.today).toEqual({ current: 3600, previous: 1800 });
+    expect(c.week).toEqual({ current: 90 * 60, previous: 45 * 60 });
+    expect(c.month).toEqual({ current: 90 * 60, previous: 20 * 60 });
+    expect(c.last7.map((d) => d.studied)).toEqual([true, false, false, false, false, true, true]);
+    expect(c.last7.at(-1)?.day).toBe(t);
+  });
+
+  it("mês anterior mais curto termina no último dia dele", () => {
+    const rows = [row("2026-02-28", A, 10), row("2026-03-31", A, 5)];
+    const c = compareWithPrevious(rows, { today: "2026-03-31", weekStartsOn: 1 });
+    expect(c.month).toEqual({ current: 300, previous: 600 });
+  });
+
+  it("a visão de 7 dias traz a data como segunda linha", () => {
+    const d = aggregateDashboard([], { today: t, weekStartsOn: 1, period: "7" });
+    expect(d.buckets[0].sublabel).toBe("28/10");
+    expect(d.buckets.at(-1)?.sublabel).toBe("03/11");
   });
 });

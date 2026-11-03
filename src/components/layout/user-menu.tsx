@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { DropdownMenu } from "radix-ui";
-import { ChevronsUpDown, LogOut, Monitor, Moon, Settings, Sun } from "lucide-react";
+import { ChevronDown, ChevronsUpDown, LogOut, Monitor, Moon, Settings, Sun } from "lucide-react";
 import { useTheme } from "@/components/theme";
 import { useEffect, useTransition } from "react";
 import { signOutAction } from "@/features/auth/actions";
@@ -43,11 +43,14 @@ export function UserMenu({ user, compact = false }: { user: MenuUser; compact?: 
         className={cn(
           "flex cursor-pointer items-center gap-2.5 rounded-md text-left outline-none transition-colors",
           "focus-visible:outline-2 focus-visible:outline-accent data-[state=open]:bg-surface-2",
-          compact ? "p-1" : "h-11 w-full px-2 hover:bg-surface-2",
+          compact ? "gap-1 rounded-full p-0.5 pr-1" : "h-12 w-full rounded-lg px-2 hover:bg-surface-2",
         )}
         aria-label="Abrir menu da conta"
       >
-        <Avatar name={user.name} size={compact ? 28 : 26} src={user.avatarUrl} />
+        <span className="flex shrink-0 rounded-full ring-1 ring-border-strong ring-offset-2 ring-offset-bg">
+          <Avatar name={user.name} size={30} src={user.avatarUrl} />
+        </span>
+        {compact && <ChevronDown className="size-3.5 text-fg-3" />}
         {!compact && (
           <>
             <span className="min-w-0 flex-1">

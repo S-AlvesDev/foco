@@ -39,6 +39,8 @@ export type Bucket = {
   bySubject: { subjectId: string; seconds: number }[];
   /** Bucket ainda em andamento (hoje, esta semana, este mês). */
   current: boolean;
+  /** Segunda linha do eixo (data, na visão de 7 dias). */
+  sublabel?: string;
 };
 
 export type SubjectShare = { subjectId: string; seconds: number; sessions: number; share: number };
@@ -150,6 +152,7 @@ export function aggregateDashboard(
         .map(([subjectId, s]) => ({ subjectId, seconds: s }))
         .sort((a, b) => b.seconds - a.seconds),
       current: cursor <= today && today <= end,
+      ...(period === "7" ? { sublabel: `${cursor.slice(8)}/${cursor.slice(5, 7)}` } : {}),
     });
     cursor =
       granularity === "day"
@@ -188,12 +191,56 @@ export function aggregateDashboard(
   };
 }
 
-/** Intervalo de datas que cobre período, semana e mês correntes numa única consulta. */
+export type Comparison = { current: number; previous: number };
+
+export type Comparisons = {
+  /** Hoje × ontem. */
+  today: Comparison;
+  /** Semana até hoje × semana passada até o mesmo dia da semana. */
+  week: Comparison;
+  /** Mês até hoje × mês passado até o mesmo dia (ou o último dia, se for mais curto). */
+  month: Comparison;
+  /** Últimos 7 dias, do mais antigo para hoje. */
+  last7: { day: string; studied: boolean }[];
+};
+
+/** Comparações justas: o período anterior tem o mesmo número de dias decorridos. */
+export function compareWithPrevious(
+  rows: StatRow[],
+  opts: { today: string; weekStartsOn: number },
+): Comparisons {
+  const { today, weekStartsOn } = opts;
+  const total = (a: string, b: string) =>
+    sumBy(
+      rows.filter((r) => r.day >= a && r.day <= b),
+      (r) => r.seconds,
+    );
+  const weekStart = weekStartOf(today, weekStartsOn);
+  const monthStart = monthStartOf(today);
+  const prevMonthStart = addMonths(monthStart, -1);
+  const prevMonthEnd = addDays(monthStart, -1);
+  const sameDayLastMonth = addDays(prevMonthStart, daysBetween(monthStart, today));
+  const studied = new Set(rows.filter((r) => r.seconds > 0).map((r) => r.day));
+  return {
+    today: { current: total(today, today), previous: total(addDays(today, -1), addDays(today, -1)) },
+    week: { current: total(weekStart, today), previous: total(addDays(weekStart, -7), addDays(today, -7)) },
+    month: {
+      current: total(monthStart, today),
+      previous: total(prevMonthStart, sameDayLastMonth < prevMonthEnd ? sameDayLastMonth : prevMonthEnd),
+    },
+    last7: Array.from({ length: 7 }, (_, i) => {
+      const day = addDays(today, i - 6);
+      return { day, studied: studied.has(day) };
+    }),
+  };
+}
+
+/** Intervalo de datas que cobre período, semana, mês e as comparações numa única consulta. */
 export function statsRange(period: DashboardPeriod, today: string, weekStartsOn: number) {
   const starts = [
     periodStart(period, today, weekStartsOn),
-    weekStartOf(today, weekStartsOn),
-    monthStartOf(today),
+    addDays(weekStartOf(today, weekStartsOn), -7),
+    addMonths(monthStartOf(today), -1),
   ];
   return { from: starts.sort()[0], to: today };
 }

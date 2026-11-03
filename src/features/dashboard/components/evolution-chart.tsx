@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { formatDuration, plural } from "@/lib/format";
 import { cn } from "@/lib/utils";
 import type { Bucket } from "../aggregate";
@@ -8,7 +8,7 @@ import type { Bucket } from "../aggregate";
 type SubjectMeta = Record<string, { name: string; color: string }>;
 
 const HEIGHT = 200;
-const PAD = { top: 12, right: 4, bottom: 26, left: 44 };
+const PAD = { top: 12, right: 4, bottom: 26, left: 40 };
 const STEPS_MIN = [15, 30, 60, 120, 180, 240, 360, 480, 600, 720, 1200, 1500, 3000, 6000, 12000];
 
 /** Escala com no máximo 4 linhas de grade, em passos "redondos" de horas. */
@@ -48,6 +48,10 @@ export function EvolutionChart({
   const ref = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(0);
   const [active, setActive] = useState<number | null>(null);
+  const gradient = useId();
+  const twoLines = buckets.some((b) => b.sublabel);
+  const height = twoLines ? HEIGHT + 16 : HEIGHT;
+  const bottom = twoLines ? PAD.bottom + 16 : PAD.bottom;
 
   useEffect(() => {
     const el = ref.current;
@@ -68,25 +72,31 @@ export function EvolutionChart({
   const max = Math.max(...buckets.map((b) => b.seconds), goalSeconds ?? 0);
   const { top, ticks } = niceScale(max);
   const plotW = Math.max(0, width - PAD.left - PAD.right);
-  const plotH = HEIGHT - PAD.top - PAD.bottom;
+  const plotH = height - PAD.top - bottom;
   const band = buckets.length ? plotW / buckets.length : 0;
-  const barW = Math.max(2, Math.min(24, band * 0.62));
+  const barW = Math.max(2, Math.min(32, band * 0.5));
   const y = (s: number) => PAD.top + plotH - (s / top) * plotH;
   const labelEvery = Math.max(1, Math.ceil(34 / Math.max(band, 1)));
   const hovered = active !== null ? buckets[active] : null;
 
   return (
     <figure className="m-0">
-      <div ref={ref} className="relative w-full select-none" style={{ height: HEIGHT }}>
+      <div ref={ref} className="relative w-full select-none" style={{ height }}>
         {width > 0 && (
           <svg
             width={width}
-            height={HEIGHT}
+            height={height}
             role="img"
             aria-label={caption}
             onPointerLeave={(e) => e.pointerType === "mouse" && setActive(null)}
             className="block overflow-visible"
           >
+            <defs>
+              <linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">
+                <stop offset="0" stopColor="var(--steel)" />
+                <stop offset="1" stopColor="var(--steel-soft)" />
+              </linearGradient>
+            </defs>
             {ticks.map((t) => (
               <g key={t}>
                 <line
@@ -137,7 +147,7 @@ export function EvolutionChart({
                   {b.seconds > 0 && (
                     <path
                       d={columnPath(cx - barW / 2, PAD.top + plotH - h, barW, h)}
-                      fill="var(--accent)"
+                      fill={`url(#${gradient})`}
                       opacity={dim ? 0.35 : 1}
                       style={{ transition: "opacity 120ms" }}
                     />
@@ -145,11 +155,16 @@ export function EvolutionChart({
                   {showLabel && (
                     <text
                       x={cx}
-                      y={HEIGHT - 8}
+                      y={PAD.top + plotH + 18}
                       textAnchor="middle"
-                      className={cn("text-[11px]", b.current ? "fill-fg font-medium" : "fill-fg-3")}
+                      className={cn("text-[11.5px]", b.current ? "fill-fg font-medium" : "fill-fg-2")}
                     >
                       {b.label}
+                      {b.sublabel && (
+                        <tspan x={cx} dy={15} className="fill-fg-3 text-[10.5px] font-normal">
+                          {b.sublabel}
+                        </tspan>
+                      )}
                     </text>
                   )}
                   {/* Alvo de hover/toque: a faixa inteira, maior que a barra. */}
