@@ -3,7 +3,15 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { MoreHorizontal, Pencil, PencilLine, Play, Timer as TimerIcon, Trash2 } from "lucide-react";
+import {
+  MoreHorizontal,
+  Pencil,
+  PencilLine,
+  Play,
+  Timer as TimerIcon,
+  Trash2,
+  CalendarClock,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter } from "@/components/ui/dialog";
@@ -249,6 +257,7 @@ function SessionItem({
   onEdit: () => void;
 }) {
   const [confirm, setConfirm] = useState(false);
+  const { openReview } = useStudy();
   const range =
     s.started_at && s.ended_at
       ? `${wallTime(timezone, new Date(s.started_at))}–${wallTime(timezone, new Date(s.ended_at))}`
@@ -296,6 +305,10 @@ function SessionItem({
           <MenuItem onSelect={onEdit}>
             <Pencil />
             Editar
+          </MenuItem>
+          <MenuItem onSelect={() => openReview({ subjectId: s.subject_id, topic: s.topic, sessionId: s.id })}>
+            <CalendarClock />
+            Agendar revisão
           </MenuItem>
           <MenuSeparator />
           <MenuItem destructive onSelect={() => setConfirm(true)}>

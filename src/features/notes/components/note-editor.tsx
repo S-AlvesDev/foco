@@ -13,6 +13,7 @@ import { Popover } from "radix-ui";
 import {
   ArrowLeft,
   Bold,
+  CalendarClock,
   Check,
   Code,
   Heading2,
@@ -35,7 +36,8 @@ import {
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter } from "@/components/ui/dialog";
-import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/menu";
+import { Menu, MenuContent, MenuItem, MenuSeparator, MenuTrigger } from "@/components/ui/menu";
+import { useStudy } from "@/features/timer/study-provider";
 import { Spinner } from "@/components/ui/spinner";
 import { selectChevron as chevron, selectClass } from "@/components/ui/select";
 import type { Json } from "@/lib/supabase/database.types";
@@ -108,6 +110,7 @@ export function NoteEditor({
   labels: Label[];
 }) {
   const router = useRouter();
+  const { openReview } = useStudy();
   const { status, queue, flush, hasPending } = useAutosave(note.id);
   const [title, setTitle] = useState(note.title);
   const [topic, setTopic] = useState(note.topic ?? "");
@@ -226,6 +229,19 @@ export function NoteEditor({
               <MoreHorizontal className="size-4" />
             </MenuTrigger>
             <MenuContent align="end">
+              <MenuItem
+                onSelect={() =>
+                  openReview({
+                    subjectId,
+                    topic: topic.trim() || title.trim() || null,
+                    noteId: note.id,
+                  })
+                }
+              >
+                <CalendarClock />
+                Agendar revisão
+              </MenuItem>
+              <MenuSeparator />
               <MenuItem destructive onSelect={() => setConfirmDelete(true)}>
                 <Trash2 />
                 Excluir anotação…

@@ -37,7 +37,7 @@ function toCount(v: string) {
 }
 
 function FinishForm({ onDone }: { onDone: () => void }) {
-  const { timer, offset, data, sync } = useStudy();
+  const { timer, offset, data, sync, openReview } = useStudy();
   const elapsed = useElapsed(timer, offset);
   const subject = data?.subjects.find((s) => s.id === timer?.subject_id);
   const [topic, setTopic] = useState(timer?.topic ?? "");
@@ -83,7 +83,18 @@ function FinishForm({ onDone }: { onDone: () => void }) {
         setError(res.message);
         return;
       }
-      toast.success("Sessão salva");
+      const subjectId = timer?.subject_id;
+      toast.success(
+        "Sessão salva",
+        topic.trim() && subjectId
+          ? {
+              action: {
+                label: "Agendar revisão",
+                onClick: () => openReview({ subjectId, topic: topic.trim() }),
+              },
+            }
+          : undefined,
+      );
       sync(null, res.serverNow);
       onDone();
     });

@@ -222,4 +222,54 @@ check("after leave, B sees no partner data",
       and one(b, "select count(*) from achievements where user_id=%s", (A,))[0] == 0)
 check("space reopened with new invite", one(a, "select invite_code is not null from couples")[0])
 
+# --- Etapa 7: revisões
+a.execute("insert into study_reviews (subject_id, topic, due_date) values (%s,'Conectivos', current_date)", (sr,))
+rid = one(a, "select id from study_reviews where topic='Conectivos'")[0]
+check("next review must be after today", fails(a, "select review_complete(%s, null, current_date - 1)", (rid,), contains="depois de hoje"))
+nxt = one(a, "select review_complete(%s, '  ok  ', current_date + 7)", (rid,))[0]
+row = one(a, "select status, comment, completed_at is not null from study_reviews where id=%s", (rid,))
+check("review_complete marks done with trimmed comment", row == ("done", "ok", True))
+check("next review linked and pending",
+      one(a, "select previous_review_id, status, interval_days from study_reviews where id=%s", (nxt,)) == (rid, "pending", 7))
+check("cannot complete twice", fails(a, "select review_complete(%s)", (rid,), contains="já foi concluída"))
+check("B cannot complete A review", fails(b, "select review_complete(%s)", (nxt,), contains="não encontrada"))
+a.execute("select review_reopen(%s)", (rid,))
+check("reopen restores pending and removes generated next",
+      one(a, "select status from study_reviews where id=%s", (rid,))[0] == "pending"
+      and one(a, "select count(*) from study_reviews where id=%s", (nxt,))[0] == 0)
+a.execute("select review_complete(%s, null, null, true)", (rid,))
+check("skip marks skipped", one(a, "select status from study_reviews where id=%s", (rid,))[0] == "skipped")
+
+# --- Etapa 8: agregados
+d = one(a, "select count(*), sum(seconds) from my_daily_totals(current_date - 400, current_date + 1)")
+check("my_daily_totals: one row per day", d[0] >= 1 and d[1] > 0)
+check("my_daily_totals: range limited", one(a, "select count(*) from my_daily_totals('2020-01-01', '2026-12-31')")[0] == 0)
+check("my_breakdown by subject and type", one(a, "select count(*) from my_breakdown(current_date - 400, current_date + 1)")[0] >= 1)
+check("B sees none of A totals", one(b, "select count(*) from my_breakdown('2000-01-01', '2100-01-01')")[0] == 0)
+check("my_monthly_totals", one(a, "select sum(seconds) from my_monthly_totals()")[0] == one(a, "select sum(duration_seconds) from study_sessions")[0])
+
+# --- Etapa 9: conquistas e Jornada
+n1 = one(a, "select refresh_my_achievements()")[0]
+n2 = one(a, "select refresh_my_achievements()")[0]
+check("refresh_my_achievements is idempotent", n1 >= 1 and n2 == 0)
+check("first_session recorded", one(a, "select count(*) from achievements where kind='first_session'")[0] == 1)
+check("existing kind not duplicated", one(a, "select count(*) from achievements where kind='streak_3'")[0] == 1)
+check("B cannot read A local_today", one(b, "select local_today(%s)", (A,))[0] is None)
+code = one(a, "select invite_code from couples")[0]
+b.execute("select couple_join(%s)", (code,))
+a.execute("insert into study_goals (period, metric, target) values ('weekly','minutes',600)")
+check("own goals always visible", one(a, "select count(*) from couple_goal_progress() where user_id=%s", (A,))[0] >= 1)
+check("partner goals hidden by default", one(b, "select count(*) from couple_goal_progress() where user_id=%s", (A,))[0] == 0)
+a.execute("update shared_settings set share_goal_progress = true where user_id=%s", (A,))
+g = one(b, "select metric, target, has_subject from couple_goal_progress() where user_id=%s and period='weekly' and not has_subject", (A,))
+check("partner goals visible after opt-in", g == ("minutes", 600, False))
+check("streaks: own always", one(b, "select count(*) from couple_streaks() where user_id=%s", (B,))[0] == 1)
+a.execute("update shared_settings set share_study_time = false where user_id=%s", (A,))
+check("streaks: hidden without study time", one(b, "select count(*) from couple_streaks() where user_id=%s", (A,))[0] == 0)
+a.execute("update shared_settings set share_study_time = true where user_id=%s", (A,))
+check("streaks: visible with study time", one(b, "select current_streak >= 0 from couple_streaks() where user_id=%s", (A,))[0])
+check("B cannot change A sharing", b.execute("update shared_settings set share_goal_progress=false where user_id=%s", (A,)).rowcount == 0)
+check("outsider sees nothing", one(c3, "select count(*) from couple_goal_progress()")[0] == 0
+      and one(c3, "select count(*) from couple_streaks()")[0] == 0)
+
 print(f"\n{ok} checks passed")

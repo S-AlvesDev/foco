@@ -744,16 +744,53 @@ export type Database = {
         Args: { p_from: string; p_to: string };
         Returns: { user_id: string; day: string; seconds: number; sessions: number }[];
       };
+      couple_goal_progress: {
+        Args: never;
+        Returns: {
+          user_id: string;
+          goal_id: string;
+          period: Database["public"]["Enums"]["goal_period"];
+          metric: Database["public"]["Enums"]["goal_metric"];
+          target: number;
+          subject_name: string;
+          has_subject: boolean;
+          value: number;
+        }[];
+      };
       couple_join: { Args: { p_code: string }; Returns: Database["public"]["Tables"]["couples"]["Row"] };
       couple_leave: { Args: never; Returns: undefined };
       couple_regenerate_invite: { Args: never; Returns: string };
+      couple_streaks: {
+        Args: never;
+        Returns: { user_id: string; current_streak: number; best_streak: number }[];
+      };
       couple_subject_totals: {
         Args: { p_from: string; p_to: string };
         Returns: { user_id: string; subject_name: string; color: string; seconds: number }[];
       };
       f_unaccent: { Args: { arg0: string }; Returns: string };
       is_couple_member: { Args: { p_couple_id: string }; Returns: boolean };
+      local_today: { Args: { p_user: string }; Returns: string };
+      my_breakdown: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          subject_id: string;
+          study_type: Database["public"]["Enums"]["study_type"];
+          seconds: number;
+          sessions: number;
+          questions: number;
+          correct: number;
+        }[];
+      };
       my_couple_id: { Args: never; Returns: string };
+      my_daily_totals: {
+        Args: { p_from: string; p_to: string };
+        Returns: { day: string; seconds: number; sessions: number; questions: number; correct: number }[];
+      };
+      my_monthly_totals: {
+        Args: never;
+        Returns: { month: string; seconds: number; sessions: number; study_days: number }[];
+      };
       my_streak: { Args: never; Returns: { current_streak: number; best_streak: number }[] };
       my_study_stats: {
         Args: { p_from: string; p_to: string };
@@ -771,7 +808,13 @@ export type Database = {
         Returns: { subject_id: string; seconds: number; sessions: number; last_date: string }[];
       };
       partner_id: { Args: never; Returns: string };
+      refresh_my_achievements: { Args: never; Returns: number };
       reorder_subjects: { Args: { p_ids: string[] }; Returns: undefined };
+      review_complete: {
+        Args: { p_id: string; p_comment?: string; p_next_due?: string; p_skip?: boolean };
+        Returns: string;
+      };
+      review_reopen: { Args: { p_id: string }; Returns: undefined };
       subject_usage: {
         Args: { p_subject_id: string };
         Returns: { sessions: number; seconds: number; notes: number; reviews: number; goals: number }[];

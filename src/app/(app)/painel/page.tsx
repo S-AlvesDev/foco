@@ -16,6 +16,8 @@ import { getAllTimeTotals, getRecentSessions, getStatRows, getStreak } from "@/f
 import { GoalList } from "@/features/goals/components/goal-list";
 import { getGoalsProgress } from "@/features/goals/queries";
 import { listNotes } from "@/features/notes/queries";
+import { ReviewList } from "@/features/reviews/components/review-list";
+import { getUpcomingReviews } from "@/features/reviews/queries";
 import { listSubjects } from "@/features/subjects/queries";
 import { DashboardStudyActions } from "@/features/timer/components/timer-widgets";
 import { getProfile } from "@/lib/auth";
@@ -44,13 +46,14 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
   const today = localDateISO(tz, now);
   const range = statsRange(period, today, profile.week_starts_on);
 
-  const [subjects, rows, streak, allTime, recent, notes] = await Promise.all([
+  const [subjects, rows, streak, allTime, recent, notes, upcoming] = await Promise.all([
     listSubjects(),
     getStatRows(range.from, range.to),
     getStreak(),
     getAllTimeTotals(),
     getRecentSessions(5),
     listNotes({}, 4),
+    getUpcomingReviews(today, 5),
   ]);
   const d = aggregateDashboard(rows, { today, weekStartsOn: profile.week_starts_on, period });
   const goals = await getGoalsProgress({
@@ -161,7 +164,42 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
             />
           </div>
         </section>
+        <section aria-labelledby="reviews-title">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="reviews-title" className="text-[14px] font-semibold text-fg">
+              Próximas revisões
+            </h2>
+            <Link href="/revisoes" className="text-[13px] text-fg-2 transition-colors hover:text-fg">
+              {upcoming.overdue > 0
+                ? `${plural(upcoming.overdue, "atrasada", "atrasadas")} · ver todas`
+                : "Ver todas"}
+            </Link>
+          </div>
+          {upcoming.reviews.length === 0 ? (
+            <p className="mt-3 text-[13.5px] text-fg-2">
+              Nada para revisar nos próximos 7 dias. Agende revisões a partir de uma sessão, anotação ou da
+              página de revisões.
+            </p>
+          ) : (
+            <div className="mt-1">
+              <ReviewList
+                reviews={upcoming.reviews}
+                subjects={subjects.map((s) => ({
+                  id: s.id,
+                  name: s.name,
+                  color: s.color,
+                  archived: Boolean(s.archived_at),
+                }))}
+                activeSubjects={activeList}
+                todayISO={today}
+                compact
+              />
+            </div>
+          )}
+        </section>
+      </div>
 
+      <div className="mt-10 grid gap-10 md:grid-cols-2">
         <section aria-labelledby="subjects-title">
           <div className="flex items-baseline justify-between gap-3">
             <h2 id="subjects-title" className="text-[14px] font-semibold text-fg">
@@ -210,9 +248,6 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
             </ul>
           )}
         </section>
-      </div>
-
-      <div className="mt-10 grid gap-10 md:grid-cols-2">
         <section aria-labelledby="recent-title">
           <div className="flex items-baseline justify-between gap-3">
             <h2 id="recent-title" className="text-[14px] font-semibold text-fg">
@@ -255,7 +290,9 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
             </ul>
           )}
         </section>
+      </div>
 
+      <div className="mt-10 grid gap-10 md:grid-cols-2">
         <section aria-labelledby="notes-title">
           <div className="flex items-baseline justify-between gap-3">
             <h2 id="notes-title" className="text-[14px] font-semibold text-fg">

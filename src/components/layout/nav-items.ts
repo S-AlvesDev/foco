@@ -1,5 +1,6 @@
 import {
   BookOpen,
+  CalendarClock,
   CalendarDays,
   History,
   LayoutGrid,
@@ -20,6 +21,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/painel", label: "Painel", icon: LayoutGrid },
   { href: "/sessoes", label: "Sessões", icon: History },
   { href: "/materias", label: "Matérias", icon: BookOpen },
+  { href: "/revisoes", label: "Revisões", icon: CalendarClock },
   { href: "/calendario", label: "Calendário", icon: CalendarDays },
   { href: "/metas", label: "Metas", icon: Target },
   { href: "/anotacoes", label: "Anotações", icon: NotebookPen },

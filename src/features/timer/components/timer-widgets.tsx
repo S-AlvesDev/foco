@@ -1,6 +1,6 @@
 "use client";
 
-import { Pause, Play, Plus, Square, Timer as TimerIcon, PencilLine } from "lucide-react";
+import { Pause, Play, Plus, Square, Timer as TimerIcon, PencilLine, CalendarClock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Menu, MenuContent, MenuItem, MenuTrigger } from "@/components/ui/menu";
 import { clock } from "@/lib/format";
@@ -167,7 +167,7 @@ export function MobileTimerSpacer() {
 
 /** Botão central da navegação inferior: cronômetro ou registro manual. */
 export function MobileAddButton() {
-  const { openStart, openManual, timer, data } = useStudy();
+  const { openStart, openManual, openReview, timer, data } = useStudy();
   const noSubjects = data?.subjects.length === 0;
   return (
     <div className="flex flex-1 items-center justify-center">
@@ -186,6 +186,10 @@ export function MobileAddButton() {
           <MenuItem onSelect={() => openManual()} disabled={noSubjects}>
             <PencilLine />
             Registrar sessão
+          </MenuItem>
+          <MenuItem onSelect={() => openReview()} disabled={noSubjects}>
+            <CalendarClock />
+            Agendar revisão
           </MenuItem>
         </MenuContent>
       </Menu>

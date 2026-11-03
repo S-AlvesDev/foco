@@ -14,7 +14,7 @@ Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind CSS v4 · Su
 | 4 | Painel e gráficos | Pronta |
 | 5 | Calendário e metas | Pronta |
 | 6 | Anotações e diário | Pronta |
-| 7 | Revisões | — |
+| 7 | Revisões | Pronta |
 | 8 | Desempenho | — |
 | 9 | Nossa Jornada | — |
 
@@ -22,7 +22,7 @@ O banco completo (todas as etapas) está em `supabase/migrations/0001_init.sql`;
 
 ## Configurar o Supabase (uma vez)
 
-1. **Banco.** No painel do Supabase, abra *SQL Editor → New query*, cole o conteúdo de cada arquivo de `supabase/migrations/` **em ordem** (`0001_init.sql`, `0002_subjects.sql`, `0003_notes_search.sql`…) e clique em *Run* para cada um. Eles criam tabelas, índices, políticas RLS, funções e o gatilho que cria o perfil no cadastro. Ao atualizar o app, rode só os arquivos novos.
+1. **Banco.** No painel do Supabase, abra *SQL Editor → New query*, cole o conteúdo de cada arquivo de `supabase/migrations/` **em ordem** (`0001_init.sql`, `0002_subjects.sql`, `0003_notes_search.sql`, `0004_reviews_reports_journey.sql`…) e clique em *Run* para cada um. Eles criam tabelas, índices, políticas RLS, funções e o gatilho que cria o perfil no cadastro. Ao atualizar o app, rode só os arquivos novos.
    - Alternativa com a CLI: `npx supabase link --project-ref <ref>` e `npx supabase db push`.
 2. **URLs de autenticação.** Em *Authentication → URL Configuration*:
    - *Site URL*: o endereço de produção (ex.: `https://foco-ai.vercel.app`).
@@ -63,7 +63,7 @@ O app não usa chave de serviço: toda consulta roda como o usuário logado e o 
 | `npm test` | Testes de unidade (Vitest) |
 | `npm run db:types` | Regenera `src/lib/supabase/database.types.ts` a partir do projeto Supabase |
 
-`supabase/tests/test_schema.py` verifica o schema e as políticas RLS contra um Postgres local (60 verificações).
+`supabase/tests/test_schema.py` verifica o schema e as políticas RLS contra um Postgres local (84 verificações).
 
 ## Estrutura
 

@@ -16,6 +16,7 @@ import { clock, localDateISO } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
 import { SessionFormDialog, type SessionDraft } from "@/features/sessions/components/session-form-dialog";
 import { pauseTimerAction, resumeTimerAction, startTimerAction } from "./actions";
+import { ReviewDialog, type ReviewDraft } from "@/features/reviews/components/review-dialog";
 import { FinishTimerDialog } from "./components/finish-timer-dialog";
 import { StartTimerDialog } from "./components/start-timer-dialog";
 import { TIMER_COLUMNS, type StudyContext, type Timer, type TimerResult } from "./types";
@@ -33,6 +34,8 @@ type Actions = {
   openStart: (subjectId?: string) => void;
   openFinish: () => void;
   openManual: (draft?: Partial<SessionDraft>) => void;
+  /** Agendar revisão (opcionalmente já com matéria, assunto, anotação ou sessão). */
+  openReview: (draft?: ReviewDraft) => void;
   quickStart: (subjectId: string) => void;
   pause: () => void;
   resume: () => void;
@@ -86,6 +89,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
   const [startOpen, setStartOpen] = useState<{ subjectId?: string } | null>(null);
   const [finishOpen, setFinishOpen] = useState(false);
   const [manual, setManual] = useState<Partial<SessionDraft> | null>(null);
+  const [review, setReview] = useState<ReviewDraft | null>(null);
   const channel = useRef<BroadcastChannel | null>(null);
   const supabase = useMemo(() => createClient(), []);
   const snap = useSyncExternalStore(store.subscribe, store.get, store.getServer);
@@ -177,6 +181,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
       openStart: (subjectId) => setStartOpen({ subjectId }),
       openFinish: () => setFinishOpen(true),
       openManual: (draft) => setManual(draft ?? {}),
+      openReview: (draft) => setReview(draft ?? {}),
       quickStart: (subjectId) => run(() => startTimerAction({ subjectId })),
       pause: () => run(pauseTimerAction),
       resume: () => run(resumeTimerAction),
@@ -201,6 +206,13 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             defaultSubjectId={startOpen?.subjectId ?? data.lastSubjectId ?? undefined}
           />
           <FinishTimerDialog open={finishOpen} onOpenChange={setFinishOpen} />
+          <ReviewDialog
+            open={review !== null}
+            onOpenChange={(o) => !o && setReview(null)}
+            subjects={data.subjects}
+            todayISO={data.todayISO}
+            draft={{ subjectId: data.lastSubjectId ?? undefined, ...review }}
+          />
           <SessionFormDialog
             open={manual !== null}
             onOpenChange={(o) => !o && setManual(null)}

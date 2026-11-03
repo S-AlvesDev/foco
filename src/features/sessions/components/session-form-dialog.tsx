@@ -1,6 +1,6 @@
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { useActionState, useEffect, useState, useRef } from "react";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter } from "@/components/ui/dialog";
@@ -90,7 +90,10 @@ function SessionForm({
   draft: Partial<SessionDraft>;
   onDone: () => void;
 }) {
-  const { sync } = useStudy();
+  const { sync, openReview } = useStudy();
+  const topicRef = useRef<HTMLInputElement>(null);
+  // O formulário é limpo depois da ação; guardamos o assunto enviado para oferecer a revisão.
+  const submittedTopic = useRef("");
   const editing = Boolean(draft.id);
   const [state, formAction] = useActionState(saveSessionAction, idle);
   const v = state.values;
@@ -114,11 +117,17 @@ function SessionForm({
 
   useEffect(() => {
     if (state.status === "success") {
-      toast.success(editing ? "Sessão atualizada" : "Sessão registrada");
+      const topic = submittedTopic.current;
+      toast.success(
+        editing ? "Sessão atualizada" : "Sessão registrada",
+        !editing && topic && subjectId
+          ? { action: { label: "Agendar revisão", onClick: () => openReview({ subjectId, topic }) } }
+          : undefined,
+      );
       sync();
       onDone();
     }
-  }, [state, editing, sync, onDone]);
+  }, [state, editing, sync, onDone, openReview, subjectId]);
 
   const interval = start && end ? minutesBetween(start, end) : null;
   const shownDuration = !durationTouched && interval !== null ? minutesToInput(interval) : duration;
@@ -141,7 +150,12 @@ function SessionForm({
   };
 
   return (
-    <form action={formAction} className="flex min-h-0 flex-1 flex-col" noValidate>
+    <form
+      action={formAction}
+      onSubmit={() => (submittedTopic.current = topicRef.current?.value.trim() ?? "")}
+      className="flex min-h-0 flex-1 flex-col"
+      noValidate
+    >
       {draft.id && <input type="hidden" name="id" value={draft.id} />}
       <DialogBody className="flex flex-col gap-5">
         {state.status === "error" && state.message && (
@@ -250,6 +264,7 @@ function SessionForm({
           {(p) => (
             <Input
               {...p}
+              ref={topicRef}
               name="topic"
               defaultValue={v?.topic ?? draft.topic ?? ""}
               placeholder="Ex.: Crase, controle de constitucionalidade"

@@ -2,19 +2,34 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { StatRow } from "./aggregate";
 
-/** Linhas dia × matéria × tipo do usuário (o RLS e a função limitam ao próprio usuário). */
+/**
+ * Linhas dia × matéria × tipo do usuário (o RLS e a função limitam ao próprio usuário).
+ * Busca em páginas: o Supabase devolve no máximo 1000 linhas por requisição.
+ */
 export async function getStatRows(from: string, to: string): Promise<StatRow[]> {
   const supabase = await createClient();
-  const { data, error } = await supabase.rpc("my_study_stats", { p_from: from, p_to: to });
-  if (error) throw error;
-  return (data ?? []).map((r) => ({
-    day: r.day,
-    subject_id: r.subject_id,
-    study_type: r.study_type,
-    seconds: Number(r.seconds),
-    sessions: Number(r.sessions),
-    questions: Number(r.questions),
-  }));
+  const PAGE = 1000;
+  const out: StatRow[] = [];
+  for (let start = 0; ; start += PAGE) {
+    const { data, error } = await supabase
+      .rpc("my_study_stats", { p_from: from, p_to: to })
+      .order("day")
+      .order("subject_id")
+      .order("study_type")
+      .range(start, start + PAGE - 1);
+    if (error) throw error;
+    for (const r of data ?? []) {
+      out.push({
+        day: r.day,
+        subject_id: r.subject_id,
+        study_type: r.study_type,
+        seconds: Number(r.seconds),
+        sessions: Number(r.sessions),
+        questions: Number(r.questions),
+      });
+    }
+    if (!data || data.length < PAGE) return out;
+  }
 }
 
 export async function getStreak() {
