@@ -4,6 +4,7 @@ import { BrandMark, BrandWordmark } from "@/components/brand";
 import { SidebarNav, SidebarSettingsLink, TabBar } from "@/components/layout/nav-link";
 import { ThemeSync, UserMenu } from "@/components/layout/user-menu";
 import { getProfile } from "@/lib/auth";
+import { avatarUrl } from "@/features/avatar/server";
 import { StudyProvider } from "@/features/timer/study-provider";
 import { MobileTimerPill, MobileTimerSpacer, SidebarTimer } from "@/features/timer/components/timer-widgets";
 
@@ -65,7 +66,12 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
 
 async function SidebarUser({ compact = false }: { compact?: boolean }) {
   const profile = await getProfile();
-  const user = { name: profile.display_name || profile.email, email: profile.email, theme: profile.theme };
+  const user = {
+    name: profile.display_name || profile.email,
+    email: profile.email,
+    theme: profile.theme,
+    avatarUrl: await avatarUrl(profile.avatar_path),
+  };
   return (
     <>
       {!compact && <ThemeSync theme={profile.theme} />}

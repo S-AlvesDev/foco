@@ -23,6 +23,7 @@ import {
   type CoupleState,
 } from "@/features/journey/queries";
 import { getProfile } from "@/lib/auth";
+import { avatarUrls } from "@/features/avatar/server";
 import { WEEKDAYS_SHORT, addDays, addMonths, monthLabel, monthStartOf, weekStartOf } from "@/lib/dates";
 import { formatDuration, localDateISO, plural, shortDate } from "@/lib/format";
 import { cn } from "@/lib/utils";
@@ -111,13 +112,14 @@ async function Together({
     win.prevFrom,
   ].sort()[0];
 
-  const [rows, streaks, subjects, goals, challenges, achievements] = await Promise.all([
+  const [rows, streaks, subjects, goals, challenges, achievements, photos] = await Promise.all([
     getCoupleDaily(from, today),
     getCoupleStreaks(),
     getCoupleSubjects(win.from, win.to),
     getCoupleGoals(),
     getChallenges(addDays(today, -60)),
     getAchievements(),
+    avatarUrls([me.avatarPath, partner.avatarPath]),
   ]);
 
   const partnerTime = partner.sharing.share_study_time;
@@ -154,8 +156,12 @@ async function Together({
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div className="flex items-center gap-3">
           <span className="flex -space-x-2" aria-hidden>
-            <Avatar name={me.name} size={32} />
-            <Avatar name={partner.name} size={32} />
+            <Avatar name={me.name} size={32} src={me.avatarPath ? photos.get(me.avatarPath) : null} />
+            <Avatar
+              name={partner.name}
+              size={32}
+              src={partner.avatarPath ? photos.get(partner.avatarPath) : null}
+            />
           </span>
           <div>
             <h1 className="text-[20px] leading-tight font-semibold tracking-[-0.015em] text-fg sm:text-[22px]">

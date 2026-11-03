@@ -272,4 +272,15 @@ check("B cannot change A sharing", b.execute("update shared_settings set share_g
 check("outsider sees nothing", one(c3, "select count(*) from couple_goal_progress()")[0] == 0
       and one(c3, "select count(*) from couple_streaks()")[0] == 0)
 
+# --- Foto de perfil (storage)
+check("bucket avatars privado", one(root, "select public from storage.buckets where id='avatars'")[0] is False)
+a.execute("insert into storage.objects (bucket_id, name) values ('avatars', %s)", (f"{A}/foto.webp",))
+check("não grava na pasta de outra pessoa",
+      fails(b, "insert into storage.objects (bucket_id, name) values ('avatars', %s)", (f"{A}/x.webp",)))
+check("parceiro vinculado vê a foto", one(b, "select count(*) from storage.objects where bucket_id='avatars'")[0] == 1)
+check("quem não é vinculado não vê", one(c3, "select count(*) from storage.objects where bucket_id='avatars'")[0] == 0)
+check("parceiro não apaga a foto do outro", b.execute("delete from storage.objects where bucket_id='avatars'").rowcount == 0)
+a.execute("update profiles set avatar_path=%s where id=%s", (f"{A}/foto.webp", A))
+check("perfil não aponta para pasta alheia", fails(b, "update profiles set avatar_path=%s where id=%s", (f"{A}/foto.webp", B)))
+
 print(f"\n{ok} checks passed")

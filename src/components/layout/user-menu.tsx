@@ -11,7 +11,7 @@ import type { ThemePref } from "@/features/profile/schemas";
 import { cn } from "@/lib/utils";
 import { Avatar } from "@/components/ui/avatar";
 
-export type MenuUser = { name: string; email: string; theme: ThemePref };
+export type MenuUser = { name: string; email: string; theme: ThemePref; avatarUrl?: string | null };
 
 const itemClass =
   "flex h-8 cursor-pointer items-center gap-2.5 rounded-[5px] px-2 text-[13px] text-fg-2 outline-none select-none data-[highlighted]:bg-surface-2 data-[highlighted]:text-fg [&_svg]:size-4 [&_svg]:text-fg-3";
@@ -47,7 +47,7 @@ export function UserMenu({ user, compact = false }: { user: MenuUser; compact?: 
         )}
         aria-label="Abrir menu da conta"
       >
-        <Avatar name={user.name} size={compact ? 28 : 26} />
+        <Avatar name={user.name} size={compact ? 28 : 26} src={user.avatarUrl} />
         {!compact && (
           <>
             <span className="min-w-0 flex-1">

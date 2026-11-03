@@ -8,6 +8,7 @@ import { NewPasswordForm } from "@/features/auth/components/new-password-form";
 import { PreferencesForm } from "@/features/profile/components/preferences-form";
 import { ProfileForm } from "@/features/profile/components/profile-form";
 import { getProfile } from "@/lib/auth";
+import { avatarUrl } from "@/features/avatar/server";
 
 export const metadata: Metadata = { title: "Configurações" };
 
@@ -27,7 +28,12 @@ async function Settings() {
   return (
     <>
       <Section title="Perfil" description="Como você aparece no app.">
-        <ProfileForm name={profile.display_name} email={profile.email} />
+        <ProfileForm
+          name={profile.display_name}
+          email={profile.email}
+          userId={profile.id}
+          avatarUrl={await avatarUrl(profile.avatar_path)}
+        />
       </Section>
 
       <Section title="Preferências" description="Valem para todos os seus aparelhos.">

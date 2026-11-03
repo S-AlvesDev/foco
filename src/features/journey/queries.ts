@@ -8,7 +8,7 @@ export type Sharing = {
   share_goal_progress: boolean;
 };
 
-export type Member = { id: string; name: string; sharing: Sharing };
+export type Member = { id: string; name: string; avatarPath: string | null; sharing: Sharing };
 
 export type CoupleState = {
   id: string;
@@ -44,10 +44,11 @@ export async function getCouple(userId: string): Promise<CoupleState | null> {
   const ids = (members.data ?? []).map((m) => m.user_id);
   const { data: profiles, error: pErr } = await supabase
     .from("profiles")
-    .select("id, display_name")
+    .select("id, display_name, avatar_path")
     .in("id", ids);
   if (pErr) throw pErr;
   const nameOf = (id: string) => profiles?.find((p) => p.id === id)?.display_name || "Sem nome";
+  const avatarOf = (id: string) => profiles?.find((p) => p.id === id)?.avatar_path ?? null;
   const sharingOf = (id: string): Sharing => {
     const s = settings.data?.find((x) => x.user_id === id);
     return {
@@ -62,8 +63,15 @@ export async function getCouple(userId: string): Promise<CoupleState | null> {
     name: couple.name,
     inviteCode: couple.invite_code,
     inviteExpiresAt: couple.invite_expires_at,
-    me: { id: userId, name: nameOf(userId), sharing: sharingOf(userId) },
-    partner: partnerId ? { id: partnerId, name: nameOf(partnerId), sharing: sharingOf(partnerId) } : null,
+    me: { id: userId, name: nameOf(userId), avatarPath: avatarOf(userId), sharing: sharingOf(userId) },
+    partner: partnerId
+      ? {
+          id: partnerId,
+          name: nameOf(partnerId),
+          avatarPath: avatarOf(partnerId),
+          sharing: sharingOf(partnerId),
+        }
+      : null,
   };
 }
 
