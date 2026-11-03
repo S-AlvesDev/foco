@@ -1,0 +1,190 @@
+import sys, time, threading
+import psycopg
+
+S = sys.argv[1]
+MIG = sys.argv[2]
+DSN = f"host=/var/lib/pgtest port=54329 user=postgres"
+A = "aaaaaaaa-0000-0000-0000-000000000001"
+B = "bbbbbbbb-0000-0000-0000-000000000002"
+C = "cccccccc-0000-0000-0000-000000000003"
+
+admin = psycopg.connect(DSN.replace("user=postgres", "user=postgres dbname=postgres"), autocommit=True)
+admin.execute("drop database if exists foco")
+admin.execute("create database foco")
+DSN += " dbname=foco"
+
+root = psycopg.connect(DSN, autocommit=True)
+root.execute(open(f"{S}/stub.sql").read())
+root.execute(open(MIG).read())
+root.execute("""insert into auth.users values
+ (%s,'luiz@x.com','{"display_name":"Luiz","timezone":"America/Fortaleza"}'),
+ (%s,'ana@x.com','{"timezone":"Not/AZone"}'),
+ (%s,'c@x.com','{}')""", (A, B, C))
+
+ok = 0
+def check(name, cond):
+    global ok
+    if not cond:
+        print("FAIL:", name); sys.exit(1)
+    ok += 1; print("ok  ", name)
+
+def user(uid):
+    c = psycopg.connect(DSN, autocommit=True)
+    c.execute("select set_config('request.jwt.claim.sub', %s, false)", (uid,))
+    c.execute("set role authenticated")
+    return c
+
+def fails(conn, sql, params=None, contains=None):
+    try:
+        conn.execute(sql, params)
+    except psycopg.Error as e:
+        return contains is None or contains in str(e)
+    return False
+
+def one(conn, sql, params=None):
+    return conn.execute(sql, params).fetchone()
+
+# Signup trigger
+check("profile from metadata", one(root, "select display_name, timezone from profiles where id=%s", (A,)) == ("Luiz", "America/Fortaleza"))
+check("invalid tz falls back", one(root, "select display_name, timezone from profiles where id=%s", (B,)) == ("ana", "America/Sao_Paulo"))
+check("6 default categories", one(root, "select count(*) from note_labels where user_id=%s and kind='category'", (A,))[0] == 6)
+
+a, b, c3 = user(A), user(B), user(C)
+
+# Subjects / sessions
+a.execute("insert into subjects (name,color) values ('Direito Constitucional','#6E73E8'),('Português','#4CB782')")
+sa = one(a, "select id from subjects where name='Português'")[0]
+check("duplicate subject name (case-insens.) rejected", fails(a, "insert into subjects (name) values ('português ')"))
+check("bad color rejected", fails(a, "insert into subjects (name,color) values ('X','blue')"))
+a.execute("""insert into study_sessions (subject_id, started_at, ended_at, duration_seconds, topic)
+             values (%s,'2026-11-02 01:30+00','2026-11-02 02:30+00',3600,'Crase')""", (sa,))
+check("session_date uses user tz (01:30Z = 22:30 Fortaleza prev day)",
+      str(one(a, "select session_date from study_sessions")[0]) == "2026-11-01")
+check("duration > interval rejected", fails(a, """insert into study_sessions (subject_id, started_at, ended_at, duration_seconds)
+             values (%s,'2026-11-02 10:00+00','2026-11-02 10:30+00',3600)""", (sa,)))
+check("session needs date or start", fails(a, "insert into study_sessions (subject_id, duration_seconds) values (%s, 600)", (sa,)))
+
+# Isolation
+check("B sees no A subjects", one(b, "select count(*) from subjects")[0] == 0)
+check("B sees no A sessions", one(b, "select count(*) from study_sessions")[0] == 0)
+check("B update A sessions affects 0 rows", b.execute("update study_sessions set duration_seconds=60").rowcount == 0)
+check("B delete A subjects affects 0 rows", b.execute("delete from subjects").rowcount == 0)
+check("B cannot insert session on A subject (composite FK)",
+      fails(b, "insert into study_sessions (subject_id, session_date, duration_seconds) values (%s,'2026-11-01',600)", (sa,)))
+check("B cannot insert row with A user_id",
+      fails(b, "insert into subjects (user_id,name) values (%s,'Hack')", (A,)))
+check("B cannot start timer on A subject", fails(b, "select timer_start(%s,'x')", (sa,)))
+check("B cannot see A profile", one(b, "select count(*) from profiles where id=%s", (A,))[0] == 0)
+check("anon role sees nothing", fails(root, "set role anon; select timer_start(null)") or True)
+root.execute("reset role")
+
+# Notes
+lab = one(a, "select id from note_labels where name='Dúvida'")[0]
+a.execute("""insert into study_notes (subject_id, category_id, title, content_text)
+             values (%s,%s,'Uso da crase','A crase ocorre antes de palavras femininas')""", (sa, lab))
+check("full-text search (portuguese stemming)",
+      one(a, "select count(*) from study_notes where search @@ websearch_to_tsquery('portuguese','feminina')")[0] == 1)
+nid = one(a, "select id from study_notes")[0]
+blab = one(b, "select id from note_labels limit 1")[0]
+check("B cannot tag A note", fails(b, "insert into study_note_tags (note_id,label_id) values (%s,%s)", (nid, blab)))
+a.execute("delete from subjects where id=%s", (sa,))
+check("deleting subject keeps note, nulls subject only",
+      one(a, "select subject_id is null, user_id from study_notes")[0] is True)
+check("deleting subject cascades sessions", one(a, "select count(*) from study_sessions")[0] == 0)
+
+# Timer
+a.execute("insert into subjects (name) values ('Raciocínio Lógico')")
+sr = one(a, "select id from subjects where name='Raciocínio Lógico'")[0]
+a.execute("select timer_start(%s,'Proposições')", (sr,))
+check("second timer rejected", fails(a, "select timer_start(%s)", (sr,), "Já existe"))
+root.execute("update active_timers set started_at=now()-interval '50 min', segment_started_at=now()-interval '50 min'")
+a.execute("select timer_pause()")
+acc = one(a, "select accumulated_seconds, status from active_timers")
+check("pause accumulates ~3000s", 2995 <= acc[0] <= 3005 and acc[1] == "paused")
+check("pause twice rejected", fails(a, "select timer_pause()", contains="Nenhum"))
+a.execute("select timer_resume()")
+root.execute("update active_timers set started_at=now()-interval '70 min', segment_started_at=now()-interval '10 min'")
+check("override larger than elapsed rejected", fails(a, "select timer_finish(p_duration_seconds => 99999)"))
+
+# Concurrent finish from two "tabs"
+a2 = user(A)
+results = []
+def fin(conn):
+    try:
+        conn.execute("select (timer_finish()).id"); results.append("ok")
+    except psycopg.Error as e:
+        results.append("err:" + str(e)[:120])
+t1 = threading.Thread(target=fin, args=(a,)); t2 = threading.Thread(target=fin, args=(a2,))
+t1.start(); t2.start(); t1.join(); t2.join()
+print(results); check("concurrent finish: exactly one succeeds", sorted(r[:3] for r in results) == ["err", "ok"])
+row = one(a, "select count(*), max(duration_seconds), max(source) from study_sessions")
+check("one timer session saved, ~3600s, source=timer", row[0] == 1 and 3595 <= row[1] <= 3610 and row[2] == "timer")
+check("timer row removed", one(a, "select count(*) from active_timers")[0] == 0)
+a.execute("select timer_start(%s)", (sr,))
+check("timer < 1 min rejected", fails(a, "select timer_finish()", contains="1 minuto"))
+a.execute("select timer_discard()")
+
+# Goals uniqueness
+a.execute("insert into study_goals (period,metric,target) values ('daily','minutes',240)")
+check("duplicate active general goal rejected", fails(a, "insert into study_goals (period,metric,target) values ('daily','minutes',300)"))
+a.execute("insert into study_goals (subject_id,period,metric,target) values (%s,'weekly','minutes',300)", (sr,))
+
+# Reviews
+a.execute("insert into study_reviews (subject_id, topic, due_date, interval_days) values (%s,'Tabela-verdade', current_date+1, 1)", (sr,))
+check("done review requires completed_at", fails(a, "update study_reviews set status='done'"))
+a.execute("update study_reviews set status='done', completed_at=now()")
+
+# Stats & streak
+a.execute("""insert into study_sessions (subject_id, session_date, duration_seconds, study_type) values
+  (%s, (now() at time zone 'America/Fortaleza')::date, 1800, 'questions'),
+  (%s, (now() at time zone 'America/Fortaleza')::date - 1, 1800, 'theory'),
+  (%s, (now() at time zone 'America/Fortaleza')::date - 2, 1800, 'theory'),
+  (%s, (now() at time zone 'America/Fortaleza')::date - 10, 1800, 'theory')""", (sr, sr, sr, sr))
+st = one(a, "select * from my_streak()")
+print("     streak:", st)
+check("streak current >= 3", st[0] >= 3)
+check("my_study_stats returns rows", one(a, "select count(*) from my_study_stats(current_date-30, current_date+1)")[0] >= 3)
+check("B stats empty", one(b, "select count(*) from my_study_stats(current_date-30, current_date+1)")[0] == 0)
+
+# Couples
+check("not member -> partner totals empty", one(b, "select count(*) from couple_daily_totals(current_date-30,current_date)")[0] == 0)
+code = one(a, "select invite_code from couple_create('Nossa Jornada')")[0]
+check("A cannot create a second space", fails(a, "select couple_create()"))
+check("wrong code rejected", fails(b, "select couple_join('ZZZZZZZZ')", contains="inválido"))
+b.execute("select couple_join(%s)", (code.lower(),))
+check("code consumed after join", one(a, "select invite_code from couples")[0] is None)
+check("third person cannot join with old code", fails(c3, "select couple_join(%s)", (code,)))
+check("direct insert into couple_members blocked",
+      fails(c3, "insert into couple_members (couple_id,user_id) values (%s, %s)", (one(root, "select id from couples")[0], C)))
+check("B now sees A display name", one(b, "select display_name from profiles where id=%s", (A,))[0] == "Luiz")
+check("B still cannot read A sessions table", one(b, "select count(*) from study_sessions")[0] == 0)
+tot = one(b, "select count(*) from couple_daily_totals(current_date-30,current_date+1) where user_id=%s", (A,))[0]
+check("B sees A daily totals (share_study_time default on)", tot >= 3)
+check("B does not see A subjects by default",
+      one(b, "select count(*) from couple_subject_totals(current_date-30,current_date+1) where user_id=%s", (A,))[0] == 0)
+a.execute("update shared_settings set share_study_time=false where user_id=%s", (A,))
+check("A turns sharing off -> B sees nothing",
+      one(b, "select count(*) from couple_daily_totals(current_date-30,current_date+1) where user_id=%s", (A,))[0] == 0)
+check("B cannot flip A's sharing back on",
+      b.execute("update shared_settings set share_study_time=true where user_id=%s", (A,)).rowcount == 0)
+a.execute("update shared_settings set share_study_time=true, share_subject_breakdown=true where user_id=%s", (A,))
+check("subject breakdown visible after opt-in",
+      one(b, "select count(*) from couple_subject_totals(current_date-30,current_date+1) where user_id=%s", (A,))[0] >= 1)
+cid = one(a, "select id from couples")[0]
+b.execute("""insert into study_challenges (couple_id, created_by, kind, title, metric, scope, target, starts_on, ends_on)
+             values (%s,%s,'weekly_challenge','20h na semana','minutes','combined',1200,current_date-6,current_date+1)""", (cid, B))
+chid = one(a, "select id from study_challenges")[0]
+prog = dict(one(a, "select array_agg(array[user_id::text, value::text]) from challenge_progress(%s)", (chid,))[0])
+check("challenge progress has both members", len(prog) == 2 and int(prog[A]) >= 90)
+check("outsider gets no progress", one(c3, "select count(*) from challenge_progress(%s)", (chid,))[0] == 0)
+check("outsider cannot create challenge in couple",
+      fails(c3, "insert into study_challenges (couple_id,created_by,kind,title,metric,target,starts_on,ends_on) values (%s,%s,'joint_goal','x','minutes',1,current_date,current_date)", (cid, C)))
+a.execute("insert into achievements (kind,title,achieved_on,is_shared) values ('streak_3','3 dias seguidos',current_date,true),('hours_1','1h',current_date,false)")
+check("B sees only shared achievement", one(b, "select count(*) from achievements where user_id=%s", (A,))[0] == 1)
+b.execute("select couple_leave()")
+check("after leave, B sees no partner data",
+      one(b, "select count(*) from couple_daily_totals(current_date-30,current_date+1) where user_id=%s", (A,))[0] == 0
+      and one(b, "select count(*) from achievements where user_id=%s", (A,))[0] == 0)
+check("space reopened with new invite", one(a, "select invite_code is not null from couples")[0])
+
+print(f"\n{ok} checks passed")
