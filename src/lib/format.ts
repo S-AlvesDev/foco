@@ -112,3 +112,8 @@ export function compactDuration(seconds: number) {
   const m = minutes % 60;
   return m ? `${h}h${String(m).padStart(2, "0")}` : `${h}h`;
 }
+
+/** Remove acentos (a busca do banco também ignora acentos). */
+export function stripAccents(s: string) {
+  return s.normalize("NFD").replace(/[̀-ͯ]/g, "");
+}

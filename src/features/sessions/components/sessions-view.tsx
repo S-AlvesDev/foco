@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { useState, useTransition } from "react";
+import { useEffect, useRef, useState, useTransition } from "react";
 import { MoreHorizontal, Pencil, PencilLine, Play, Timer as TimerIcon, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -184,10 +184,17 @@ function Filters({
   const router = useRouter();
   const params = useSearchParams();
   const [pending, startTransition] = useTransition();
+  // Mudanças rápidas seguidas partem da última URL pedida.
+  const paramsStr = params.toString();
+  const latest = useRef(paramsStr);
+  useEffect(() => {
+    if (!pending) latest.current = paramsStr;
+  }, [paramsStr, pending]);
   const set = (key: string, value: string) => {
-    const next = new URLSearchParams(params.toString());
+    const next = new URLSearchParams(latest.current);
     if (value) next.set(key, value);
     else next.delete(key);
+    latest.current = next.toString();
     startTransition(() => router.replace(`/sessoes${next.size ? `?${next}` : ""}`, { scroll: false }));
   };
   return (

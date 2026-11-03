@@ -15,6 +15,7 @@ import { PeriodTabs } from "@/features/dashboard/components/period-tabs";
 import { getAllTimeTotals, getRecentSessions, getStatRows, getStreak } from "@/features/dashboard/queries";
 import { GoalList } from "@/features/goals/components/goal-list";
 import { getGoalsProgress } from "@/features/goals/queries";
+import { listNotes } from "@/features/notes/queries";
 import { listSubjects } from "@/features/subjects/queries";
 import { DashboardStudyActions } from "@/features/timer/components/timer-widgets";
 import { getProfile } from "@/lib/auth";
@@ -43,12 +44,13 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
   const today = localDateISO(tz, now);
   const range = statsRange(period, today, profile.week_starts_on);
 
-  const [subjects, rows, streak, allTime, recent] = await Promise.all([
+  const [subjects, rows, streak, allTime, recent, notes] = await Promise.all([
     listSubjects(),
     getStatRows(range.from, range.to),
     getStreak(),
     getAllTimeTotals(),
     getRecentSessions(5),
+    listNotes({}, 4),
   ]);
   const d = aggregateDashboard(rows, { today, weekStartsOn: profile.week_starts_on, period });
   const goals = await getGoalsProgress({
@@ -248,6 +250,45 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
                     </span>
                     <span className="block text-[12px] text-fg-3">{relativeDay(s.session_date, today)}</span>
                   </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section aria-labelledby="notes-title">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="notes-title" className="text-[14px] font-semibold text-fg">
+              Anotações recentes
+            </h2>
+            <Link href="/anotacoes" className="text-[13px] text-fg-2 transition-colors hover:text-fg">
+              {notes.length ? "Ver todas" : "Ir para anotações"}
+            </Link>
+          </div>
+          {notes.length === 0 ? (
+            <p className="mt-3 text-[13.5px] text-fg-2">
+              Resumos, dúvidas e pontos importantes aparecem aqui.
+            </p>
+          ) : (
+            <ul className="mt-2 divide-y divide-border">
+              {notes.map((n) => (
+                <li key={n.id}>
+                  <Link
+                    href={`/anotacoes/${n.id}`}
+                    className="-mx-2 block rounded-md px-2 py-2.5 hover:bg-surface-2/60"
+                  >
+                    <span className="flex items-baseline justify-between gap-3">
+                      <span className={`truncate text-[13.5px] ${n.title ? "text-fg" : "text-fg-3"}`}>
+                        {n.title || "Sem título"}
+                      </span>
+                      <span className="shrink-0 text-[12px] text-fg-3">
+                        {relativeDay(n.updated_at.slice(0, 10), today)}
+                      </span>
+                    </span>
+                    {n.snippet && (
+                      <span className="mt-0.5 line-clamp-1 block text-[12.5px] text-fg-3">{n.snippet}</span>
+                    )}
+                  </Link>
                 </li>
               ))}
             </ul>

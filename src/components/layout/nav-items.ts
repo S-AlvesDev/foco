@@ -1,4 +1,14 @@
-import { BookOpen, CalendarDays, History, LayoutGrid, Settings, Target, type LucideIcon } from "lucide-react";
+import {
+  BookOpen,
+  CalendarDays,
+  History,
+  LayoutGrid,
+  NotebookPen,
+  NotebookText,
+  Settings,
+  Target,
+  type LucideIcon,
+} from "lucide-react";
 
 export type NavItem = { href: string; label: string; icon: LucideIcon; short?: string };
 
@@ -12,6 +22,8 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/materias", label: "Matérias", icon: BookOpen },
   { href: "/calendario", label: "Calendário", icon: CalendarDays },
   { href: "/metas", label: "Metas", icon: Target },
+  { href: "/anotacoes", label: "Anotações", icon: NotebookPen },
+  { href: "/diario", label: "Diário", icon: NotebookText },
 ];
 
 /** Na barra inferior do celular: os dois primeiros, o botão +, Matérias e "Mais". */

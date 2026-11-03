@@ -92,6 +92,11 @@ a.execute("""insert into study_notes (subject_id, category_id, title, content_te
              values (%s,%s,'Uso da crase','A crase ocorre antes de palavras femininas')""", (sa, lab))
 check("full-text search (portuguese stemming)",
       one(a, "select count(*) from study_notes where search @@ websearch_to_tsquery('portuguese','feminina')")[0] == 1)
+if any("0003" in m for m in MIGRATIONS):
+    a.execute("insert into study_notes (title, content_text) values ('Dúvida sobre concordância', 'Verbos impessoais')")
+    check("busca ignora acentos (duvida, concordancia)",
+          one(a, "select count(*) from study_notes where search @@ websearch_to_tsquery('portuguese','duvida concordancia')")[0] == 1)
+    a.execute("delete from study_notes where title like 'Dúvida%'")
 nid = one(a, "select id from study_notes")[0]
 blab = one(b, "select id from note_labels limit 1")[0]
 check("B cannot tag A note", fails(b, "insert into study_note_tags (note_id,label_id) values (%s,%s)", (nid, blab)))

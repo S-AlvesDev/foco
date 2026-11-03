@@ -751,6 +751,7 @@ export type Database = {
         Args: { p_from: string; p_to: string };
         Returns: { user_id: string; subject_name: string; color: string; seconds: number }[];
       };
+      f_unaccent: { Args: { arg0: string }; Returns: string };
       is_couple_member: { Args: { p_couple_id: string }; Returns: boolean };
       my_couple_id: { Args: never; Returns: string };
       my_streak: { Args: never; Returns: { current_streak: number; best_streak: number }[] };
