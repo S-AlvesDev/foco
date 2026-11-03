@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { DropdownMenu } from "radix-ui";
 import { ChevronsUpDown, LogOut, Monitor, Moon, Settings, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme";
 import { useEffect, useTransition } from "react";
 import { signOutAction } from "@/features/auth/actions";
 import { updatePreferencesAction } from "@/features/profile/actions";

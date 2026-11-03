@@ -1,23 +1,35 @@
 "use client";
 
-import { createContext, use, useCallback, useEffect, useMemo, useRef, useState, useTransition } from "react";
+import {
+  createContext,
+  use,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  useSyncExternalStore,
+  useTransition,
+} from "react";
 import { toast } from "sonner";
-import { clock } from "@/lib/format";
+import { clock, localDateISO } from "@/lib/format";
 import { createClient } from "@/lib/supabase/client";
-import { localDateISO } from "@/lib/format";
+import { SessionFormDialog, type SessionDraft } from "@/features/sessions/components/session-form-dialog";
 import { pauseTimerAction, resumeTimerAction, startTimerAction } from "./actions";
-import { TIMER_COLUMNS, type StudyContext, type Timer } from "./types";
 import { FinishTimerDialog } from "./components/finish-timer-dialog";
 import { StartTimerDialog } from "./components/start-timer-dialog";
-import { SessionFormDialog, type SessionDraft } from "@/features/sessions/components/session-form-dialog";
+import { TIMER_COLUMNS, type StudyContext, type Timer, type TimerResult } from "./types";
 
-type Api = {
+type Snapshot = {
   ready: boolean;
   data: StudyContext | null;
   timer: Timer | null;
   /** Diferença relógio do servidor − aparelho (ms). */
   offset: number;
   busy: boolean;
+};
+
+type Actions = {
   openStart: (subjectId?: string) => void;
   openFinish: () => void;
   openManual: (draft?: Partial<SessionDraft>) => void;
@@ -28,32 +40,59 @@ type Api = {
   sync: (timer?: Timer | null, serverNow?: number) => void;
 };
 
-const Ctx = createContext<Api | null>(null);
+const INITIAL: Snapshot = { ready: false, data: null, timer: null, offset: 0, busy: false };
 
-export function useStudy() {
-  const api = use(Ctx);
-  if (!api) throw new Error("useStudy precisa de <StudyProvider>.");
-  return api;
+/**
+ * Estado do cronômetro fora do contexto do React.
+ * O contexto só carrega objetos estáveis; quem precisa dos dados se inscreve no store.
+ * Assim, carregar ou atualizar o cronômetro não força o React a recriar no navegador
+ * trechos da página que ainda estão chegando do servidor (o que duplicava conteúdo).
+ */
+function createStore() {
+  let state = INITIAL;
+  const listeners = new Set<() => void>();
+  return {
+    get: () => state,
+    getServer: () => INITIAL,
+    subscribe(fn: () => void) {
+      listeners.add(fn);
+      return () => listeners.delete(fn);
+    },
+    set(patch: Partial<Snapshot>) {
+      const next = { ...state, ...patch };
+      if (patch.data !== undefined) next.timer = patch.data?.timer ?? null;
+      next.ready = next.data !== null;
+      state = next;
+      listeners.forEach((l) => l());
+    },
+  };
+}
+type Store = ReturnType<typeof createStore>;
+
+const Ctx = createContext<{ store: Store; actions: Actions } | null>(null);
+
+export function useStudy(): Snapshot & Actions {
+  const ctx = use(Ctx);
+  if (!ctx) throw new Error("useStudy precisa de <StudyProvider>.");
+  const snap = useSyncExternalStore(ctx.store.subscribe, ctx.store.get, ctx.store.getServer);
+  return { ...snap, ...ctx.actions };
 }
 
 const CHANNEL = "foco-timer";
 
 export function StudyProvider({ children }: { children: React.ReactNode }) {
-  const [data, setData] = useState<StudyContext | null>(null);
-  const [offset, setOffset] = useState(0);
+  const [store] = useState(createStore);
   const [busy, startTransition] = useTransition();
   const [startOpen, setStartOpen] = useState<{ subjectId?: string } | null>(null);
   const [finishOpen, setFinishOpen] = useState(false);
   const [manual, setManual] = useState<Partial<SessionDraft> | null>(null);
   const channel = useRef<BroadcastChannel | null>(null);
-
   const supabase = useMemo(() => createClient(), []);
+  const snap = useSyncExternalStore(store.subscribe, store.get, store.getServer);
 
-  /**
-   * Lê direto do Supabase no navegador (o RLS limita aos dados do usuário).
-   * Não usa Server Action de propósito: renovar cookies dentro de uma action
-   * faz o Next.js renderizar a página de novo no meio do carregamento.
-   */
+  useEffect(() => store.set({ busy }), [busy, store]);
+
+  /** Lê direto do Supabase no navegador (o RLS limita aos dados do usuário). */
   const load = useCallback(async () => {
     try {
       const { data: auth } = await supabase.auth.getSession();
@@ -80,23 +119,24 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
       if (timer.error || subjects.error || profile.error) return;
       const received = Date.now();
       const serverNow = clockRes.now;
-      setOffset(serverNow - (sent + received) / 2);
-      setData({
-        timer: timer.data,
-        subjects: subjects.data ?? [],
-        timezone: profile.data.timezone,
-        todayISO: localDateISO(profile.data.timezone, new Date(serverNow)),
-        lastSubjectId: last.data?.subject_id ?? null,
-        serverNow,
+      store.set({
+        offset: serverNow - (sent + received) / 2,
+        data: {
+          timer: timer.data,
+          subjects: subjects.data ?? [],
+          timezone: profile.data.timezone,
+          todayISO: localDateISO(profile.data.timezone, new Date(serverNow)),
+          lastSubjectId: last.data?.subject_id ?? null,
+          serverNow,
+        },
       });
     } catch {
       // Sem rede: mantém o último estado conhecido; tenta de novo no próximo foco.
     }
-  }, [supabase]);
+  }, [supabase, store]);
 
   // Carga inicial, ao voltar para a aba e quando outra aba mexe no cronômetro.
   useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
     void load();
     const onVisible = () => document.visibilityState === "visible" && void load();
     document.addEventListener("visibilitychange", onVisible);
@@ -112,24 +152,19 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
     };
   }, [load]);
 
-  const sync = useCallback(
-    (timer?: Timer | null, serverNow?: number) => {
-      if (timer !== undefined) {
-        setData((d) => (d ? { ...d, timer } : d));
-        if (serverNow) setOffset(serverNow - Date.now());
+  const actions = useMemo<Actions>(() => {
+    const sync: Actions["sync"] = (timer, serverNow) => {
+      const cur = store.get();
+      if (timer !== undefined && cur.data) {
+        store.set({
+          data: { ...cur.data, timer },
+          ...(serverNow ? { offset: serverNow - Date.now() } : {}),
+        });
       }
       channel.current?.postMessage("changed");
       void load();
-    },
-    [load],
-  );
-
-  const run = useCallback(
-    (
-      fn: () => Promise<
-        { ok: true; timer: Timer | null; serverNow: number } | { ok: false; message: string }
-      >,
-    ) =>
+    };
+    const run = (fn: () => Promise<TimerResult>) =>
       startTransition(async () => {
         const res = await fn();
         if (res.ok) sync(res.timer, res.serverNow);
@@ -137,17 +172,8 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
           toast.error(res.message);
           sync();
         }
-      }),
-    [sync],
-  );
-
-  const api = useMemo<Api>(
-    () => ({
-      ready: data !== null,
-      data,
-      timer: data?.timer ?? null,
-      offset,
-      busy,
+      });
+    return {
       openStart: (subjectId) => setStartOpen({ subjectId }),
       openFinish: () => setFinishOpen(true),
       openManual: (draft) => setManual(draft ?? {}),
@@ -155,12 +181,15 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
       pause: () => run(pauseTimerAction),
       resume: () => run(resumeTimerAction),
       sync,
-    }),
-    [data, offset, busy, run, sync],
-  );
+    };
+  }, [store, load]);
+
+  // Valor estável: nunca muda depois da montagem.
+  const value = useMemo(() => ({ store, actions }), [store, actions]);
+  const data = snap.data;
 
   return (
-    <Ctx value={api}>
+    <Ctx value={value}>
       {children}
       <TitleClock />
       {data && (

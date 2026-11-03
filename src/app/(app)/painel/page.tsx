@@ -1,73 +1,76 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { Timer as TimerIcon } from "lucide-react";
 import { Page } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
+import {
+  aggregateDashboard,
+  DASHBOARD_PERIODS,
+  statsRange,
+  type DashboardPeriod,
+} from "@/features/dashboard/aggregate";
+import { EvolutionChart } from "@/features/dashboard/components/evolution-chart";
+import { PeriodTabs } from "@/features/dashboard/components/period-tabs";
+import { getAllTimeTotals, getRecentSessions, getStatRows, getStreak } from "@/features/dashboard/queries";
 import { listSubjects } from "@/features/subjects/queries";
-import { listSessions } from "@/features/sessions/queries";
 import { DashboardStudyActions } from "@/features/timer/components/timer-widgets";
-import { formatDuration, localDateISO, plural } from "@/lib/format";
 import { getProfile } from "@/lib/auth";
-import { clockTime, greeting, longDate, timeZoneName, timeZoneOffset } from "@/lib/time";
+import { formatDuration, localDateISO, plural, relativeDay } from "@/lib/format";
+import { studyTypeLabel } from "@/lib/study-types";
+import { greeting, longDate } from "@/lib/time";
 
 export const metadata: Metadata = { title: "Painel" };
 
-export default function DashboardPage() {
+export default function DashboardPage({ searchParams }: PageProps<"/painel">) {
   return (
-    <Page>
+    <Page className="max-w-[1040px]">
       <Suspense fallback={<DashboardSkeleton />}>
-        <Dashboard />
+        <Dashboard searchParams={searchParams} />
       </Suspense>
     </Page>
   );
 }
 
-async function Dashboard() {
-  const [profile, subjects] = await Promise.all([getProfile(), listSubjects()]);
-  const activeSubjects = subjects.filter((s) => !s.archived_at).length;
-  const now = new Date();
+async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">["searchParams"] }) {
+  const sp = await searchParams;
+  const period = (DASHBOARD_PERIODS.find((p) => p.value === sp.periodo)?.value ?? "30") as DashboardPeriod;
+  const profile = await getProfile();
   const tz = profile.timezone;
+  const now = new Date();
   const today = localDateISO(tz, now);
-  const todaySessions = await listSessions({ from: today, to: today });
-  const todaySeconds = todaySessions.reduce((sum, s) => sum + s.duration_seconds, 0);
+  const range = statsRange(period, today, profile.week_starts_on);
+
+  const [subjects, rows, streak, allTime, recent] = await Promise.all([
+    listSubjects(),
+    getStatRows(range.from, range.to),
+    getStreak(),
+    getAllTimeTotals(),
+    getRecentSessions(5),
+  ]);
+  const d = aggregateDashboard(rows, { today, weekStartsOn: profile.week_starts_on, period });
+  const meta = Object.fromEntries(subjects.map((s) => [s.id, { name: s.name, color: s.color }]));
   const firstName = (profile.display_name || profile.email).split(" ")[0];
-  const themeLabel = { dark: "Escuro", light: "Claro", system: "Do sistema" }[profile.theme];
+  const activeSubjects = subjects.filter((s) => !s.archived_at).length;
+  const periodLabel = DASHBOARD_PERIODS.find((p) => p.value === period)!.label;
+  const top = d.bySubject[0];
 
   return (
     <>
-      <header className="mb-10">
-        <p className="text-[13px] text-fg-3 first-letter:uppercase">{longDate(tz, now)}</p>
-        <h1 className="mt-1 text-[24px] leading-tight font-semibold tracking-[-0.02em] text-fg sm:text-[28px]">
-          {greeting(tz, now)}, {firstName}.
-        </h1>
-        {activeSubjects > 0 && (
-          <>
-            <p className="mt-3 text-[15px] text-fg-2 tabular-nums">
-              {todaySessions.length === 0 ? (
-                "Nada registrado hoje ainda."
-              ) : (
-                <>
-                  Hoje: <span className="font-medium text-fg">{formatDuration(todaySeconds)}</span> em{" "}
-                  {plural(todaySessions.length, "sessão", "sessões")}.
-                </>
-              )}
-            </p>
-            <div className="mt-5">
-              <DashboardStudyActions />
-            </div>
-          </>
-        )}
+      <header className="mb-8 flex flex-wrap items-end justify-between gap-x-8 gap-y-5">
+        <div>
+          <p className="text-[13px] text-fg-3 first-letter:uppercase">{longDate(tz, now)}</p>
+          <h1 className="mt-1 text-[24px] leading-tight font-semibold tracking-[-0.02em] text-fg sm:text-[28px]">
+            {greeting(tz, now)}, {firstName}.
+          </h1>
+        </div>
+        {activeSubjects > 0 && <DashboardStudyActions />}
       </header>
 
       {activeSubjects === 0 && (
-        <section
-          aria-labelledby="subjects-cta"
-          className="mb-10 flex max-w-[560px] flex-col items-start gap-4 rounded-lg border border-border bg-surface-1 p-5 sm:flex-row sm:items-center sm:justify-between"
-        >
+        <section className="mb-10 flex max-w-[560px] flex-col items-start gap-4 rounded-lg border border-border bg-surface-1 p-5 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 id="subjects-cta" className="text-[14px] font-semibold text-fg">
-              Cadastre suas matérias
-            </h2>
+            <h2 className="text-[14px] font-semibold text-fg">Cadastre suas matérias</h2>
             <p className="mt-1 text-[13px] leading-relaxed text-fg-2">
               Elas organizam sessões, metas, anotações e revisões.
             </p>
@@ -78,50 +81,165 @@ async function Dashboard() {
         </section>
       )}
 
-      <section aria-labelledby="setup-title" className="max-w-[560px]">
-        <h2 id="setup-title" className="text-[14px] font-semibold text-fg">
-          Confira antes de começar
-        </h2>
-        <p className="mt-1 text-[13px] leading-relaxed text-fg-2">
-          Horas, sequências e metas são contadas no seu fuso horário. Um dia de estudo termina à meia-noite
-          daqui.
+      <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-5">
+        <Stat label="Hoje" value={formatDuration(d.today)} />
+        <Stat label="Esta semana" value={formatDuration(d.week)} />
+        <Stat label="Este mês" value={formatDuration(d.month)} />
+        <Stat
+          label="Total acumulado"
+          value={formatDuration(allTime.seconds)}
+          sub={plural(allTime.sessions, "sessão", "sessões")}
+        />
+        <Stat
+          label="Sequência"
+          value={plural(streak.current, "dia", "dias")}
+          sub={
+            streak.best > 0 ? `Recorde: ${plural(streak.best, "dia", "dias")}` : "Estude hoje para começar"
+          }
+          className="col-span-2 sm:col-span-1"
+        />
+      </dl>
+
+      <section aria-labelledby="evolution-title" className="mt-10">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 id="evolution-title" className="text-[14px] font-semibold text-fg">
+            Evolução
+          </h2>
+          <PeriodTabs value={period} />
+        </div>
+        <p className="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-fg-2 tabular-nums">
+          <span>
+            <span className="font-medium text-fg">{formatDuration(d.period.seconds)}</span> em{" "}
+            {plural(d.period.sessions, "sessão", "sessões")}
+          </span>
+          <span>Média de {formatDuration(d.period.dailyAverage)} por dia</span>
+          <span>
+            {d.period.studiedDays} de {d.period.days} dias com estudo
+          </span>
+          {d.period.questions > 0 && <span>{plural(d.period.questions, "questão", "questões")}</span>}
         </p>
-
-        <dl className="mt-5 divide-y divide-border border-y border-border">
-          <Row label="Fuso horário">
-            {timeZoneName(tz)}
-            <span className="ml-2 text-[12.5px] text-fg-3 tabular-nums">{timeZoneOffset(tz, now)}</span>
-          </Row>
-          <Row label="Agora">
-            <span className="tabular-nums">{clockTime(tz, now)}</span>
-          </Row>
-          <Row label="Semana começa">{profile.week_starts_on === 0 ? "Domingo" : "Segunda-feira"}</Row>
-          <Row label="Tema">{themeLabel}</Row>
-          {activeSubjects > 0 && (
-            <Row label="Matérias ativas">
-              <Link
-                href="/materias"
-                className="underline decoration-border-strong underline-offset-[3px] hover:decoration-fg-2"
-              >
-                {activeSubjects}
-              </Link>
-            </Row>
-          )}
-        </dl>
-
-        <Button asChild variant="secondary" className="mt-5">
-          <Link href="/configuracoes">Ajustar configurações</Link>
-        </Button>
+        <div className="mt-4">
+          <EvolutionChart
+            buckets={d.buckets}
+            subjects={meta}
+            caption={`Horas estudadas por ${d.granularity === "day" ? "dia" : d.granularity === "week" ? "semana" : "mês"}, últimos ${periodLabel}`}
+          />
+        </div>
       </section>
+
+      <div className="mt-10 grid gap-10 md:grid-cols-2">
+        <section aria-labelledby="subjects-title">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="subjects-title" className="text-[14px] font-semibold text-fg">
+              Por matéria
+            </h2>
+            <span className="text-[12.5px] text-fg-3">Últimos {periodLabel}</span>
+          </div>
+          {d.bySubject.length === 0 ? (
+            <p className="mt-3 text-[13.5px] text-fg-2">Nenhum estudo registrado neste período.</p>
+          ) : (
+            <ul className="mt-3 flex flex-col gap-3.5">
+              {d.bySubject.slice(0, 8).map((s) => (
+                <li key={s.subjectId}>
+                  <div className="flex items-baseline justify-between gap-3 text-[13.5px]">
+                    <Link
+                      href={`/materias/${s.subjectId}`}
+                      className="flex min-w-0 items-center gap-2 text-fg hover:underline hover:decoration-border-strong hover:underline-offset-[3px]"
+                    >
+                      <span
+                        className="size-2 shrink-0 rounded-full"
+                        style={{ background: meta[s.subjectId]?.color }}
+                      />
+                      <span className="truncate">{meta[s.subjectId]?.name ?? "Matéria excluída"}</span>
+                      {s === top && d.bySubject.length > 1 && (
+                        <span className="shrink-0 text-[12px] text-fg-3">mais estudada</span>
+                      )}
+                    </Link>
+                    <span className="shrink-0 text-fg tabular-nums">
+                      {formatDuration(s.seconds)}
+                      <span className="ml-2 inline-block w-9 text-right text-fg-3">
+                        {Math.round(s.share * 100)}%
+                      </span>
+                    </span>
+                  </div>
+                  <div className="mt-1.5 h-1.5 rounded-full bg-surface-2" aria-hidden>
+                    <div
+                      className="h-full rounded-full"
+                      style={{
+                        width: `${Math.max(s.share * 100, 1.5)}%`,
+                        background: meta[s.subjectId]?.color,
+                      }}
+                    />
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+
+        <section aria-labelledby="recent-title">
+          <div className="flex items-baseline justify-between gap-3">
+            <h2 id="recent-title" className="text-[14px] font-semibold text-fg">
+              Últimas sessões
+            </h2>
+            <Link href="/sessoes" className="text-[13px] text-fg-2 transition-colors hover:text-fg">
+              Ver todas
+            </Link>
+          </div>
+          {recent.length === 0 ? (
+            <p className="mt-3 text-[13.5px] text-fg-2">
+              Use o cronômetro enquanto estuda ou registre uma sessão que já aconteceu.
+            </p>
+          ) : (
+            <ul className="mt-2 divide-y divide-border">
+              {recent.map((s) => (
+                <li key={s.id} className="flex items-center gap-3 py-2.5">
+                  <span
+                    className="size-2 shrink-0 rounded-full"
+                    style={{ background: meta[s.subject_id]?.color }}
+                    aria-hidden
+                  />
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate text-[13.5px] text-fg">
+                      {s.topic || meta[s.subject_id]?.name || "Matéria"}
+                    </span>
+                    <span className="flex items-center gap-2 text-[12.5px] text-fg-3">
+                      {s.topic ? (meta[s.subject_id]?.name ?? "Matéria") : studyTypeLabel(s.study_type)}
+                      {s.source === "timer" && <TimerIcon className="size-3" aria-label="cronômetro" />}
+                    </span>
+                  </span>
+                  <span className="shrink-0 text-right">
+                    <span className="block text-[13.5px] text-fg tabular-nums">
+                      {formatDuration(s.duration_seconds)}
+                    </span>
+                    <span className="block text-[12px] text-fg-3">{relativeDay(s.session_date, today)}</span>
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+        </section>
+      </div>
     </>
   );
 }
 
-function Row({ label, children }: { label: string; children: React.ReactNode }) {
+function Stat({
+  label,
+  value,
+  sub,
+  className,
+}: {
+  label: string;
+  value: string;
+  sub?: string;
+  className?: string;
+}) {
   return (
-    <div className="flex items-baseline justify-between gap-4 py-3 text-[13.5px]">
-      <dt className="text-fg-2">{label}</dt>
-      <dd className="text-right text-fg">{children}</dd>
+    <div className={`bg-bg px-4 py-3.5 ${className ?? ""}`}>
+      <dt className="text-[12.5px] text-fg-3">{label}</dt>
+      <dd className="mt-1 text-[20px] font-semibold tracking-[-0.015em] text-fg tabular-nums">{value}</dd>
+      {sub && <dd className="mt-0.5 text-[12px] text-fg-3">{sub}</dd>}
     </div>
   );
 }
@@ -131,8 +249,9 @@ function DashboardSkeleton() {
     <div aria-hidden className="animate-pulse">
       <div className="h-3 w-40 rounded bg-surface-2" />
       <div className="mt-3 h-7 w-64 rounded bg-surface-2" />
-      <div className="mt-12 h-3.5 w-48 rounded bg-surface-2" />
-      <div className="mt-6 h-40 max-w-[560px] rounded-lg bg-surface-2/60" />
+      <div className="mt-10 h-[86px] rounded-lg bg-surface-2/60" />
+      <div className="mt-10 h-3.5 w-24 rounded bg-surface-2" />
+      <div className="mt-6 h-[200px] rounded-lg bg-surface-2/40" />
     </div>
   );
 }

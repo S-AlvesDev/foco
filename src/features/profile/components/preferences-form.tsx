@@ -1,7 +1,7 @@
 "use client";
 
 import { Monitor, Moon, Sun } from "lucide-react";
-import { useTheme } from "next-themes";
+import { useTheme } from "@/components/theme";
 import { useOptimistic, useTransition } from "react";
 import { toast } from "sonner";
 import { Segmented } from "@/components/ui/segmented";
