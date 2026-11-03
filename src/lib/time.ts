@@ -74,3 +74,48 @@ export function longDate(tz: string, at: Date) {
 export function clockTime(tz: string, at: Date) {
   return new Intl.DateTimeFormat("pt-BR", { timeZone: tz, hour: "2-digit", minute: "2-digit" }).format(at);
 }
+
+/** Deslocamento do fuso (ms) num instante: hora local − UTC. */
+function offsetMs(tz: string, at: Date) {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone: tz,
+    hourCycle: "h23",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    second: "2-digit",
+  }).formatToParts(at);
+  const get = (t: string) => Number(parts.find((p) => p.type === t)?.value);
+  const asUTC = Date.UTC(
+    get("year"),
+    get("month") - 1,
+    get("day"),
+    get("hour"),
+    get("minute"),
+    get("second"),
+  );
+  return asUTC - Math.floor(at.getTime() / 1000) * 1000;
+}
+
+/** Converte data + hora de parede ("2026-11-02", "22:30") no fuso para o instante UTC. */
+export function zonedToUtc(dateISO: string, time: string, tz: string) {
+  const [y, m, d] = dateISO.split("-").map(Number);
+  const [hh, mm] = time.split(":").map(Number);
+  const wall = Date.UTC(y, m - 1, d, hh, mm);
+  let guess = wall;
+  // Duas iterações resolvem inclusive as transições de horário de verão.
+  for (let i = 0; i < 2; i++) guess = wall - offsetMs(tz, new Date(guess));
+  return new Date(guess);
+}
+
+/** Hora local "HH:MM" de um instante no fuso. */
+export function wallTime(tz: string, at: Date) {
+  return new Intl.DateTimeFormat("en-GB", {
+    timeZone: tz,
+    hour: "2-digit",
+    minute: "2-digit",
+    hourCycle: "h23",
+  }).format(at);
+}

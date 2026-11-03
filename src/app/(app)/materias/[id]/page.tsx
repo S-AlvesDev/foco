@@ -11,6 +11,7 @@ import { uuid } from "@/features/subjects/schemas";
 import { getProfile } from "@/lib/auth";
 import { formatDuration, localDateISO, relativeDay } from "@/lib/format";
 import { studyTypeLabel } from "@/lib/study-types";
+import { SubjectStudyActions } from "@/features/timer/components/timer-widgets";
 
 export const metadata: Metadata = { title: "Matéria" };
 
@@ -75,6 +76,12 @@ async function SubjectDetail({ params }: { params: PageProps<"/materias/[id]">["
         />
       </header>
 
+      {!archived && (
+        <div className="mb-6">
+          <SubjectStudyActions subjectId={subject.id} />
+        </div>
+      )}
+
       <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border sm:grid-cols-4">
         <Stat label="Estudado" value={formatDuration(subject.seconds)} />
         <Stat label="Sessões" value={subject.sessions.toLocaleString("pt-BR")} />
@@ -86,9 +93,19 @@ async function SubjectDetail({ params }: { params: PageProps<"/materias/[id]">["
       </dl>
 
       <section aria-labelledby="history-title" className="mt-10">
-        <h2 id="history-title" className="text-[14px] font-semibold text-fg">
-          Histórico
-        </h2>
+        <div className="flex items-baseline justify-between gap-4">
+          <h2 id="history-title" className="text-[14px] font-semibold text-fg">
+            Histórico
+          </h2>
+          {sessions.length > 0 && (
+            <Link
+              href={`/sessoes?materia=${subject.id}&periodo=tudo`}
+              className="text-[13px] text-fg-2 transition-colors hover:text-fg"
+            >
+              Editar em Sessões
+            </Link>
+          )}
+        </div>
         {sessions.length === 0 ? (
           <p className="mt-3 text-[13.5px] leading-relaxed text-fg-2">
             Nenhuma sessão registrada nesta matéria. Quando houver, o histórico aparece aqui, da mais recente

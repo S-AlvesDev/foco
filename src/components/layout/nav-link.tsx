@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Suspense } from "react";
 import { cn } from "@/lib/utils";
+import { MobileAddButton } from "@/features/timer/components/timer-widgets";
 import { PRIMARY_NAV, SETTINGS_NAV, type NavItem } from "./nav-items";
 
 function useActive(href: string) {
@@ -64,7 +65,7 @@ function TabBarLinkView({ item, active }: { item: NavItem; active: boolean }) {
       )}
     >
       <Icon className="size-[22px]" strokeWidth={active ? 2 : 1.6} />
-      {item.label}
+      {item.short ?? item.label}
     </Link>
   );
 }
@@ -91,7 +92,12 @@ export function TabBar() {
       aria-label="Principal"
       className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-surface-1/90 pb-[env(safe-area-inset-bottom)] backdrop-blur-md md:hidden"
     >
-      {[...PRIMARY_NAV, SETTINGS_NAV].map((item) => (
+      {/* Painel, Sessões, [+], Matérias, Ajustes */}
+      {PRIMARY_NAV.slice(0, 2).map((item) => (
+        <TabBarLink key={item.href} item={item} />
+      ))}
+      <MobileAddButton />
+      {[...PRIMARY_NAV.slice(2), SETTINGS_NAV].map((item) => (
         <TabBarLink key={item.href} item={item} />
       ))}
     </nav>
