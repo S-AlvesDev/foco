@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { Suspense } from "react";
 import { cn } from "@/lib/utils";
 import { PRIMARY_NAV, SETTINGS_NAV, type NavItem } from "./nav-items";
 
@@ -10,8 +11,24 @@ function useActive(href: string) {
   return pathname === href || pathname.startsWith(href + "/");
 }
 
+/** Lê a URL (dinâmica); o fallback mostra os mesmos links sem destaque enquanto ela chega. */
+function WithActive({ href, render }: { href: string; render: (active: boolean) => React.ReactNode }) {
+  return (
+    <Suspense fallback={render(false)}>
+      <ActiveReader href={href} render={render} />
+    </Suspense>
+  );
+}
+
+function ActiveReader({ href, render }: { href: string; render: (active: boolean) => React.ReactNode }) {
+  return render(useActive(href));
+}
+
 export function SidebarLink({ item }: { item: NavItem }) {
-  const active = useActive(item.href);
+  return <WithActive href={item.href} render={(active) => <SidebarLinkView item={item} active={active} />} />;
+}
+
+function SidebarLinkView({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon;
   return (
     <Link
@@ -32,7 +49,10 @@ export function SidebarLink({ item }: { item: NavItem }) {
 }
 
 export function TabBarLink({ item }: { item: NavItem }) {
-  const active = useActive(item.href);
+  return <WithActive href={item.href} render={(active) => <TabBarLinkView item={item} active={active} />} />;
+}
+
+function TabBarLinkView({ item, active }: { item: NavItem; active: boolean }) {
   const Icon = item.icon;
   return (
     <Link

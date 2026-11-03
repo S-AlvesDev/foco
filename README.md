@@ -9,7 +9,7 @@ Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind CSS v4 · Su
 | Etapa | Escopo | Situação |
 | --- | --- | --- |
 | 1 | Autenticação, perfil, preferências, shell do app | Pronta |
-| 2 | Matérias e personalização | — |
+| 2 | Matérias e personalização | Pronta |
 | 3 | Registro manual e cronômetro | — |
 | 4 | Painel e gráficos | — |
 | 5 | Calendário e metas | — |
@@ -18,11 +18,11 @@ Next.js 16 (App Router, Cache Components) · TypeScript · Tailwind CSS v4 · Su
 | 8 | Desempenho | — |
 | 9 | Nossa Jornada | — |
 
-O banco completo (todas as etapas) já está em `supabase/migrations/0001_init.sql`.
+O banco completo (todas as etapas) está em `supabase/migrations/0001_init.sql`; cada etapa pode acrescentar um arquivo novo (`0002_…`), sempre aplicado em ordem.
 
 ## Configurar o Supabase (uma vez)
 
-1. **Banco.** No painel do Supabase, abra *SQL Editor → New query*, cole todo o conteúdo de `supabase/migrations/0001_init.sql` e clique em *Run*. Ele cria tabelas, índices, políticas RLS, funções e o gatilho que cria o perfil no cadastro.
+1. **Banco.** No painel do Supabase, abra *SQL Editor → New query*, cole o conteúdo de cada arquivo de `supabase/migrations/` **em ordem** (`0001_init.sql`, depois `0002_subjects.sql`…) e clique em *Run* para cada um. Eles criam tabelas, índices, políticas RLS, funções e o gatilho que cria o perfil no cadastro. Ao atualizar o app, rode só os arquivos novos.
    - Alternativa com a CLI: `npx supabase link --project-ref <ref>` e `npx supabase db push`.
 2. **URLs de autenticação.** Em *Authentication → URL Configuration*:
    - *Site URL*: o endereço de produção (ex.: `https://foco-ai.vercel.app`).
@@ -63,7 +63,7 @@ O app não usa chave de serviço: toda consulta roda como o usuário logado e o 
 | `npm test` | Testes de unidade (Vitest) |
 | `npm run db:types` | Regenera `src/lib/supabase/database.types.ts` a partir do projeto Supabase |
 
-`supabase/tests/test_schema.py` verifica o schema e as políticas RLS contra um Postgres local (53 verificações).
+`supabase/tests/test_schema.py` verifica o schema e as políticas RLS contra um Postgres local (59 verificações).
 
 ## Estrutura
 

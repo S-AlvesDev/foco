@@ -3,6 +3,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { Page } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
+import { listSubjects } from "@/features/subjects/queries";
 import { getProfile } from "@/lib/auth";
 import { clockTime, greeting, longDate, timeZoneName, timeZoneOffset } from "@/lib/time";
 
@@ -19,7 +20,8 @@ export default function DashboardPage() {
 }
 
 async function Dashboard() {
-  const profile = await getProfile();
+  const [profile, subjects] = await Promise.all([getProfile(), listSubjects()]);
+  const activeSubjects = subjects.filter((s) => !s.archived_at).length;
   const now = new Date();
   const tz = profile.timezone;
   const firstName = (profile.display_name || profile.email).split(" ")[0];
@@ -33,6 +35,25 @@ async function Dashboard() {
           {greeting(tz, now)}, {firstName}.
         </h1>
       </header>
+
+      {activeSubjects === 0 && (
+        <section
+          aria-labelledby="subjects-cta"
+          className="mb-10 flex max-w-[560px] flex-col items-start gap-4 rounded-lg border border-border bg-surface-1 p-5 sm:flex-row sm:items-center sm:justify-between"
+        >
+          <div>
+            <h2 id="subjects-cta" className="text-[14px] font-semibold text-fg">
+              Cadastre suas matérias
+            </h2>
+            <p className="mt-1 text-[13px] leading-relaxed text-fg-2">
+              Elas organizam sessões, metas, anotações e revisões.
+            </p>
+          </div>
+          <Button asChild variant="primary" className="shrink-0">
+            <Link href="/materias">Abrir matérias</Link>
+          </Button>
+        </section>
+      )}
 
       <section aria-labelledby="setup-title" className="max-w-[560px]">
         <h2 id="setup-title" className="text-[14px] font-semibold text-fg">
@@ -53,6 +74,16 @@ async function Dashboard() {
           </Row>
           <Row label="Semana começa">{profile.week_starts_on === 0 ? "Domingo" : "Segunda-feira"}</Row>
           <Row label="Tema">{themeLabel}</Row>
+          {activeSubjects > 0 && (
+            <Row label="Matérias ativas">
+              <Link
+                href="/materias"
+                className="underline decoration-border-strong underline-offset-[3px] hover:decoration-fg-2"
+              >
+                {activeSubjects}
+              </Link>
+            </Row>
+          )}
         </dl>
 
         <Button asChild variant="secondary" className="mt-5">

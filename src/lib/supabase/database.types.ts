@@ -765,7 +765,16 @@ export type Database = {
           questions: number;
         }[];
       };
+      my_subject_totals: {
+        Args: never;
+        Returns: { subject_id: string; seconds: number; sessions: number; last_date: string }[];
+      };
       partner_id: { Args: never; Returns: string };
+      reorder_subjects: { Args: { p_ids: string[] }; Returns: undefined };
+      subject_usage: {
+        Args: { p_subject_id: string };
+        Returns: { sessions: number; seconds: number; notes: number; reviews: number; goals: number }[];
+      };
       timer_discard: { Args: never; Returns: undefined };
       timer_finish: {
         Args: {

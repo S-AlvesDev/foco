@@ -70,3 +70,12 @@ export function Field({ label, error, hint, aside, children, className }: FieldP
     </div>
   );
 }
+
+export function Textarea({ className, ...props }: React.ComponentProps<"textarea">) {
+  return (
+    <textarea
+      className={cn(inputClass, "h-auto min-h-[76px] resize-y py-2 leading-relaxed", className)}
+      {...props}
+    />
+  );
+}

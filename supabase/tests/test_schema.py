@@ -1,9 +1,16 @@
-import sys, time, threading
+"""Verifica schema, RLS e funções contra um Postgres local com um esquema `auth` simulado.
+
+Uso: python3 supabase/tests/test_schema.py [host] [porta]
+Requer: pip install "psycopg[binary]"; um Postgres 15+ acessível como superusuário "postgres".
+"""
+import glob, os, sys, threading
 import psycopg
 
-S = sys.argv[1]
-MIG = sys.argv[2]
-DSN = f"host=/var/lib/pgtest port=54329 user=postgres"
+HERE = os.path.dirname(os.path.abspath(__file__))
+MIGRATIONS = sorted(glob.glob(os.path.join(HERE, "..", "migrations", "*.sql")))
+HOST = sys.argv[1] if len(sys.argv) > 1 else "/var/lib/pgtest"
+PORT = sys.argv[2] if len(sys.argv) > 2 else "54329"
+DSN = f"host={HOST} port={PORT} user=postgres"
 A = "aaaaaaaa-0000-0000-0000-000000000001"
 B = "bbbbbbbb-0000-0000-0000-000000000002"
 C = "cccccccc-0000-0000-0000-000000000003"
@@ -14,8 +21,9 @@ admin.execute("create database foco")
 DSN += " dbname=foco"
 
 root = psycopg.connect(DSN, autocommit=True)
-root.execute(open(f"{S}/stub.sql").read())
-root.execute(open(MIG).read())
+root.execute(open(os.path.join(HERE, "auth_stub.sql")).read())
+for mig in MIGRATIONS:
+    root.execute(open(mig).read())
 root.execute("""insert into auth.users values
  (%s,'luiz@x.com','{"display_name":"Luiz","timezone":"America/Fortaleza"}'),
  (%s,'ana@x.com','{"timezone":"Not/AZone"}'),
@@ -92,6 +100,28 @@ check("deleting subject keeps note, nulls subject only",
       one(a, "select subject_id is null, user_id from study_notes")[0] is True)
 check("deleting subject cascades sessions", one(a, "select count(*) from study_sessions")[0] == 0)
 
+# Etapa 2: reordenação, totais, impacto da exclusão
+a.execute("insert into subjects (name, position) values ('Matemática', 5), ('História', 6)")
+ids = [r[0] for r in a.execute("select id from subjects order by name").fetchall()]
+a.execute("select reorder_subjects(%s::uuid[])", (list(reversed(ids)),))
+check("reorder_subjects aplica a ordem do array",
+      [r[0] for r in a.execute("select id from subjects order by position").fetchall()] == list(reversed(ids)))
+b.execute("insert into subjects (name) values ('Física')")
+bid = one(b, "select id from subjects")[0]
+b.execute("select reorder_subjects(%s::uuid[])", ([ids[0], ids[1], bid],))
+check("reorder de B não altera matérias de A",
+      [r[0] for r in a.execute("select id from subjects order by position").fetchall()] == list(reversed(ids)))
+hist = one(a, "select id from subjects where name='História'")[0]
+a.execute("insert into study_sessions (subject_id, session_date, duration_seconds) values (%s,'2026-11-01',1800),(%s,'2026-11-02',600)", (hist, hist))
+a.execute("insert into study_goals (subject_id, period, metric, target) values (%s,'weekly','minutes',120)", (hist,))
+tot = one(a, "select seconds, sessions, last_date::text from my_subject_totals() where subject_id=%s", (hist,))
+check("my_subject_totals soma sessões da matéria", tot == (2400, 2, "2026-11-02"))
+check("my_subject_totals de B não inclui A", one(b, "select count(*) from my_subject_totals()")[0] == 0)
+check("subject_usage conta o impacto", one(a, "select sessions, seconds, notes, reviews, goals from subject_usage(%s)", (hist,)) == (2, 2400, 0, 0, 1))
+check("subject_usage de B sobre matéria de A é zero", one(b, "select sessions, seconds from subject_usage(%s)", (hist,)) == (0, 0))
+a.execute("delete from subjects where name in ('Matemática','História')")
+b.execute("delete from subjects")
+
 # Timer
 a.execute("insert into subjects (name) values ('Raciocínio Lógico')")
 sr = one(a, "select id from subjects where name='Raciocínio Lógico'")[0]
@@ -116,7 +146,7 @@ def fin(conn):
         results.append("err:" + str(e)[:120])
 t1 = threading.Thread(target=fin, args=(a,)); t2 = threading.Thread(target=fin, args=(a2,))
 t1.start(); t2.start(); t1.join(); t2.join()
-print(results); check("concurrent finish: exactly one succeeds", sorted(r[:3] for r in results) == ["err", "ok"])
+check("concurrent finish: exactly one succeeds", sorted(r[:3] for r in results) == ["err", "ok"])
 row = one(a, "select count(*), max(duration_seconds), max(source) from study_sessions")
 check("one timer session saved, ~3600s, source=timer", row[0] == 1 and 3595 <= row[1] <= 3610 and row[2] == "timer")
 check("timer row removed", one(a, "select count(*) from active_timers")[0] == 0)
