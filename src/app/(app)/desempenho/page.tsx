@@ -34,6 +34,8 @@ import { listSubjects } from "@/features/subjects/queries";
 import { AchievementsList } from "@/features/journey/components/space-controls";
 import { getAchievements } from "@/features/journey/queries";
 import { getProfile } from "@/lib/auth";
+import { QuestionPerformance } from "@/features/questions/components/question-insights";
+import { getQuestionDaily } from "@/features/questions/queries";
 import { MONTHS_LONG } from "@/lib/dates";
 import { formatDuration, localDateISO, plural, shortDate } from "@/lib/format";
 import { studyTypeLabel } from "@/lib/study-types";
@@ -64,7 +66,7 @@ async function Performance({ searchParams }: { searchParams: PageProps<"/desempe
   const r = performanceRange(period, today);
   const goalsFrom = goalHistoryStart(today, wso);
 
-  const [subjects, daily, cur, prev, monthly, goals, goalRows, achievements] = await Promise.all([
+  const [subjects, daily, cur, prev, monthly, goals, goalRows, achievements, qRows] = await Promise.all([
     listSubjects(),
     getDailyTotals(r.prevFrom, r.to),
     getBreakdown(r.from, r.to),
@@ -73,9 +75,20 @@ async function Performance({ searchParams }: { searchParams: PageProps<"/desempe
     getGoalsWithCreation(profile.timezone),
     getStatRows(goalsFrom, today),
     getAchievements(),
+    getQuestionDaily(r.prevFrom, r.to),
   ]);
 
   const periodLabel = PERFORMANCE_PERIODS.find((p) => p.value === period)!.label;
+  const questions = (
+    <QuestionPerformance
+      rows={qRows.filter((q) => q.day >= r.from)}
+      prevRows={qRows.filter((q) => q.day < r.from)}
+      from={r.from}
+      to={r.to}
+      today={today}
+      periodLabel={periodLabel}
+    />
+  );
   const meta = new Map(subjects.map((s) => [s.id, s]));
 
   if (monthly.length === 0) {
@@ -92,6 +105,7 @@ async function Performance({ searchParams }: { searchParams: PageProps<"/desempe
             <Link href="/sessoes">Ir para sessões</Link>
           </Button>
         </div>
+        {qRows.length > 0 && questions}
       </>
     );
   }
@@ -173,6 +187,8 @@ async function Performance({ searchParams }: { searchParams: PageProps<"/desempe
           )}
         </dl>
       </section>
+
+      {questions}
 
       <div className="mt-12 grid gap-12 lg:grid-cols-2">
         <ChartSection id="weeks" title="Horas por semana" aside={`Últimos ${periodLabel}`}>
@@ -414,7 +430,7 @@ function Header({ period }: { period: PerformancePeriod }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-[20px] leading-tight font-semibold tracking-[-0.015em] text-fg sm:text-[22px]">
+        <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
           Desempenho
         </h1>
         <p className="mt-1 text-[14px] text-fg-2">Como seus estudos evoluem ao longo do tempo.</p>
@@ -522,7 +538,7 @@ function Fact({ label, value }: { label: string; value: string }) {
 function PerformanceSkeleton() {
   return (
     <div aria-hidden className="animate-pulse">
-      <h1 className="text-[20px] leading-tight font-semibold tracking-[-0.015em] text-fg sm:text-[22px]">
+      <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
         Desempenho
       </h1>
       <div className="mt-2.5 h-3 w-64 rounded bg-surface-2" />

@@ -811,6 +811,288 @@ export type Database = {
           },
         ];
       };
+      question_admins: {
+        Row: {
+          created_at: string;
+          user_id: string;
+        };
+        Insert: {
+          created_at?: string;
+          user_id: string;
+        };
+        Update: {
+          created_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_admins_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      question_attempts: {
+        Row: {
+          answer: string;
+          answered_on: string;
+          created_at: string;
+          id: string;
+          is_correct: boolean;
+          question_id: string;
+          user_id: string;
+        };
+        Insert: {
+          answer: string;
+          answered_on?: string;
+          created_at?: string;
+          id?: string;
+          is_correct?: boolean;
+          question_id: string;
+          user_id?: string;
+        };
+        Update: {
+          answer?: string;
+          answered_on?: string;
+          created_at?: string;
+          id?: string;
+          is_correct?: boolean;
+          question_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_attempts_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_attempts_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      question_notes: {
+        Row: {
+          favorite: boolean;
+          note: string | null;
+          question_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          favorite?: boolean;
+          note?: string | null;
+          question_id: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          favorite?: boolean;
+          note?: string | null;
+          question_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_notes_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_notes_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      question_prefs: {
+        Row: {
+          area: string | null;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          area?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          area?: string | null;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_prefs_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      question_reports: {
+        Row: {
+          category: string;
+          created_at: string;
+          id: string;
+          message: string | null;
+          question_id: string;
+          resolved_at: string | null;
+          user_id: string;
+        };
+        Insert: {
+          category: string;
+          created_at?: string;
+          id?: string;
+          message?: string | null;
+          question_id: string;
+          resolved_at?: string | null;
+          user_id?: string;
+        };
+        Update: {
+          category?: string;
+          created_at?: string;
+          id?: string;
+          message?: string | null;
+          question_id?: string;
+          resolved_at?: string | null;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "question_reports_question_id_fkey";
+            columns: ["question_id"];
+            isOneToOne: false;
+            referencedRelation: "questions";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "question_reports_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      questions: {
+        Row: {
+          alternativas: Json | null;
+          area: string;
+          assunto: string;
+          banca_referencia: string | null;
+          cargo: string | null;
+          comentario: string | null;
+          concurso: string;
+          created_at: string;
+          curso_referencia: string | null;
+          data_producao: string | null;
+          dificuldade: string;
+          disciplina: string;
+          enunciado: string;
+          especialidade_referencia: string | null;
+          explicacoes_incorretas: Json | null;
+          fonte: string | null;
+          gabarito: string;
+          id: string;
+          imported_by: string | null;
+          justificativa: string | null;
+          licenca: string | null;
+          lote_producao: number | null;
+          origem: string | null;
+          referencias: Json;
+          status_revisao: string | null;
+          subassunto: string | null;
+          tipo: string;
+          updated_at: string;
+          versao_schema: string | null;
+        };
+        Insert: {
+          alternativas?: Json | null;
+          area: string;
+          assunto: string;
+          banca_referencia?: string | null;
+          cargo?: string | null;
+          comentario?: string | null;
+          concurso: string;
+          created_at?: string;
+          curso_referencia?: string | null;
+          data_producao?: string | null;
+          dificuldade: string;
+          disciplina: string;
+          enunciado: string;
+          especialidade_referencia?: string | null;
+          explicacoes_incorretas?: Json | null;
+          fonte?: string | null;
+          gabarito: string;
+          id: string;
+          imported_by?: string | null;
+          justificativa?: string | null;
+          licenca?: string | null;
+          lote_producao?: number | null;
+          origem?: string | null;
+          referencias?: Json;
+          status_revisao?: string | null;
+          subassunto?: string | null;
+          tipo: string;
+          updated_at?: string;
+          versao_schema?: string | null;
+        };
+        Update: {
+          alternativas?: Json | null;
+          area?: string;
+          assunto?: string;
+          banca_referencia?: string | null;
+          cargo?: string | null;
+          comentario?: string | null;
+          concurso?: string;
+          created_at?: string;
+          curso_referencia?: string | null;
+          data_producao?: string | null;
+          dificuldade?: string;
+          disciplina?: string;
+          enunciado?: string;
+          especialidade_referencia?: string | null;
+          explicacoes_incorretas?: Json | null;
+          fonte?: string | null;
+          gabarito?: string;
+          id?: string;
+          imported_by?: string | null;
+          justificativa?: string | null;
+          licenca?: string | null;
+          lote_producao?: number | null;
+          origem?: string | null;
+          referencias?: Json;
+          status_revisao?: string | null;
+          subassunto?: string | null;
+          tipo?: string;
+          updated_at?: string;
+          versao_schema?: string | null;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "questions_imported_by_fkey";
+            columns: ["imported_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -947,6 +1229,79 @@ export type Database = {
           p_study_type?: Database["public"]["Enums"]["study_type"];
         };
         Returns: Database["public"]["Tables"]["active_timers"]["Row"];
+      };
+      claim_question_admin: { Args: never; Returns: boolean };
+      import_questions: { Args: { p_items: Json }; Returns: Json };
+      is_question_admin: { Args: never; Returns: boolean };
+      question_admin_exists: { Args: never; Returns: boolean };
+      question_base: {
+        Args: never;
+        Returns: {
+          id: string;
+          area: string;
+          concurso: string;
+          disciplina: string;
+          assunto: string;
+          banca: string;
+          dificuldade: string;
+          tipo: string;
+          search: string;
+          last_correct: boolean;
+          favorite: boolean;
+          noted: boolean;
+        }[];
+      };
+      question_community: { Args: { p_id: string }; Returns: Json };
+      question_daily: {
+        Args: { p_from: string; p_to: string };
+        Returns: {
+          day: string;
+          area: string;
+          disciplina: string;
+          assunto: string;
+          answered: number;
+          correct: number;
+        }[];
+      };
+      question_facets: { Args: { p: Json }; Returns: { field: string; value: string; n: number }[] };
+      question_filter: {
+        Args: { p: Json; p_skip?: string };
+        Returns: {
+          id: string;
+          area: string;
+          concurso: string;
+          disciplina: string;
+          assunto: string;
+          banca: string;
+          dificuldade: string;
+          tipo: string;
+          search: string;
+          last_correct: boolean;
+          favorite: boolean;
+          noted: boolean;
+        }[];
+      };
+      question_match: {
+        Args: {
+          p: Json;
+          p_skip: string;
+          area: string;
+          concurso: string;
+          disciplina: string;
+          assunto: string;
+          banca: string;
+          dificuldade: string;
+          tipo: string;
+          search: string;
+          last_correct: boolean;
+          favorite: boolean;
+          noted: boolean;
+        };
+        Returns: boolean;
+      };
+      question_search: {
+        Args: { p: Json; p_offset?: number; p_limit?: number; p_seed?: string };
+        Returns: { id: string; total: number }[];
       };
     };
     Enums: {

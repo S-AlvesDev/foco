@@ -6,6 +6,7 @@ import {
   HeartHandshake,
   History,
   LayoutGrid,
+  ListChecks,
   NotebookPen,
   NotebookText,
   Settings,
@@ -22,6 +23,7 @@ export type NavGroup = { label: string; items: NavItem[] };
  */
 export const PRIMARY_NAV: NavItem[] = [
   { href: "/painel", label: "Painel", icon: LayoutGrid },
+  { href: "/questoes", label: "Questões", icon: ListChecks },
   { href: "/sessoes", label: "Sessões", icon: History },
   { href: "/materias", label: "Matérias", icon: BookOpen },
   { href: "/revisoes", label: "Revisões", icon: CalendarClock },
@@ -33,8 +35,8 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/jornada", label: "Nossa Jornada", icon: HeartHandshake },
 ];
 
-/** Na barra inferior do celular: os dois primeiros, o botão +, Matérias e "Mais". */
-export const TAB_BAR_PRIMARY = ["/painel", "/sessoes", "/materias"];
+/** Na barra inferior do celular: Painel, Questões, o botão +, Sessões e "Mais". */
+export const TAB_BAR_PRIMARY = ["/painel", "/questoes", "/sessoes"];
 
 export const SETTINGS_NAV: NavItem = {
   href: "/configuracoes",
@@ -44,8 +46,11 @@ export const SETTINGS_NAV: NavItem = {
 };
 
 /** Grupos da sidebar no desktop. */
+const pick = (...hrefs: string[]) => hrefs.map((h) => PRIMARY_NAV.find((i) => i.href === h)!);
+
 export const NAV_GROUPS: NavGroup[] = [
-  { label: "Estudo", items: PRIMARY_NAV.slice(0, 6) },
-  { label: "Registros", items: PRIMARY_NAV.slice(6, 8) },
-  { label: "Análise", items: PRIMARY_NAV.slice(8) },
+  { label: "Estudo", items: pick("/painel", "/questoes", "/sessoes", "/materias", "/revisoes") },
+  { label: "Planejamento", items: pick("/calendario", "/metas") },
+  { label: "Registros", items: pick("/anotacoes", "/diario") },
+  { label: "Análise", items: pick("/desempenho", "/jornada") },
 ];

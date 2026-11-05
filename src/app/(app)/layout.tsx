@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { BrandWordmark } from "@/components/brand";
+import { OrbitArcs } from "@/components/orbit-arcs";
 import { SidebarNav, SidebarSettingsLink, TabBar } from "@/components/layout/nav-link";
 import { ThemeSync, UserMenu } from "@/components/layout/user-menu";
 import { getProfile } from "@/lib/auth";
@@ -16,7 +17,13 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
     <StudyProvider>
       <div className="flex min-h-dvh">
         {/* Sidebar: tablet e desktop */}
-        <aside className="sticky top-0 hidden h-dvh w-[264px] shrink-0 flex-col border-r border-border bg-surface-1 md:flex">
+        {/* Sempre escura, nos dois temas: é o painel da marca, como na tela de entrada. */}
+        <aside className="dark sticky top-0 isolate hidden h-dvh w-[264px] shrink-0 flex-col overflow-hidden border-r border-white/[0.06] bg-[linear-gradient(180deg,#0f0c25_0%,#0a0a17_40%,#0a0915_70%,#120e2c_100%)] text-fg md:flex">
+          <OrbitArcs className="pointer-events-none absolute -top-14 -left-20 -z-10 w-[330px] opacity-35" />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -bottom-32 -left-24 -z-10 size-[380px] rounded-full bg-[radial-gradient(closest-side,rgb(109_75_255/0.18),transparent)]"
+          />
           <div className="flex h-16 items-center justify-between gap-2 pr-2.5 pl-5">
             <Link href="/painel" className="min-w-0 rounded-md" aria-label="Missão Alpha-01, painel">
               <BrandWordmark />
@@ -29,7 +36,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             <SidebarTimer />
           </div>
           <SidebarNav />
-          <div className="flex flex-col gap-0.5 border-t border-border px-3 pt-3 pb-3">
+          <div className="flex flex-col gap-0.5 border-t border-white/[0.06] px-3 pt-3 pb-3">
             <SidebarSettingsLink />
             <div className="mt-1">
               <Suspense fallback={<UserSkeleton />}>
@@ -39,7 +46,12 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           </div>
         </aside>
 
-        <div className="flex min-w-0 flex-1 flex-col">
+        <div className="relative isolate flex min-w-0 flex-1 flex-col">
+          {/* Brilho violeta discreto no topo do conteúdo (só no tema escuro). */}
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 hidden h-[420px] bg-[radial-gradient(60%_80%_at_100%_0%,rgb(109_75_255/0.07),transparent_70%)] dark:block"
+          />
           {/* Barra superior: celular */}
           <header className="sticky top-0 z-30 flex h-[calc(56px+env(safe-area-inset-top))] items-end border-b border-border/70 bg-bg/80 px-4 pb-2.5 backdrop-blur-xl md:hidden">
             <Link

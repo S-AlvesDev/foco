@@ -21,10 +21,10 @@ export function PageHeader({
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="text-[22px] leading-tight font-semibold tracking-[-0.02em] text-fg sm:text-[26px]">
+        <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
           {title}
         </h1>
-        {description && <div className="mt-1 text-[14px] text-fg-2">{description}</div>}
+        {description && <div className="mt-1.5 text-[14px] text-fg-2">{description}</div>}
       </div>
       {actions && <div className="flex items-center gap-2">{actions}</div>}
     </div>

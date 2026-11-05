@@ -391,4 +391,64 @@ a.execute("select push_subscribe('https://push.example/abc', %s, %s, 'teste')", 
 check("aparelho passa para quem entrou nele", one(a, "select count(*) from push_subscriptions")[0] == 1
       and one(b, "select count(*) from push_subscriptions")[0] == 0)
 
+# Banco de questões
+QS = _json.dumps([
+  {"id": "T-0001", "area": "policial", "concurso": "PRF", "disciplina": "Português", "assunto": "Crase",
+   "tipo": "certo_errado", "dificuldade": "facil", "enunciado": "Frase 1", "gabarito": "C", "referencias": []},
+  {"id": "T-0002", "area": "policial", "concurso": "PF", "disciplina": "Português", "assunto": "Vírgula",
+   "banca_referencia": "FGV", "tipo": "multipla_escolha", "dificuldade": "dificil", "enunciado": "Frase 2",
+   "alternativas": {"A": "a", "B": "b", "C": "c"}, "gabarito": "B", "explicacoes_incorretas": {"A": "x"}},
+  {"id": "T-0003", "area": "farmacia", "concurso": "Farmácia", "disciplina": "Farmacologia", "assunto": "AINEs",
+   "tipo": "certo_errado", "dificuldade": "intermediaria", "enunciado": "Frase 3", "gabarito": "E"},
+  {"id": "T-0004", "area": "policial", "concurso": "PRF", "disciplina": "Português", "assunto": "Crase",
+   "tipo": "multipla_escolha", "dificuldade": "facil", "enunciado": "sem gabarito válido",
+   "alternativas": {"A": "a"}, "gabarito": "D"},
+])
+check("questões: importar sem ser administrador é recusado", fails(a, "select import_questions(%s::jsonb)", (QS,)))
+check("questões: primeira conta vira administradora", one(a, "select claim_question_admin()")[0] is True)
+check("questões: segunda conta não vira", one(b, "select claim_question_admin()")[0] is False and one(b, "select is_question_admin()")[0] is False)
+r = one(a, "select import_questions(%s::jsonb)", (QS,))[0]
+check("questões: importa 3 e aponta a inválida", r["inserted"] == 3 and len(r["errors"]) == 1 and r["errors"][0]["id"] == "T-0004")
+r = one(a, "select import_questions(%s::jsonb)", (QS,))[0]
+check("questões: reimportar igual não altera nada", r["inserted"] == 0 and r["updated"] == 0 and r["unchanged"] == 3)
+QS2 = QS.replace("Frase 1", "Frase 1 revisada")
+r = one(a, "select import_questions(%s::jsonb)", (QS2,))[0]
+check("questões: reimportar com mudança atualiza", r["updated"] == 1 and r["unchanged"] == 2)
+check("questões: B não importa", fails(b, "select import_questions(%s::jsonb)", (QS,)))
+check("questões: todos leem o catálogo", one(b, "select count(*) from questions")[0] == 3)
+check("questões: ninguém grava no catálogo direto", fails(a, "update questions set gabarito='E' where id='T-0001'")
+      or a.execute("update questions set gabarito='E' where id='T-0001'").rowcount == 0)
+a.execute("insert into question_attempts (question_id, answer, is_correct) values ('T-0001','E', true)")
+check("questões: acerto calculado pelo banco", one(a, "select is_correct from question_attempts where question_id='T-0001'")[0] is False)
+a.execute("insert into question_attempts (question_id, answer) values ('T-0001','c')")
+check("questões: letra minúscula aceita e conferida", one(a, "select count(*) from question_attempts where is_correct")[0] == 1)
+check("questões: alternativa inexistente recusada", fails(a, "insert into question_attempts (question_id, answer) values ('T-0002','E')"))
+check("questões: C/E só em certo ou errado", fails(a, "insert into question_attempts (question_id, answer) values ('T-0001','A')"))
+a.execute("insert into question_attempts (question_id, answer) values ('T-0002','A')")
+b.execute("insert into question_attempts (question_id, answer) values ('T-0002','B')")
+check("questões: B não vê respostas de A", one(b, "select count(*) from question_attempts")[0] == 1)
+st = one(a, "select question_community('T-0002')")[0]
+check("questões: estatística do app soma todos sem identificar", st["total"] == 2 and st["correct"] == 1 and st["by_answer"] == {"A": 1, "B": 1})
+a.execute("insert into question_notes (question_id, favorite) values ('T-0003', true)")
+f = {(r[0], r[1]): r[2] for r in a.execute("select * from question_facets('{\"area\":\"policial\"}'::jsonb)").fetchall()}
+check("questões: facetas por área", f[("area", "policial")] == 2 and f[("area", "farmacia")] == 1 and f[("status", "all")] == 2)
+check("questões: status pela última resposta", f[("status", "correct")] == 1 and f[("status", "wrong")] == 1 and f[("status", "unanswered")] == 0)
+check("questões: áreas contam o catálogo inteiro", one(a, "select count(*) from question_facets('{\"area\":\"policial\",\"disciplina\":[\"Português\"]}'::jsonb) where field='area'")[0] == 2)
+check("questões: faceta ignora o próprio filtro", one(a, "select count(*) from question_facets('{\"concurso\":[\"PF\"]}'::jsonb) where field='concurso'")[0] == 3)
+check("questões: filtro de favoritas", one(a, "select total from question_search('{\"status\":\"favorite\"}'::jsonb)")[0] == 1)
+check("questões: busca no enunciado", one(a, "select id from question_search('{\"text\":\"FRASE 2\"}'::jsonb)")[0] == "T-0002")
+p1 = [r[0] for r in a.execute("select id from question_search('{}'::jsonb, 0, 10, 'x')").fetchall()]
+p2 = [r[0] for r in a.execute("select id from question_search('{}'::jsonb, 0, 10, 'x')").fetchall()]
+check("questões: ordem embaralhada é estável com a mesma semente", p1 == p2 and sorted(p1) == ["T-0001", "T-0002", "T-0003"])
+check("questões: B não vê favoritas de A", one(b, "select count(*) from question_notes")[0] == 0)
+b.execute("insert into question_reports (question_id, category, message) values ('T-0001','gabarito','Acho que é E')")
+check("questões: administradora vê o erro reportado", one(a, "select count(*) from question_reports")[0] == 1)
+check("questões: quem reportou não marca como resolvido", b.execute("update question_reports set resolved_at=now()").rowcount == 0)
+check("questões: administradora resolve", a.execute("update question_reports set resolved_at=now()").rowcount == 1)
+check("questões: C não vê o erro de B", one(c3, "select count(*) from question_reports")[0] == 0)
+a.execute("insert into question_prefs (area) values ('policial')")
+check("questões: área com formato inválido recusada", fails(b, "insert into question_prefs (area) values ('Área X')"))
+d = a.execute("select * from question_daily('2000-01-01','2100-01-01')").fetchall()
+check("questões: resumo diário só com as próprias respostas", sum(r[4] for r in d) == 3 and sum(r[5] for r in d) == 1)
+
 print(f"\n{ok} checks passed")

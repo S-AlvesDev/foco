@@ -7,15 +7,15 @@
    ------------------------------------------------------------------ */
 :root,
 .theme-light {
-  --bg: #f6f7f9;
+  --bg: #f4f4f9;
   --surface-1: #ffffff;
-  --surface-2: #f1f2f5;
-  --surface-3: #e8eaef;
-  --border: #e2e4ea;
-  --border-strong: #cfd3dc;
-  --text-1: #12141a;
-  --text-2: #565d6d;
-  --text-3: #868c9b;
+  --surface-2: #f0f0f6;
+  --surface-3: #e6e6ef;
+  --border: #e3e3ed;
+  --border-strong: #cfcfdd;
+  --text-1: #13131c;
+  --text-2: #575a6e;
+  --text-3: #85889c;
   --accent: #5d50dc;
   --accent-hover: #4f42cf;
   --accent-fg: #ffffff;
@@ -27,22 +27,23 @@
   --danger: #cf3f37;
   --danger-subtle: rgb(207 63 55 / 0.08);
   --accent-fill: linear-gradient(180deg, #5f3ff0, #4622cc);
-  --card-shadow: 0 1px 2px rgb(18 20 26 / 0.04);
+  --gold: #a8780f;
+  --card-shadow: 0 1px 2px rgb(30 24 70 / 0.05);
   --pop-shadow: 0 8px 24px -8px rgb(18 20 26 / 0.16), 0 0 0 1px var(--border);
   color-scheme: light;
 }
 
-/* Grafite profundo; violeta para ação, azul aço para dados. */
+/* Índigo profundo (o mesmo da tela de entrada); violeta para ação, dourado para conquistas. */
 .dark {
-  --bg: #08090d;
-  --surface-1: #0f1117;
-  --surface-2: #151821;
-  --surface-3: #1c202b;
-  --border: #1d212b;
-  --border-strong: #2a2f3c;
-  --text-1: #eceef3;
-  --text-2: #a0a6b4;
-  --text-3: #6a7081;
+  --bg: #08080f;
+  --surface-1: #0f0f1a;
+  --surface-2: #161625;
+  --surface-3: #1e1e30;
+  --border: #20203a;
+  --border-strong: #2e2e4c;
+  --text-1: #eeeef6;
+  --text-2: #a3a5bf;
+  --text-3: #6f7290;
   --accent: #7366ef;
   --accent-hover: #8478f4;
   --accent-fg: #ffffff;
@@ -54,7 +55,8 @@
   --danger: #e5534b;
   --danger-subtle: rgb(229 83 75 / 0.12);
   --accent-fill: linear-gradient(180deg, #6d4ef4, #4b29d4);
-  --card-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset;
+  --gold: #e9b949;
+  --card-shadow: 0 1px 0 rgb(255 255 255 / 0.035) inset, 0 12px 32px -24px rgb(0 0 0 / 0.8);
   --pop-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.7), 0 0 0 1px var(--border);
   color-scheme: dark;
 }
@@ -79,6 +81,7 @@
   --color-warning: var(--warning);
   --color-danger: var(--danger);
   --color-danger-subtle: var(--danger-subtle);
+  --color-gold: var(--gold);
 
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-geist-mono), ui-monospace, monospace;

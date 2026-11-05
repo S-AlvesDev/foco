@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
+import { addDays } from "@/lib/dates";
+import { QuestionsTodayCard } from "@/features/questions/components/question-insights";
+import { getQuestionDaily } from "@/features/questions/queries";
 import type { Route } from "next";
 import {
   ArrowDown,
@@ -74,7 +77,8 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
   const today = localDateISO(tz, now);
   const range = statsRange(period, today, profile.week_starts_on);
 
-  const [subjects, rows, streak, allTime, recent, notes, upcoming, focus] = await Promise.all([
+  const qFrom = addDays(today, -6);
+  const [subjects, rows, streak, allTime, recent, notes, upcoming, focus, qRows] = await Promise.all([
     listSubjects(),
     getStatRows(range.from, range.to),
     getStreak(),
@@ -83,6 +87,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
     listNotes({}, 4),
     getUpcomingReviews(today, 5),
     getStudyFocus(),
+    getQuestionDaily(qFrom, today),
   ]);
   const banner = readBanner(profile);
   const bannerSrc = banner.style === "custom" ? await bannerUrl(banner.path) : null;
@@ -344,6 +349,8 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
             </div>
           )}
         </Card>
+
+        <QuestionsTodayCard rows={qRows} today={today} from={qFrom} />
 
         <Card aria-labelledby="goals-title">
           <CardHeader
