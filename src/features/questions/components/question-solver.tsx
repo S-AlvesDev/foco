@@ -243,7 +243,7 @@ export function QuestionSolver({
         </header>
 
         <div className="px-4 py-5 sm:px-6 sm:py-6">
-          <p className="text-[16.5px] leading-[1.7] whitespace-pre-line text-fg sm:text-[17px]">
+          <p className="text-[16.5px] leading-[1.7] whitespace-pre-wrap break-words text-fg sm:text-[17px]">
             {q.enunciado}
           </p>
 
@@ -610,7 +610,7 @@ function McOption({
         </span>
         <span
           className={cn(
-            "min-w-0 flex-1 pt-0.5 text-[15.5px] leading-relaxed",
+            "min-w-0 flex-1 pt-0.5 text-[15.5px] leading-relaxed whitespace-pre-wrap break-words",
             crossed ? "text-fg-3 line-through decoration-fg-3" : "text-fg",
           )}
         >
@@ -808,7 +808,9 @@ function SolutionPanel({ result, tipo }: { result: Answered; tipo: PublicQuestio
       {s.comentario && (
         <div>
           <p className="text-[12.5px] font-semibold text-fg-2">Comentário</p>
-          <p className="mt-1 text-[15px] leading-[1.7] whitespace-pre-line text-fg">{s.comentario}</p>
+          <p className="mt-1 text-[15px] leading-[1.7] whitespace-pre-wrap break-words text-fg">
+            {s.comentario}
+          </p>
         </div>
       )}
       {!s.comentario && !s.justificativa && (
@@ -1047,7 +1049,7 @@ function ExpectedAnswer({ text }: { text: string }) {
         <BookOpenCheck className="size-4" aria-hidden />
         Resposta esperada
       </p>
-      <p className="mt-1.5 text-[15px] leading-[1.7] whitespace-pre-line text-fg">{text}</p>
+      <p className="mt-1.5 text-[15px] leading-[1.7] whitespace-pre-wrap break-words text-fg">{text}</p>
     </div>
   );
 }
@@ -1101,7 +1103,9 @@ function Discursive({
         {draft.trim() && (
           <div className="mt-6 rounded-xl border border-border bg-surface-2/60 px-4 py-3.5">
             <p className="text-[12.5px] font-semibold text-fg-2">Sua resposta</p>
-            <p className="mt-1.5 text-[15px] leading-[1.7] whitespace-pre-line text-fg">{draft.trim()}</p>
+            <p className="mt-1.5 text-[15px] leading-[1.7] whitespace-pre-wrap break-words text-fg">
+              {draft.trim()}
+            </p>
           </div>
         )}
         <ResultBanner result={result} tipo="discursiva" nextHref={nextHref} listHref={listHref} />
@@ -1128,7 +1132,7 @@ function Discursive({
         {lastResponse && revealed === null && (
           <details className="text-[12.5px] text-fg-3">
             <summary className="cursor-pointer hover:text-fg-2">Ver sua última resposta</summary>
-            <p className="mt-1.5 whitespace-pre-line text-fg-2">{lastResponse}</p>
+            <p className="mt-1.5 whitespace-pre-wrap break-words text-fg-2">{lastResponse}</p>
           </details>
         )}
       </div>
