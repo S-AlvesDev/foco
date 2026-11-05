@@ -40,14 +40,19 @@ export async function revealDiscursiveAction(
   const supabase = await createClient();
   const { data, error } = await supabase.from("questions").select("tipo").eq("id", id).maybeSingle();
   if (error) return { ok: false, message: dbErrorMessage(error) };
-  if (data?.tipo !== "discursiva") return { ok: false, message: "Só questões discursivas mostram a resposta antes." };
+  if (data?.tipo !== "discursiva")
+    return { ok: false, message: "Só questões discursivas mostram a resposta antes." };
   const [solution, community] = await Promise.all([getSolution(id), getCommunity(id)]);
   if (!solution) return { ok: false, message: "Questão não encontrada." };
   return { ok: true, solution, community };
 }
 
 /** Discursiva: registra a autoavaliação (C = acertei, E = errei) e o texto escrito. */
-export async function gradeDiscursiveAction(id: string, correct: boolean, response: string): Promise<AnswerResult> {
+export async function gradeDiscursiveAction(
+  id: string,
+  correct: boolean,
+  response: string,
+): Promise<AnswerResult> {
   await requireUser();
   if (!questionId.safeParse(id).success) return { ok: false, message: "Questão inválida." };
   const text = response.trim();

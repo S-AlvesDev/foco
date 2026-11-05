@@ -154,7 +154,9 @@ export async function getSolution(id: string): Promise<Solution | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("questions")
-    .select("gabarito, resposta_esperada, comentario, justificativa, explicacoes_incorretas, referencias, licenca")
+    .select(
+      "gabarito, resposta_esperada, comentario, justificativa, explicacoes_incorretas, referencias, licenca",
+    )
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
