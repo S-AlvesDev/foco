@@ -95,6 +95,13 @@ describe("checkImport", () => {
     expect(r.duplicates).toEqual(["A-1"]);
     expect(r.invalid.map((i) => i.id)).toEqual(["A-2", "A-3"]);
   });
+  it("discursiva exige resposta esperada e não aceita letra", () => {
+    const d = { ...ce, id: "D-1", tipo: "discursiva", gabarito: null, resposta_esperada: "Texto esperado." };
+    const r = checkImport([d, { ...d, id: "D-2", resposta_esperada: null }, { ...d, id: "D-3", gabarito: "C" }]);
+    expect(r.valid.map((v) => v.id)).toEqual(["D-1"]);
+    expect(r.invalid.map((i) => i.id)).toEqual(["D-2", "D-3"]);
+    expect(r.valid[0].gabarito).toBeNull();
+  });
   it("aceita { questoes: [...] } e recusa outra coisa", () => {
     expect(checkImport({ questoes: [ce] }).valid).toHaveLength(1);
     expect(checkImport({ a: 1 }).invalid[0].message).toMatch(/lista/);

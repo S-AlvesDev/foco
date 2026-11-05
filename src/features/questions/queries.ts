@@ -108,7 +108,7 @@ export type PublicQuestion = {
   assunto: string;
   subassunto: string | null;
   banca: string | null;
-  tipo: "certo_errado" | "multipla_escolha";
+  tipo: "certo_errado" | "multipla_escolha" | "discursiva";
   dificuldade: string;
   enunciado: string;
   alternativas: Record<string, string> | null;
@@ -137,7 +137,10 @@ export async function getPublicQuestion(id: string): Promise<PublicQuestion | nu
 export type Reference = { titulo?: string; url?: string; localizador?: string | null };
 
 export type Solution = {
-  gabarito: string;
+  /** Letra (C/E ou A–E); null nas discursivas. */
+  gabarito: string | null;
+  /** Só nas discursivas. */
+  respostaEsperada: string | null;
   comentario: string | null;
   justificativa: string | null;
   /** A justificativa é só a primeira frase do comentário (não precisa aparecer em destaque). */
@@ -151,7 +154,7 @@ export async function getSolution(id: string): Promise<Solution | null> {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("questions")
-    .select("gabarito, comentario, justificativa, explicacoes_incorretas, referencias, licenca")
+    .select("gabarito, resposta_esperada, comentario, justificativa, explicacoes_incorretas, referencias, licenca")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;
@@ -159,6 +162,7 @@ export async function getSolution(id: string): Promise<Solution | null> {
   const refs = Array.isArray(data.referencias) ? (data.referencias as Reference[]) : [];
   return {
     gabarito: data.gabarito,
+    respostaEsperada: data.resposta_esperada,
     comentario: data.comentario,
     // Lotes antigos cortaram a frase em abreviações ("O art."): completa com o comentário.
     justificativa: completeJustificativa(data.justificativa, data.comentario),
@@ -185,7 +189,7 @@ export type MyQuestionState = {
   note: string | null;
   attempts: number;
   correct: number;
-  last: { answer: string; isCorrect: boolean; on: string } | null;
+  last: { answer: string; isCorrect: boolean; on: string; response: string | null } | null;
 };
 
 export async function getMyState(id: string): Promise<MyQuestionState> {
@@ -194,7 +198,7 @@ export async function getMyState(id: string): Promise<MyQuestionState> {
     supabase.from("question_notes").select("favorite, note").eq("question_id", id).maybeSingle(),
     supabase
       .from("question_attempts")
-      .select("answer, is_correct, answered_on")
+      .select("answer, is_correct, answered_on, response")
       .eq("question_id", id)
       .order("created_at", { ascending: false })
       .limit(200),
@@ -208,7 +212,9 @@ export async function getMyState(id: string): Promise<MyQuestionState> {
     note: notes.data?.note ?? null,
     attempts: list.length,
     correct: list.filter((a) => a.is_correct).length,
-    last: last ? { answer: last.answer, isCorrect: last.is_correct, on: last.answered_on } : null,
+    last: last
+      ? { answer: last.answer, isCorrect: last.is_correct, on: last.answered_on, response: last.response }
+      : null,
   };
 }
 

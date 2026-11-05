@@ -31,6 +31,39 @@ export async function answerQuestionAction(id: string, answer: string): Promise<
   return { ok: true, correct: data.is_correct, solution, community };
 }
 
+/** Discursiva: mostra a resposta esperada sem registrar nada (a pessoa ainda vai se avaliar). */
+export async function revealDiscursiveAction(
+  id: string,
+): Promise<{ ok: true; solution: Solution; community: Community } | Fail> {
+  await requireUser();
+  if (!questionId.safeParse(id).success) return { ok: false, message: "Questão inválida." };
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("questions").select("tipo").eq("id", id).maybeSingle();
+  if (error) return { ok: false, message: dbErrorMessage(error) };
+  if (data?.tipo !== "discursiva") return { ok: false, message: "Só questões discursivas mostram a resposta antes." };
+  const [solution, community] = await Promise.all([getSolution(id), getCommunity(id)]);
+  if (!solution) return { ok: false, message: "Questão não encontrada." };
+  return { ok: true, solution, community };
+}
+
+/** Discursiva: registra a autoavaliação (C = acertei, E = errei) e o texto escrito. */
+export async function gradeDiscursiveAction(id: string, correct: boolean, response: string): Promise<AnswerResult> {
+  await requireUser();
+  if (!questionId.safeParse(id).success) return { ok: false, message: "Questão inválida." };
+  const text = response.trim();
+  if (text.length > 10000) return { ok: false, message: "Resposta com mais de 10.000 caracteres." };
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("question_attempts")
+    .insert({ question_id: id, answer: correct ? "C" : "E", response: text || null })
+    .select("is_correct")
+    .single();
+  if (error) return { ok: false, message: dbErrorMessage(error) };
+  const [solution, community] = await Promise.all([getSolution(id), getCommunity(id)]);
+  if (!solution) return { ok: false, message: "Questão não encontrada." };
+  return { ok: true, correct: data.is_correct, solution, community };
+}
+
 export async function setFavoriteAction(id: string, favorite: boolean): Promise<{ ok: true } | Fail> {
   const user = await requireUser();
   if (!questionId.safeParse(id).success) return { ok: false, message: "Questão inválida." };

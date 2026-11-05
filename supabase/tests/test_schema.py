@@ -451,4 +451,26 @@ check("questões: área com formato inválido recusada", fails(b, "insert into q
 d = a.execute("select * from question_daily('2000-01-01','2100-01-01')").fetchall()
 check("questões: resumo diário só com as próprias respostas", sum(r[4] for r in d) == 3 and sum(r[5] for r in d) == 1)
 
+# Discursivas
+QD = _json.dumps([
+  {"id": "D-0001", "area": "farmacia", "concurso": "Farmácia", "disciplina": "Química", "assunto": "Isomeria",
+   "tipo": "discursiva", "dificuldade": "facil", "enunciado": "Explique quiralidade.", "gabarito": None,
+   "resposta_esperada": "Carbono com quatro ligantes diferentes."},
+  {"id": "D-0002", "area": "farmacia", "concurso": "Farmácia", "disciplina": "Química", "assunto": "Isomeria",
+   "tipo": "discursiva", "dificuldade": "facil", "enunciado": "Sem resposta esperada."},
+  {"id": "D-0003", "area": "farmacia", "concurso": "Farmácia", "disciplina": "Química", "assunto": "Isomeria",
+   "tipo": "discursiva", "dificuldade": "facil", "enunciado": "Com letra.", "gabarito": "C", "resposta_esperada": "x"},
+])
+r = one(a, "select import_questions(%s::jsonb)", (QD,))[0]
+check("discursiva: importa com resposta esperada e recusa sem ela ou com letra",
+      r["inserted"] == 1 and sorted(e["id"] for e in r["errors"]) == ["D-0002", "D-0003"])
+r = one(a, "select import_questions(%s::jsonb)", (QD.replace("quatro ligantes", "4 ligantes"),))[0]
+check("discursiva: mudar a resposta esperada atualiza", r["updated"] == 1)
+a.execute("insert into question_attempts (question_id, answer, response) values ('D-0001','C','Tem 4 grupos diferentes')")
+check("discursiva: autoavaliação C conta como acerto e guarda o texto",
+      one(a, "select is_correct, response from question_attempts where question_id='D-0001'") == (True, "Tem 4 grupos diferentes"))
+check("discursiva: só C ou E", fails(a, "insert into question_attempts (question_id, answer) values ('D-0001','A')"))
+a.execute("insert into question_attempts (question_id, answer, response) values ('T-0001','C','texto')")
+check("objetiva não guarda texto", one(a, "select response from question_attempts where question_id='T-0001' order by created_at desc limit 1")[0] is None)
+
 print(f"\n{ok} checks passed")

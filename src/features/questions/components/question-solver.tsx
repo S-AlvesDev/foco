@@ -16,8 +16,10 @@ import {
   ExternalLink,
   Flag,
   Keyboard,
+  Eye,
   ListFilter,
   NotebookPen,
+  PenLine,
   Scissors,
   Star,
   X,
@@ -29,6 +31,8 @@ import { selectChevron, selectClass } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import {
   answerQuestionAction,
+  gradeDiscursiveAction,
+  revealDiscursiveAction,
   reportQuestionAction,
   saveNoteAction,
   setFavoriteAction,
@@ -82,7 +86,10 @@ export function QuestionSolver({
   const [showKeys, setShowKeys] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
 
-  const options = useMemo(() => (q.tipo === "certo_errado" ? ["C", "E"] : letters(q.alternativas)), [q]);
+  const options = useMemo(
+    () => (q.tipo === "certo_errado" ? ["C", "E"] : q.tipo === "discursiva" ? [] : letters(q.alternativas)),
+    [q],
+  );
 
   // Depois de responder, a questão pode sair da lista filtrada (ex.: "Não resolvidas").
   // Nesse caso a próxima ocupa a mesma posição.
@@ -253,74 +260,90 @@ export function QuestionSolver({
             </p>
           )}
 
-          {/* Alternativas */}
-          <div
-            role="radiogroup"
-            aria-label="Resposta"
-            className={cn(
-              "mt-6",
-              q.tipo === "certo_errado" ? "grid grid-cols-2 gap-3" : "flex flex-col gap-2",
-            )}
-          >
-            {q.tipo === "certo_errado"
-              ? CE.map((o) => (
-                  <CeOption
-                    key={o.value}
-                    label={o.label}
-                    icon={o.icon}
-                    selected={selected === o.value}
-                    state={stateOf(o.value, result, gab)}
-                    disabled={!!result || sending}
-                    onSelect={() => pick(o.value)}
-                    share={result ? share(result, o.value) : null}
-                  />
-                ))
-              : options.map((l) => (
-                  <McOption
-                    key={l}
-                    letter={l}
-                    text={q.alternativas?.[l] ?? ""}
-                    selected={selected === l}
-                    crossed={crossed.includes(l)}
-                    state={stateOf(l, result, gab)}
-                    disabled={!!result || sending}
-                    onSelect={() => pick(l)}
-                    onCross={() => toggleCross(l)}
-                    share={result ? share(result, l) : null}
-                  />
-                ))}
-          </div>
-
-          {!result ? (
-            <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
-              <button
-                type="button"
-                onClick={() => setShowKeys((v) => !v)}
-                aria-expanded={showKeys}
-                className="hidden cursor-pointer items-center gap-1.5 text-[12.5px] text-fg-3 hover:text-fg-2 md:flex"
-              >
-                <Keyboard className="size-4" aria-hidden />
-                Atalhos
-              </button>
-              <Button
-                variant="primary"
-                size="lg"
-                className="min-w-[160px] max-md:w-full"
-                disabled={!selected}
-                loading={sending}
-                onClick={submit}
-              >
-                Responder
-              </Button>
-              {showKeys && (
-                <p className="w-full text-[12.5px] text-fg-3">
-                  {q.tipo === "certo_errado" ? "C ou E escolhem" : `${options.join(", ")} escolhem`} · Enter
-                  responde · ← → mudam de questão. Na múltipla escolha, a tesoura risca uma alternativa.
-                </p>
-              )}
-            </div>
+          {q.tipo === "discursiva" ? (
+            <Discursive
+              id={q.id}
+              result={result}
+              onGraded={(r) => {
+                setResult(r);
+                setTab("solution");
+              }}
+              nextHref={nextHref}
+              listHref={listHref}
+              lastResponse={mine.last?.response ?? null}
+            />
           ) : (
-            <ResultBanner result={result} tipo={q.tipo} nextHref={nextHref} listHref={listHref} />
+            <>
+              {/* Alternativas */}
+              <div
+                role="radiogroup"
+                aria-label="Resposta"
+                className={cn(
+                  "mt-6",
+                  q.tipo === "certo_errado" ? "grid grid-cols-2 gap-3" : "flex flex-col gap-2",
+                )}
+              >
+                {q.tipo === "certo_errado"
+                  ? CE.map((o) => (
+                      <CeOption
+                        key={o.value}
+                        label={o.label}
+                        icon={o.icon}
+                        selected={selected === o.value}
+                        state={stateOf(o.value, result, gab)}
+                        disabled={!!result || sending}
+                        onSelect={() => pick(o.value)}
+                        share={result ? share(result, o.value) : null}
+                      />
+                    ))
+                  : options.map((l) => (
+                      <McOption
+                        key={l}
+                        letter={l}
+                        text={q.alternativas?.[l] ?? ""}
+                        selected={selected === l}
+                        crossed={crossed.includes(l)}
+                        state={stateOf(l, result, gab)}
+                        disabled={!!result || sending}
+                        onSelect={() => pick(l)}
+                        onCross={() => toggleCross(l)}
+                        share={result ? share(result, l) : null}
+                      />
+                    ))}
+              </div>
+              {!result ? (
+                <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
+                  <button
+                    type="button"
+                    onClick={() => setShowKeys((v) => !v)}
+                    aria-expanded={showKeys}
+                    className="hidden cursor-pointer items-center gap-1.5 text-[12.5px] text-fg-3 hover:text-fg-2 md:flex"
+                  >
+                    <Keyboard className="size-4" aria-hidden />
+                    Atalhos
+                  </button>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="min-w-[160px] max-md:w-full"
+                    disabled={!selected}
+                    loading={sending}
+                    onClick={submit}
+                  >
+                    Responder
+                  </Button>
+                  {showKeys && (
+                    <p className="w-full text-[12.5px] text-fg-3">
+                      {q.tipo === "certo_errado" ? "C ou E escolhem" : `${options.join(", ")} escolhem`} ·
+                      Enter responde · ← → mudam de questão. Na múltipla escolha, a tesoura risca uma
+                      alternativa.
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <ResultBanner result={result} tipo={q.tipo} nextHref={nextHref} listHref={listHref} />
+              )}
+            </>
           )}
         </div>
 
@@ -373,7 +396,7 @@ export function QuestionSolver({
 
 type OptState = "idle" | "right" | "wrong" | "missed";
 
-function stateOf(value: string, result: Answered | null, gab: string | undefined): OptState {
+function stateOf(value: string, result: Answered | null, gab: string | null | undefined): OptState {
   if (!result || !gab) return "idle";
   if (value === gab) return value === result.answer ? "right" : "missed";
   return value === result.answer ? "wrong" : "idle";
@@ -652,11 +675,15 @@ function ResultBanner({
       </span>
       <div className="min-w-0 flex-1">
         <p className="text-[15.5px] font-semibold text-fg">
-          {result.correct ? "Você acertou!" : "Você errou."} Gabarito: {gabLabel}
+          {tipo === "discursiva"
+            ? result.correct
+              ? "Você marcou que acertou."
+              : "Você marcou que errou. Revise a resposta esperada."
+            : `${result.correct ? "Você acertou!" : "Você errou."} Gabarito: ${gabLabel}`}
         </p>
         <p className="text-[12.5px] text-fg-2">
           {c.total > 1
-            ? `${Math.round((c.correct / c.total) * 100)}% de acerto entre ${c.total} respostas no app`
+            ? `${Math.round((c.correct / c.total) * 100)}% ${tipo === "discursiva" ? "marcaram acerto" : "de acerto"} entre ${c.total} respostas no app`
             : "Primeira resposta registrada no app para esta questão"}
         </p>
       </div>
@@ -764,10 +791,14 @@ function SolutionPanel({ result, tipo }: { result: Answered; tipo: PublicQuestio
     tipo === "certo_errado" ? (s.gabarito === "C" ? "Certo" : "Errado") : `Alternativa ${s.gabarito}`;
   return (
     <div className="flex flex-col gap-4">
-      <p className="flex items-center gap-2 text-[14px] font-semibold text-fg">
-        <CircleCheck className="size-4 text-success" aria-hidden />
-        Gabarito: {gabLabel}
-      </p>
+      {tipo === "discursiva" ? (
+        s.respostaEsperada && <ExpectedAnswer text={s.respostaEsperada} />
+      ) : (
+        <p className="flex items-center gap-2 text-[14px] font-semibold text-fg">
+          <CircleCheck className="size-4 text-success" aria-hidden />
+          Gabarito: {gabLabel}
+        </p>
+      )}
       {s.justificativa && !s.justificativaIsLead && (
         <div className="rounded-xl border-l-[3px] border-accent bg-accent-subtle px-4 py-3">
           <p className="text-[12px] font-semibold text-accent">Em uma frase</p>
@@ -847,8 +878,17 @@ function AlternativesPanel({ q, result }: { q: PublicQuestion; result: Answered 
 
 function StatsPanel({ q, result }: { q: PublicQuestion; result: Answered }) {
   const c = result.community;
-  const opts = q.tipo === "certo_errado" ? ["C", "E"] : letters(q.alternativas);
-  const label = (v: string) => (q.tipo === "certo_errado" ? (v === "C" ? "Certo" : "Errado") : v);
+  const opts = q.tipo === "multipla_escolha" ? letters(q.alternativas) : ["C", "E"];
+  const label = (v: string) =>
+    q.tipo === "discursiva"
+      ? v === "C"
+        ? "Acertei"
+        : "Errei"
+      : q.tipo === "certo_errado"
+        ? v === "C"
+          ? "Certo"
+          : "Errado"
+        : v;
   return (
     <div>
       <p className="text-[13.5px] text-fg-2">
@@ -862,9 +902,9 @@ function StatsPanel({ q, result }: { q: PublicQuestion; result: Answered }) {
         {opts.map((v) => {
           const n = c.byAnswer[v] ?? 0;
           const pct = c.total ? Math.round((n / c.total) * 100) : 0;
-          const right = v === result.solution.gabarito;
+          const right = q.tipo === "discursiva" ? v === "C" : v === result.solution.gabarito;
           return (
-            <li key={v} className="grid grid-cols-[64px_1fr_72px] items-center gap-3 text-[13px]">
+            <li key={v} className="grid grid-cols-[72px_1fr_72px] items-center gap-3 text-[13px]">
               <span className={cn("font-semibold", right ? "text-success" : "text-fg-2")}>{label(v)}</span>
               <span className="h-2 overflow-hidden rounded-full bg-surface-3">
                 <span
@@ -992,6 +1032,158 @@ function ReportPanel({ id, onDone }: { id: string; onDone: () => void }) {
           Enviar relato
         </Button>
       </div>
+    </div>
+  );
+}
+
+/* ------------------------------------------------------------------ */
+/* Discursiva: escrever, ver a resposta esperada e se autoavaliar      */
+/* ------------------------------------------------------------------ */
+
+function ExpectedAnswer({ text }: { text: string }) {
+  return (
+    <div className="rounded-xl border border-success/30 bg-success/[0.07] px-4 py-3.5">
+      <p className="flex items-center gap-1.5 text-[12.5px] font-semibold text-success">
+        <BookOpenCheck className="size-4" aria-hidden />
+        Resposta esperada
+      </p>
+      <p className="mt-1.5 text-[15px] leading-[1.7] whitespace-pre-line text-fg">{text}</p>
+    </div>
+  );
+}
+
+function Discursive({
+  id,
+  result,
+  onGraded,
+  nextHref,
+  listHref,
+  lastResponse,
+}: {
+  id: string;
+  result: Answered | null;
+  onGraded: (r: Answered) => void;
+  nextHref: string | null;
+  listHref: string;
+  lastResponse: string | null;
+}) {
+  const [draft, setDraft] = useState("");
+  const [revealed, setRevealed] = useState<string | null>(null);
+  const [pending, start] = useTransition();
+  const [grading, setGrading] = useState<"C" | "E" | null>(null);
+
+  const reveal = () =>
+    start(async () => {
+      const r = await revealDiscursiveAction(id);
+      if (!r.ok) {
+        toast.error(r.message);
+        return;
+      }
+      setRevealed(r.solution.respostaEsperada ?? "");
+    });
+
+  const grade = (correct: boolean) => {
+    setGrading(correct ? "C" : "E");
+    start(async () => {
+      const r = await gradeDiscursiveAction(id, correct, draft);
+      setGrading(null);
+      if (!r.ok) {
+        toast.error(r.message);
+        return;
+      }
+      onGraded({ ...r, answer: correct ? "C" : "E" });
+    });
+  };
+
+  if (result) {
+    return (
+      <>
+        {draft.trim() && (
+          <div className="mt-6 rounded-xl border border-border bg-surface-2/60 px-4 py-3.5">
+            <p className="text-[12.5px] font-semibold text-fg-2">Sua resposta</p>
+            <p className="mt-1.5 text-[15px] leading-[1.7] whitespace-pre-line text-fg">{draft.trim()}</p>
+          </div>
+        )}
+        <ResultBanner result={result} tipo="discursiva" nextHref={nextHref} listHref={listHref} />
+      </>
+    );
+  }
+
+  return (
+    <div className="mt-6 flex flex-col gap-4">
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor={`resp-${id}`} className="flex items-center gap-1.5 text-[13px] font-medium text-fg-2">
+          <PenLine className="size-4 text-fg-3" aria-hidden />
+          Sua resposta
+        </label>
+        <Textarea
+          id={`resp-${id}`}
+          value={draft}
+          maxLength={10000}
+          readOnly={revealed !== null}
+          onChange={(e) => setDraft(e.target.value)}
+          placeholder="Escreva sua resposta. Depois compare com a resposta esperada."
+          className="min-h-[140px] text-[15px] read-only:opacity-80"
+        />
+        {lastResponse && revealed === null && (
+          <details className="text-[12.5px] text-fg-3">
+            <summary className="cursor-pointer hover:text-fg-2">Ver sua última resposta</summary>
+            <p className="mt-1.5 whitespace-pre-line text-fg-2">{lastResponse}</p>
+          </details>
+        )}
+      </div>
+
+      {revealed === null ? (
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <p className="text-[12.5px] text-fg-3">
+            Escrever é opcional; dá para responder de cabeça e conferir.
+          </p>
+          <Button
+            variant="primary"
+            size="lg"
+            className="min-w-[200px] max-md:w-full"
+            loading={pending}
+            onClick={reveal}
+          >
+            <Eye />
+            Ver resposta esperada
+          </Button>
+        </div>
+      ) : (
+        <>
+          <ExpectedAnswer text={revealed} />
+          <div className="rounded-xl border border-border bg-surface-2/50 px-4 py-3.5">
+            <p className="text-[14px] font-semibold text-fg">Como foi sua resposta?</p>
+            <p className="mt-0.5 text-[12.5px] text-fg-3">
+              Compare com a resposta esperada. Isso entra no seu desempenho e no filtro “Errei”.
+            </p>
+            <div className="mt-3 grid grid-cols-2 gap-3">
+              <Button
+                variant="secondary"
+                size="lg"
+                className="h-12 border-success/40 hover:border-success hover:bg-success/10"
+                loading={pending && grading === "C"}
+                disabled={pending}
+                onClick={() => grade(true)}
+              >
+                <CircleCheck className="text-success" />
+                Acertei
+              </Button>
+              <Button
+                variant="secondary"
+                size="lg"
+                className="h-12 border-danger/40 hover:border-danger hover:bg-danger/10"
+                loading={pending && grading === "E"}
+                disabled={pending}
+                onClick={() => grade(false)}
+              >
+                <CircleX className="text-danger" />
+                Errei
+              </Button>
+            </div>
+          </div>
+        </>
+      )}
     </div>
   );
 }

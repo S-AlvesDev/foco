@@ -22,7 +22,7 @@ O banco completo (todas as etapas) está em `supabase/migrations/0001_init.sql`;
 
 ## Configurar o Supabase (uma vez)
 
-1. **Banco.** No painel do Supabase, abra _SQL Editor → New query_, cole o conteúdo de cada arquivo de `supabase/migrations/` **em ordem** (`0001_init.sql`, `0002_subjects.sql`, `0003_notes_search.sql`, `0004_reviews_reports_journey.sql`, `0005_avatars.sql`, `0006_study_focus.sql`, `0007_banner.sql`, `0008_pwa_notifications.sql`, `0009_questions.sql`…) e clique em _Run_ para cada um. Eles criam tabelas, índices, políticas RLS, funções e o gatilho que cria o perfil no cadastro. Ao atualizar o app, rode só os arquivos novos.
+1. **Banco.** No painel do Supabase, abra _SQL Editor → New query_, cole o conteúdo de cada arquivo de `supabase/migrations/` **em ordem** (`0001_init.sql`, `0002_subjects.sql`, `0003_notes_search.sql`, `0004_reviews_reports_journey.sql`, `0005_avatars.sql`, `0006_study_focus.sql`, `0007_banner.sql`, `0008_pwa_notifications.sql`, `0009_questions.sql`, `0010_discursive.sql`…) e clique em _Run_ para cada um. Eles criam tabelas, índices, políticas RLS, funções e o gatilho que cria o perfil no cadastro. Ao atualizar o app, rode só os arquivos novos.
    - Alternativa com a CLI: `npx supabase link --project-ref <ref>` e `npx supabase db push`.
 2. **URLs de autenticação.** Em _Authentication → URL Configuration_:
    - _Site URL_: o endereço de produção (ex.: `https://foco-ai.vercel.app`).
@@ -84,6 +84,7 @@ O app pode ser instalado no celular e no computador, abre em tela cheia, funcion
 
 - `supabase/migrations/0009_questions.sql` cria o catálogo (`questions`, lido pelas duas contas), as respostas (`question_attempts`, o acerto é calculado pelo banco), favoritas e anotações (`question_notes`), erros reportados (`question_reports`), a área escolhida por conta (`question_prefs`) e as funções de filtro, contagem e estatística.
 - **Importar lotes:** em _Questões → Ativar importação_, a primeira conta que ativar vira a administradora do banco (só ela importa e resolve relatos). Depois, _Importar questões_ aceita um ou mais `.json` no formato do Alpha-20K (lista de questões ou `{ "questoes": [...] }`). O app confere cada questão antes de enviar; importar o mesmo arquivo de novo não duplica (atualiza pelo `id` só o que mudou).
+- **Discursivas** (`0010_discursive.sql`): `"tipo": "discursiva"`, sem `alternativas` nem `gabarito`, com o texto em `"resposta_esperada"`. Quem resolve escreve a resposta (opcional), vê a resposta esperada e marca _Acertei_ ou _Errei_; isso conta no desempenho e no filtro _Errei_.
 - Até rodar a migração 0009, o painel e o desempenho funcionam normalmente e a página de questões mostra o que falta.
 
 ## Scripts

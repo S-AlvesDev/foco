@@ -29,10 +29,12 @@ export const DIFICULDADE_LABELS: Record<string, string> = {
   dificil: "Difícil",
 };
 
-export const TIPOS = ["certo_errado", "multipla_escolha"] as const;
+export const TIPOS = ["certo_errado", "multipla_escolha", "discursiva"] as const;
+export type Tipo = (typeof TIPOS)[number];
 export const TIPO_LABELS: Record<string, string> = {
   certo_errado: "Certo ou errado",
   multipla_escolha: "Múltipla escolha",
+  discursiva: "Discursiva",
 };
 
 export const STATUS = ["all", "unanswered", "answered", "correct", "wrong", "favorite", "noted"] as const;
@@ -172,14 +174,15 @@ export const importItemSchema = z
     assunto: text(200),
     subassunto: optText(200),
     banca_referencia: optText(80),
-    tipo: z.enum(TIPOS, "tipo deve ser certo_errado ou multipla_escolha"),
+    tipo: z.enum(TIPOS, "tipo deve ser certo_errado, multipla_escolha ou discursiva"),
     dificuldade: z.enum(DIFICULDADES, "dificuldade deve ser facil, intermediaria ou dificil"),
     enunciado: text(10000),
     alternativas: letterMap.nullish(),
     gabarito: z
       .string()
-      .trim()
-      .transform((s) => s.toUpperCase()),
+      .nullish()
+      .transform((s) => (s && s.trim() ? s.trim().toUpperCase() : null)),
+    resposta_esperada: optText(20000),
     comentario: optText(20000),
     justificativa: optText(5000),
     explicacoes_incorretas: letterMap.nullish(),
@@ -219,6 +222,19 @@ export const importItemSchema = z
           path: ["alternativas"],
           message: "certo/errado não tem alternativas",
         });
+    } else if (q.tipo === "discursiva") {
+      if (!q.resposta_esperada)
+        ctx.addIssue({
+          code: "custom",
+          path: ["resposta_esperada"],
+          message: "discursiva precisa de resposta_esperada",
+        });
+      if (q.gabarito || q.alternativas)
+        ctx.addIssue({
+          code: "custom",
+          path: ["gabarito"],
+          message: "discursiva não tem gabarito de letra nem alternativas",
+        });
     } else {
       const keys = Object.keys(q.alternativas ?? {});
       if (keys.length < 2)
@@ -227,7 +243,7 @@ export const importItemSchema = z
           path: ["alternativas"],
           message: "precisa de ao menos 2 alternativas",
         });
-      if (!keys.includes(q.gabarito))
+      if (!q.gabarito || !keys.includes(q.gabarito))
         ctx.addIssue({
           code: "custom",
           path: ["gabarito"],

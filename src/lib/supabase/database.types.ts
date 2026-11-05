@@ -842,6 +842,7 @@ export type Database = {
           id: string;
           is_correct: boolean;
           question_id: string;
+          response: string | null;
           user_id: string;
         };
         Insert: {
@@ -851,6 +852,7 @@ export type Database = {
           id?: string;
           is_correct?: boolean;
           question_id: string;
+          response?: string | null;
           user_id?: string;
         };
         Update: {
@@ -860,6 +862,7 @@ export type Database = {
           id?: string;
           is_correct?: boolean;
           question_id?: string;
+          response?: string | null;
           user_id?: string;
         };
         Relationships: [
@@ -1007,7 +1010,7 @@ export type Database = {
           especialidade_referencia: string | null;
           explicacoes_incorretas: Json | null;
           fonte: string | null;
-          gabarito: string;
+          gabarito: string | null;
           id: string;
           imported_by: string | null;
           justificativa: string | null;
@@ -1015,6 +1018,7 @@ export type Database = {
           lote_producao: number | null;
           origem: string | null;
           referencias: Json;
+          resposta_esperada: string | null;
           status_revisao: string | null;
           subassunto: string | null;
           tipo: string;
@@ -1038,7 +1042,7 @@ export type Database = {
           especialidade_referencia?: string | null;
           explicacoes_incorretas?: Json | null;
           fonte?: string | null;
-          gabarito: string;
+          gabarito?: string | null;
           id: string;
           imported_by?: string | null;
           justificativa?: string | null;
@@ -1046,6 +1050,7 @@ export type Database = {
           lote_producao?: number | null;
           origem?: string | null;
           referencias?: Json;
+          resposta_esperada?: string | null;
           status_revisao?: string | null;
           subassunto?: string | null;
           tipo: string;
@@ -1069,7 +1074,7 @@ export type Database = {
           especialidade_referencia?: string | null;
           explicacoes_incorretas?: Json | null;
           fonte?: string | null;
-          gabarito?: string;
+          gabarito?: string | null;
           id?: string;
           imported_by?: string | null;
           justificativa?: string | null;
@@ -1077,6 +1082,7 @@ export type Database = {
           lote_producao?: number | null;
           origem?: string | null;
           referencias?: Json;
+          resposta_esperada?: string | null;
           status_revisao?: string | null;
           subassunto?: string | null;
           tipo?: string;
