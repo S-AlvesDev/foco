@@ -32,12 +32,38 @@ export function BrandEmblem({ className }: { className?: string }) {
   );
 }
 
-export function BrandWordmark({ className }: { className?: string }) {
+/**
+ * Assinatura da marca: escudo, filete vertical e o nome em duas linhas
+ * ("MISSÃO" pequeno e espaçado, "ALPHA-01" grande, com o 01 em dourado).
+ */
+export function BrandWordmark({ size = "sm", className }: { size?: "sm" | "lg"; className?: string }) {
+  const lg = size === "lg";
   return (
-    <span className={cn("inline-flex items-center gap-2.5", className)}>
-      <BrandMark />
-      <span className="text-[14px] leading-none font-bold tracking-[0.08em] whitespace-nowrap text-fg uppercase">
-        Missão Alpha-<span className="text-[#d9a640]">01</span>
+    <span className={cn("inline-flex items-center", lg ? "gap-4 sm:gap-5" : "gap-2.5", className)}>
+      <BrandMark className={lg ? "size-16 sm:size-[88px]" : "size-9"} />
+      <span aria-hidden className={cn("w-px self-stretch bg-current opacity-20", lg ? "my-2" : "my-1.5")} />
+      <span className="flex flex-col whitespace-nowrap uppercase">
+        <span
+          className={cn(
+            "leading-none font-semibold text-fg-2",
+            lg ? "text-[13px] tracking-[0.34em] sm:text-[15px]" : "text-[8.5px] tracking-[0.36em]",
+          )}
+        >
+          Missão
+        </span>
+        <span
+          className={cn(
+            "leading-none font-extrabold tracking-[-0.01em]",
+            lg ? "mt-1.5 text-[30px] sm:text-[38px]" : "mt-[3px] text-[17px]",
+          )}
+        >
+          <span className="text-fg dark:bg-[linear-gradient(180deg,#ffffff_20%,#a7adbb)] dark:bg-clip-text dark:text-transparent">
+            Alpha-
+          </span>
+          <span className="bg-[linear-gradient(180deg,#f6cf6e,#c58a22)] bg-clip-text text-transparent">
+            01
+          </span>
+        </span>
       </span>
     </span>
   );

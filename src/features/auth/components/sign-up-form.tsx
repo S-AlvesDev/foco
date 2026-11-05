@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useActionState, useState } from "react";
-import { MailCheck } from "lucide-react";
+import { LockKeyhole, Mail, MailCheck, UserRound, UserRoundPlus } from "lucide-react";
 import { Field, Input, PasswordInput } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Notice } from "@/components/ui/notice";
 import { idle } from "@/lib/form";
 import { resendConfirmationAction, signUpAction } from "../actions";
-import { AuthHeader, authLinkClass } from "./auth-header";
+import { AuthFooter, AuthHeader, authLinkClass, authSubmitClass } from "./auth-header";
 
 export function SignUpForm() {
   const [state, formAction] = useActionState(signUpAction, idle);
@@ -36,13 +36,20 @@ export function SignUpForm() {
           </Notice>
         )}
 
-        <Field label="Nome" error={state.fieldErrors?.name}>
+        <Field label="Nome" icon={UserRound} error={state.fieldErrors?.name}>
           {(p) => (
-            <Input {...p} name="name" autoComplete="given-name" defaultValue={state.values?.name} autoFocus />
+            <Input
+              {...p}
+              name="name"
+              autoComplete="given-name"
+              placeholder="Como quer ser chamado"
+              defaultValue={state.values?.name}
+              autoFocus
+            />
           )}
         </Field>
 
-        <Field label="E-mail" error={state.fieldErrors?.email}>
+        <Field label="E-mail" icon={Mail} error={state.fieldErrors?.email}>
           {(p) => (
             <Input
               {...p}
@@ -52,6 +59,7 @@ export function SignUpForm() {
               autoComplete="email"
               autoCapitalize="none"
               spellCheck={false}
+              placeholder="seu@email.com"
               defaultValue={state.values?.email}
             />
           )}
@@ -59,6 +67,7 @@ export function SignUpForm() {
 
         <Field
           label="Senha"
+          icon={LockKeyhole}
           error={state.fieldErrors?.password}
           hint={<PasswordHint length={password.length} />}
         >
@@ -67,22 +76,24 @@ export function SignUpForm() {
               {...p}
               name="password"
               autoComplete="new-password"
+              placeholder="Crie uma senha"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
             />
           )}
         </Field>
 
-        <SubmitButton variant="primary" size="lg" className="mt-2 w-full">
+        <SubmitButton variant="primary" size="lg" className={authSubmitClass}>
+          <UserRoundPlus aria-hidden />
           Criar conta
         </SubmitButton>
 
-        <p className="mt-4 text-center text-[13px] text-fg-2">
+        <AuthFooter>
           Já tem conta?{" "}
           <Link href="/entrar" className={authLinkClass}>
             Entrar
           </Link>
-        </p>
+        </AuthFooter>
       </form>
     </>
   );
@@ -98,7 +109,7 @@ function CheckEmail({ email }: { email: string }) {
   const [state, resend] = useActionState(resendConfirmationAction, idle);
   return (
     <div>
-      <div className="mb-5 flex size-10 items-center justify-center rounded-lg border border-border bg-surface-2 text-accent">
+      <div className="mb-5 flex size-10 items-center justify-center rounded-xl bg-accent-subtle text-accent">
         <MailCheck className="size-5" />
       </div>
       <AuthHeader
@@ -117,7 +128,7 @@ function CheckEmail({ email }: { email: string }) {
       )}
       <form action={resend} className="flex flex-col gap-3">
         <input type="hidden" name="email" value={email} />
-        <SubmitButton variant="secondary" size="lg" className="w-full">
+        <SubmitButton variant="secondary" size="lg" className="h-12 w-full rounded-[10px] text-[15px]">
           Reenviar link
         </SubmitButton>
       </form>

@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Entrar" };
 export default function SignInPage() {
   return (
     <>
-      <AuthHeader title="Entrar" description="Continue de onde parou." />
+      <AuthHeader title="Bem-vindo de volta" description="Continue sua preparação de onde parou." />
       <SignInForm />
     </>
   );

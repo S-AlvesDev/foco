@@ -3,12 +3,13 @@
 import Link from "next/link";
 import { Suspense, useActionState } from "react";
 import { useSearchParams } from "next/navigation";
+import { LockKeyhole, LogIn, Mail } from "lucide-react";
 import { Field, Input, PasswordInput } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Notice } from "@/components/ui/notice";
 import { idle } from "@/lib/form";
 import { signInAction } from "../actions";
-import { authLinkClass } from "./auth-header";
+import { AuthFooter, authLinkClass, authSubmitClass } from "./auth-header";
 
 const URL_ERRORS: Record<string, string> = {
   link: "Esse link é inválido ou já foi usado. Entre com sua senha ou peça um novo link.",
@@ -41,7 +42,7 @@ export function SignInForm() {
         </Suspense>
       )}
 
-      <Field label="E-mail" error={state.fieldErrors?.email}>
+      <Field label="E-mail" icon={Mail} error={state.fieldErrors?.email}>
         {(p) => (
           <Input
             {...p}
@@ -51,6 +52,7 @@ export function SignInForm() {
             autoComplete="email"
             autoCapitalize="none"
             spellCheck={false}
+            placeholder="seu@email.com"
             defaultValue={state.values?.email}
             autoFocus
           />
@@ -59,26 +61,30 @@ export function SignInForm() {
 
       <Field
         label="Senha"
+        icon={LockKeyhole}
         error={state.fieldErrors?.password}
         aside={
-          <Link href="/recuperar-senha" className="text-[12.5px] text-fg-3 transition-colors hover:text-fg-2">
-            Esqueci a senha
+          <Link href="/recuperar-senha" className={`text-[13px] ${authLinkClass}`}>
+            Esqueci minha senha
           </Link>
         }
       >
-        {(p) => <PasswordInput {...p} name="password" autoComplete="current-password" />}
+        {(p) => (
+          <PasswordInput {...p} name="password" autoComplete="current-password" placeholder="Sua senha" />
+        )}
       </Field>
 
-      <SubmitButton variant="primary" size="lg" className="mt-2 w-full">
-        Entrar
+      <SubmitButton variant="primary" size="lg" className={authSubmitClass}>
+        <LogIn aria-hidden />
+        Entrar na plataforma
       </SubmitButton>
 
-      <p className="mt-4 text-center text-[13px] text-fg-2">
+      <AuthFooter>
         Ainda não tem conta?{" "}
         <Link href="/cadastro" className={authLinkClass}>
           Criar conta
         </Link>
-      </p>
+      </AuthFooter>
     </form>
   );
 }

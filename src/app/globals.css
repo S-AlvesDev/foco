@@ -5,7 +5,8 @@
 /* ------------------------------------------------------------------
    Tokens. Claro em :root, escuro em .dark (padrão do app).
    ------------------------------------------------------------------ */
-:root {
+:root,
+.theme-light {
   --bg: #f6f7f9;
   --surface-1: #ffffff;
   --surface-2: #f1f2f5;
@@ -25,6 +26,7 @@
   --warning: #b07816;
   --danger: #cf3f37;
   --danger-subtle: rgb(207 63 55 / 0.08);
+  --accent-fill: linear-gradient(180deg, #5f3ff0, #4622cc);
   --card-shadow: 0 1px 2px rgb(18 20 26 / 0.04);
   --pop-shadow: 0 8px 24px -8px rgb(18 20 26 / 0.16), 0 0 0 1px var(--border);
   color-scheme: light;
@@ -51,6 +53,7 @@
   --warning: #e2a33d;
   --danger: #e5534b;
   --danger-subtle: rgb(229 83 75 / 0.12);
+  --accent-fill: linear-gradient(180deg, #6d4ef4, #4b29d4);
   --card-shadow: 0 1px 0 rgb(255 255 255 / 0.03) inset;
   --pop-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.7), 0 0 0 1px var(--border);
   color-scheme: dark;

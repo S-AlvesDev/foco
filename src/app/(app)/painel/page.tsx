@@ -26,6 +26,7 @@ import { BannerBackdrop } from "@/features/banner/components/banner-backdrop";
 import { readBanner } from "@/features/banner/model";
 import { bannerUrl } from "@/features/banner/server";
 import { ShortcutAction } from "@/features/pwa/shortcut-action";
+import { OrbitArcs } from "@/components/orbit-arcs";
 import { cn } from "@/lib/utils";
 import { Page } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
@@ -109,7 +110,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
         <p className={cn("text-[13px] first-letter:uppercase", onImage ? "text-fg-2" : "text-fg-3")}>
           {longDate(tz, now)}
         </p>
-        <h1 className="mt-1.5 text-[28px] leading-[1.15] font-semibold tracking-[-0.025em] text-fg sm:text-[34px]">
+        <h1 className="mt-1.5 text-[30px] leading-[1.1] font-bold tracking-[-0.03em] text-fg sm:text-[38px]">
           {greeting(tz, now)}, {firstName}.
         </h1>
         <div className="mt-4">
@@ -132,6 +133,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
             aria-hidden
             className="pointer-events-none absolute top-0 left-1/2 -z-10 h-[380px] w-[100vw] -translate-x-1/2 bg-[radial-gradient(55%_70%_at_88%_0%,color-mix(in_oklab,var(--accent)_14%,transparent),transparent_70%),radial-gradient(40%_60%_at_60%_0%,color-mix(in_oklab,var(--steel)_8%,transparent),transparent_70%)]"
           />
+          <OrbitArcs className="pointer-events-none absolute -top-6 -left-4 -z-10 w-[280px] opacity-50 sm:w-[380px]" />
           {hero(false)}
         </>
       ) : (
@@ -150,6 +152,9 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
             zoom={banner.zoom}
             overlay={banner.overlay}
           />
+          {banner.style === "default" && (
+            <OrbitArcs className="pointer-events-none absolute -top-2 -left-2 w-[260px] opacity-55 sm:w-[360px]" />
+          )}
           <div className="relative flex min-h-[360px] flex-col justify-end px-4 pt-16 pb-6 sm:min-h-[300px] sm:px-8 sm:pt-20 sm:pb-8">
             {hero(true)}
           </div>

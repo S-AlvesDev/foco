@@ -2,13 +2,13 @@
 
 import Link from "next/link";
 import { useActionState } from "react";
-import { MailCheck } from "lucide-react";
+import { MailCheck, Mail, Send } from "lucide-react";
 import { Field, Input } from "@/components/ui/input";
 import { SubmitButton } from "@/components/ui/submit-button";
 import { Notice } from "@/components/ui/notice";
 import { idle } from "@/lib/form";
 import { requestPasswordResetAction } from "../actions";
-import { AuthHeader, authLinkClass } from "./auth-header";
+import { AuthHeader, authLinkClass, AuthFooter, authSubmitClass } from "./auth-header";
 
 export function ResetRequestForm() {
   const [state, formAction] = useActionState(requestPasswordResetAction, idle);
@@ -49,7 +49,7 @@ export function ResetRequestForm() {
             {state.message}
           </Notice>
         )}
-        <Field label="E-mail" error={state.fieldErrors?.email}>
+        <Field label="E-mail" icon={Mail} error={state.fieldErrors?.email}>
           {(p) => (
             <Input
               {...p}
@@ -59,20 +59,22 @@ export function ResetRequestForm() {
               autoComplete="email"
               autoCapitalize="none"
               spellCheck={false}
+              placeholder="seu@email.com"
               defaultValue={state.values?.email}
               autoFocus
             />
           )}
         </Field>
-        <SubmitButton variant="primary" size="lg" className="mt-2 w-full">
+        <SubmitButton variant="primary" size="lg" className={authSubmitClass}>
+          <Send aria-hidden />
           Enviar link
         </SubmitButton>
-        <p className="mt-4 text-center text-[13px] text-fg-2">
+        <AuthFooter>
           Lembrou?{" "}
           <Link href="/entrar" className={authLinkClass}>
             Entrar
           </Link>
-        </p>
+        </AuthFooter>
       </form>
     </>
   );

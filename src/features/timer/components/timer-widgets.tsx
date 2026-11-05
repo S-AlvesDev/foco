@@ -46,7 +46,7 @@ function Stop({ size = "md" }: { size?: "sm" | "md" }) {
       onClick={openFinish}
       aria-label="Finalizar sessão"
       className={cn(
-        "flex shrink-0 cursor-pointer items-center justify-center rounded-md bg-accent text-accent-fg transition-colors hover:bg-accent-hover",
+        "flex shrink-0 cursor-pointer items-center justify-center rounded-md bg-accent bg-(image:--accent-fill) text-accent-fg transition-[filter] hover:brightness-110",
         size === "sm" ? "size-9" : "size-8",
       )}
     >
@@ -174,7 +174,7 @@ export function MobileAddButton() {
       <Menu>
         <MenuTrigger
           aria-label="Estudar"
-          className="-mt-6 flex size-14 cursor-pointer items-center justify-center rounded-full bg-[linear-gradient(150deg,var(--accent-hover),var(--accent))] text-accent-fg shadow-[0_8px_24px_-6px_var(--accent),0_0_0_5px_var(--bg)] transition-transform active:scale-95 data-[state=open]:rotate-45"
+          className="-mt-6 flex size-14 cursor-pointer items-center justify-center rounded-full bg-accent bg-(image:--accent-fill) text-accent-fg shadow-[0_8px_24px_-6px_var(--accent),0_0_0_5px_var(--bg)] transition-transform active:scale-95 data-[state=open]:rotate-45"
         >
           <Plus className="size-6" strokeWidth={2.25} />
         </MenuTrigger>

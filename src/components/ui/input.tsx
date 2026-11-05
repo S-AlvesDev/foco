@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useState } from "react";
-import { Eye, EyeOff } from "lucide-react";
+import { Eye, EyeOff, type LucideIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 export const inputClass = cn(
@@ -41,18 +41,21 @@ type FieldProps = {
   error?: string;
   hint?: React.ReactNode;
   aside?: React.ReactNode;
+  /** Ícone decorativo antes do rótulo. */
+  icon?: LucideIcon;
   children: (props: { id: string; "aria-invalid"?: true; "aria-describedby"?: string }) => React.ReactNode;
   className?: string;
 };
 
 /** Rótulo + controle + mensagem, com ids e aria ligados. */
-export function Field({ label, error, hint, aside, children, className }: FieldProps) {
+export function Field({ label, error, hint, aside, icon: Icon, children, className }: FieldProps) {
   const id = useId();
   const describedBy = error ? `${id}-error` : hint ? `${id}-hint` : undefined;
   return (
     <div className={cn("flex flex-col gap-1.5", className)}>
       <div className="flex items-baseline justify-between gap-3">
-        <label htmlFor={id} className="text-[13px] font-medium text-fg-2">
+        <label htmlFor={id} className="flex items-center gap-2 text-[13px] font-medium text-fg-2">
+          {Icon && <Icon aria-hidden className="size-4 shrink-0 text-fg-2" />}
           {label}
         </label>
         {aside}
