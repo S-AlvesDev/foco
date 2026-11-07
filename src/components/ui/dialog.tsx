@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback, useEffect, useState } from "react";
 import { Dialog as D } from "radix-ui";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -7,6 +8,66 @@ import { cn } from "@/lib/utils";
 export const Dialog = D.Root;
 export const DialogTrigger = D.Trigger;
 export const DialogClose = D.Close;
+
+/**
+ * No iPhone o teclado não encolhe a página: uma folha presa à base fica escondida atrás dele.
+ * Mede a área visível (visualViewport) e expõe --kb (altura coberta pelo teclado) e --vvh
+ * (altura visível) para a folha subir junto com o teclado; também traz o campo focado para a vista.
+ */
+function useKeyboardInset() {
+  const [el, setEl] = useState<HTMLElement | null>(null);
+  useEffect(() => {
+    const vv = window.visualViewport;
+    if (!el || !vv) return;
+    const mobile = window.matchMedia("(max-width: 639px)");
+    let focusTimer: ReturnType<typeof setTimeout> | undefined;
+    const update = () => {
+      if (!mobile.matches) {
+        el.style.removeProperty("--kb");
+        el.style.removeProperty("--vvh");
+        return;
+      }
+      const kb = Math.max(0, Math.round(window.innerHeight - vv.height - vv.offsetTop));
+      el.style.setProperty("--kb", `${kb}px`);
+      el.style.setProperty("--vvh", `${Math.round(vv.height)}px`);
+      el.toggleAttribute("data-keyboard", kb > 80);
+    };
+    const reveal = () => {
+      const a = document.activeElement;
+      if (
+        a instanceof HTMLElement &&
+        el.contains(a) &&
+        a.matches("input, textarea, select, [contenteditable]")
+      )
+        a.scrollIntoView({ block: "nearest" });
+    };
+    const onResize = () => {
+      update();
+      clearTimeout(focusTimer);
+      focusTimer = setTimeout(reveal, 60);
+    };
+    const onFocus = () => {
+      clearTimeout(focusTimer);
+      focusTimer = setTimeout(() => {
+        update();
+        reveal();
+      }, 320);
+    };
+    update();
+    vv.addEventListener("resize", onResize);
+    vv.addEventListener("scroll", update);
+    mobile.addEventListener("change", update);
+    el.addEventListener("focusin", onFocus);
+    return () => {
+      clearTimeout(focusTimer);
+      vv.removeEventListener("resize", onResize);
+      vv.removeEventListener("scroll", update);
+      mobile.removeEventListener("change", update);
+      el.removeEventListener("focusin", onFocus);
+    };
+  }, [el]);
+  return useCallback((node: HTMLElement | null) => setEl(node), []);
+}
 
 /**
  * Diálogo centralizado no desktop; folha que sobe da base no celular.
@@ -22,6 +83,7 @@ export function DialogContent({
   title: string;
   description?: React.ReactNode;
 }) {
+  const keyboardRef = useKeyboardInset();
   return (
     <D.Portal>
       <D.Overlay className="fixed inset-0 z-50 bg-black/55 backdrop-blur-[2px] data-[state=open]:animate-fade" />
@@ -29,12 +91,14 @@ export function DialogContent({
         className={cn(
           "fixed z-50 flex flex-col bg-surface-1 shadow-pop outline-none",
           // celular: folha inferior
-          "inset-x-0 bottom-0 max-h-[92dvh] rounded-t-xl pb-[env(safe-area-inset-bottom)] data-[state=open]:animate-sheet",
+          // (sobe junto com o teclado do iPhone: ver useKeyboardInset)
+          "inset-x-0 bottom-[var(--kb,0px)] max-h-[min(92dvh,calc(var(--vvh,100dvh)-16px))] rounded-t-xl pb-[env(safe-area-inset-bottom)] data-[keyboard]:pb-0 data-[state=open]:animate-sheet",
           // tablet/desktop: centralizado
           "sm:inset-auto sm:top-[12vh] sm:left-1/2 sm:max-h-[76vh] sm:w-[min(460px,calc(100vw-32px))] sm:-translate-x-1/2 sm:rounded-xl sm:pb-0 sm:data-[state=open]:animate-pop",
           className,
         )}
         {...props}
+        ref={keyboardRef}
       >
         <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-border-strong sm:hidden" aria-hidden />
         <div className="flex items-start justify-between gap-4 px-5 pt-4 pb-1 sm:pt-5">
