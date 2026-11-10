@@ -38,12 +38,13 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
             <Button asChild variant="ghost">
               <Link href="/biblioteca/favoritos">
                 <Star />
-                <span className="hidden sm:inline">Favoritos</span>
+                Favoritos
               </Link>
             </Button>
             <Button asChild variant="ghost">
               <Link href="/biblioteca/anotacoes">
                 <NotebookPen />
+                <span className="sm:hidden">Anotações</span>
                 <span className="hidden sm:inline">Marcações e anotações</span>
               </Link>
             </Button>
@@ -127,7 +128,7 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
                 <span className="flex size-10 shrink-0 items-center justify-center rounded-xl bg-accent-subtle text-accent">
                   <BookMarked className="size-5" />
                 </span>
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 flex-1 basis-[calc(100%-56px)] sm:basis-auto">
                   <p id="continue" className="text-[12.5px] text-fg-3">
                     Último assunto acessado · {cont.disciplineName}
                   </p>
@@ -136,7 +137,7 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
                   </p>
                   <ProgressBar percent={cont.percent} className="mt-2 max-w-[320px]" />
                 </div>
-                <Button asChild variant="primary">
+                <Button asChild variant="primary" className="w-full sm:w-auto">
                   <Link href={topicHref(cont.disciplineId, cont.topicId, cont.lastBlockId)}>
                     Continuar estudando
                     <ArrowRight />

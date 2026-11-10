@@ -294,7 +294,6 @@ export type ImportPreview =
       newTopics: number;
       toArchive: { id: string; title: string }[];
       takenBlocks: { id: string; topicId: string }[];
-      marksOnDiscipline: number;
     }
   | Fail;
 
@@ -313,16 +312,12 @@ export async function previewImportAction(input: {
   const supabase = await createClient();
   const { data: admin } = await supabase.rpc("is_question_admin");
   if (!admin) return { ok: false, message: "Só a conta administradora pode importar materiais." };
-  const [disc, topics, marks] = await Promise.all([
+  const [disc, topics] = await Promise.all([
     supabase.from("library_disciplines").select("id").eq("id", input.disciplineId).maybeSingle(),
     supabase
       .from("library_topics")
       .select("id, title, chapter_id, archived_at")
       .eq("discipline_id", input.disciplineId),
-    supabase
-      .from("library_marks")
-      .select("id, library_topics!inner(discipline_id)", { count: "exact", head: true })
-      .eq("library_topics.discipline_id", input.disciplineId),
   ]);
   if (disc.error || topics.error) return { ok: false, message: dbErrorMessage(disc.error ?? topics.error) };
   const incoming = new Set(input.topicIds);
@@ -352,6 +347,5 @@ export async function previewImportAction(input: {
     newTopics: input.topicIds.filter((id) => !existingIds.has(id)).length,
     toArchive,
     takenBlocks: taken.slice(0, 50),
-    marksOnDiscipline: marks.count ?? 0,
   };
 }

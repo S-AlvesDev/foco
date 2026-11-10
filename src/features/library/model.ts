@@ -215,7 +215,10 @@ export function checkLibraryImport(raw: unknown): ImportCheck {
   if (!parsed.success) {
     return {
       ok: false,
-      issues: parsed.error.issues.slice(0, 50).map((i) => ({ path: formatPath(i.path), message: i.message })),
+      issues: [
+        ...parsed.error.issues.slice(0, 50).map((i) => ({ path: formatPath(i.path), message: i.message })),
+        ...rawDuplicateIds(raw),
+      ],
     };
   }
   const data = parsed.data;
@@ -309,6 +312,28 @@ export function checkLibraryImport(raw: unknown): ImportCheck {
     stats: { chapters: data.capitulos.length, topics: topics.length, blocks, images: [...new Set(images)] },
     warnings,
   };
+}
+
+/** Ids repetidos mesmo quando o arquivo tem outros erros (para mostrar tudo de uma vez). */
+function rawDuplicateIds(raw: unknown): ImportIssue[] {
+  const seen = new Set<string>();
+  const out: ImportIssue[] = [];
+  const walk = (v: unknown) => {
+    if (Array.isArray(v)) return v.forEach(walk);
+    if (!v || typeof v !== "object") return;
+    const o = v as Record<string, unknown>;
+    if (typeof o.id === "string" && ("titulo" in o || "tipo" in o || "arquivo" in o)) {
+      if (seen.has(o.id)) out.push({ path: o.id, message: `id "${o.id}" repetido` });
+      seen.add(o.id);
+    }
+    for (const k of ["fontes", "capitulos", "topicos", "subtopicos", "blocos"]) if (k in o) walk(o[k]);
+  };
+  if (raw && typeof raw === "object") {
+    const r = raw as Record<string, unknown>;
+    walk(r.fontes);
+    walk(r.capitulos);
+  }
+  return out.slice(0, 30);
 }
 
 function formatPath(path: PropertyKey[]) {

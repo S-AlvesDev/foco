@@ -283,15 +283,11 @@ export function LibraryImportView() {
                   </span>
                 </li>
               )}
-              {preview.exists && preview.marksOnDiscipline > 0 && (
+              {preview.exists && (
                 <li className="flex items-start gap-2">
                   <CircleCheck className="mt-0.5 size-4 shrink-0 text-success" />
-                  {plural(
-                    preview.marksOnDiscipline,
-                    "marcação/anotação existente é preservada",
-                    "marcações/anotações existentes são preservadas",
-                  )}
-                  ; trechos que mudarem de texto são reposicionados ou ficam “para revisar”.
+                  Marcações, anotações, favoritos e progresso existentes são preservados; trechos cujo texto
+                  mudar são reposicionados ou ficam “para revisar”.
                 </li>
               )}
               {preview.takenBlocks.length > 0 && (

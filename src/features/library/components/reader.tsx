@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { createPortal } from "react-dom";
 import {
   useCallback,
   useEffect,
@@ -245,6 +246,16 @@ export function Reader({ page }: { page: TopicPage }) {
       document.removeEventListener("selectionchange", onChange);
     };
   }, [texts]);
+
+  // a barra acompanha o trecho ao rolar a página
+  const hasPending = pending !== null;
+  useEffect(() => {
+    if (!hasPending) return;
+    const onScroll = () =>
+      setPending((p) => (p ? { ...p, rect: selectionRect(window.getSelection()) ?? p.rect } : p));
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, [hasPending]);
 
   const clearSelection = () => {
     window.getSelection()?.removeAllRanges();
@@ -684,14 +695,16 @@ function floatStyle(rect: DOMRect | null): React.CSSProperties | undefined {
   if (window.matchMedia("(pointer: coarse)").matches) return undefined; // celular: barra fixa embaixo
   const w = 300;
   const left = Math.min(window.innerWidth - w - 12, Math.max(12, rect.left + rect.width / 2 - w / 2));
-  const top = rect.top > 90 ? rect.top - 52 : rect.bottom + 10;
+  const raw = rect.top > 90 ? rect.top - 52 : rect.bottom + 10;
+  const top = Math.min(window.innerHeight - 64, Math.max(8, raw));
   return { position: "fixed", top, left, width: w };
 }
 
 const floatingClass =
-  "z-40 flex items-center gap-1 rounded-xl border border-border bg-surface-1/95 p-1.5 shadow-pop backdrop-blur-xl";
+  "z-[60] flex items-center gap-1 rounded-xl border border-border bg-surface-1/95 p-1.5 shadow-pop backdrop-blur-xl";
+/** Celular: barra presa logo abaixo da barra do leitor (embaixo ficam o cronômetro e as abas). */
 const dockedClass =
-  "fixed inset-x-3 bottom-[calc(76px+env(safe-area-inset-bottom))] mx-auto max-w-[420px] md:bottom-6";
+  "fixed inset-x-3 top-[calc(56px+env(safe-area-inset-top)+52px)] mx-auto max-w-[420px] md:top-auto md:bottom-6";
 
 function SelectionBar({
   rect,
@@ -709,7 +722,7 @@ function SelectionBar({
   onClose: () => void;
 }) {
   const style = floatStyle(rect);
-  return (
+  return createPortal(
     <div
       role="toolbar"
       aria-label="Marcar trecho"
@@ -760,7 +773,8 @@ function SelectionBar({
       >
         <X className="size-4" />
       </button>
-    </div>
+    </div>,
+    document.body,
   );
 }
 
@@ -790,7 +804,7 @@ function MarkPopover({
       window.removeEventListener("scroll", onScroll);
     };
   }, [onClose]);
-  return (
+  return createPortal(
     <div
       role="dialog"
       aria-label="Marcação"
@@ -858,7 +872,8 @@ function MarkPopover({
           )}
         </div>
       ))}
-    </div>
+    </div>,
+    document.body,
   );
 }
 
