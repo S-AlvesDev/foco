@@ -2,7 +2,16 @@
 
 import Link from "next/link";
 import { useState, useTransition } from "react";
-import { Check, MoreHorizontal, NotebookPen, Pencil, RotateCcw, SkipForward, Trash2 } from "lucide-react";
+import {
+  BookOpen,
+  Check,
+  MoreHorizontal,
+  NotebookPen,
+  Pencil,
+  RotateCcw,
+  SkipForward,
+  Trash2,
+} from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogBody, DialogClose, DialogContent, DialogFooter } from "@/components/ui/dialog";
@@ -23,7 +32,10 @@ export function ReviewList({
   activeSubjects,
   todayISO,
   compact = false,
+  materials,
 }: {
+  /** Assunto → link do material na Biblioteca. */
+  materials?: Record<string, string>;
   reviews: Review[];
   /** Todas as matérias (inclui arquivadas, para mostrar o nome). */
   subjects: SubjectInfo[];
@@ -47,6 +59,7 @@ export function ReviewList({
             subject={bySubject.get(r.subject_id)}
             todayISO={todayISO}
             compact={compact}
+            material={materials?.[r.topic.trim()]}
             onComplete={() => setCompleting(r)}
             onEdit={() => setEditing(r)}
             onDelete={() => setDeleting(r)}
@@ -82,6 +95,7 @@ function ReviewRow({
   subject,
   todayISO,
   compact,
+  material,
   onComplete,
   onEdit,
   onDelete,
@@ -90,6 +104,7 @@ function ReviewRow({
   subject?: SubjectInfo;
   todayISO: string;
   compact: boolean;
+  material?: string;
   onComplete: () => void;
   onEdit: () => void;
   onDelete: () => void;
@@ -158,6 +173,15 @@ function ReviewRow({
           )}
           {!compact && r.interval_days && !done && (
             <span>intervalo de {plural(r.interval_days, "dia", "dias")}</span>
+          )}
+          {material && (
+            <Link
+              href={material}
+              className="inline-flex items-center gap-1 text-fg-2 underline-offset-[3px] hover:text-fg hover:underline"
+            >
+              <BookOpen className="size-3" />
+              Material
+            </Link>
           )}
           {!compact && r.note_id && (
             <Link

@@ -8,6 +8,7 @@ import { createClient } from "@/lib/supabase/client";
 import { syncOfflineSessionAction } from "@/features/sessions/actions";
 import { savePushSubscriptionAction } from "@/features/notifications/actions";
 import { syncOfflineFinishAction } from "@/features/timer/actions";
+import { syncOfflineLibraryAction } from "@/features/library/actions";
 import { useStudy } from "@/features/timer/study-provider";
 import {
   currentUserId,
@@ -249,5 +250,6 @@ export function OfflineRuntime() {
 
 function send(item: OutboxItem) {
   if (item.kind === "session") return syncOfflineSessionAction(item);
+  if (item.kind === "library") return syncOfflineLibraryAction(item.payload);
   return syncOfflineFinishAction(item.payload);
 }

@@ -8,6 +8,7 @@ import { listSubjects } from "@/features/subjects/queries";
 import { uuid } from "@/features/subjects/schemas";
 import { getProfile } from "@/lib/auth";
 import { localDateISO } from "@/lib/format";
+import { findTopicsByTitle } from "@/features/library/queries";
 
 export const metadata: Metadata = { title: "Revisões" };
 
@@ -38,9 +39,12 @@ async function Reviews({ searchParams }: { searchParams: PageProps<"/revisoes">[
       ? await listReviewHistory(subjectId)
       : pendingAll.filter((r) => !subjectId || r.subject_id === subjectId);
 
+  const materials = Object.fromEntries(await findTopicsByTitle(reviews.map((r) => r.topic)));
+
   return (
     <ReviewsView
       reviews={reviews}
+      materials={materials}
       subjects={subjects.map((s) => ({
         id: s.id,
         name: s.name,

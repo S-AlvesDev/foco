@@ -18,11 +18,15 @@ export function StartTimerDialog({
   onOpenChange,
   subjects,
   defaultSubjectId,
+  defaultTopic,
+  defaultStudyType,
 }: {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   subjects: StudySubject[];
   defaultSubjectId?: string;
+  defaultTopic?: string;
+  defaultStudyType?: StudyType;
 }) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -34,6 +38,8 @@ export function StartTimerDialog({
           <StartForm
             subjects={subjects}
             defaultSubjectId={defaultSubjectId}
+            defaultTopic={defaultTopic}
+            defaultStudyType={defaultStudyType}
             onDone={() => onOpenChange(false)}
           />
         )}
@@ -45,18 +51,22 @@ export function StartTimerDialog({
 function StartForm({
   subjects,
   defaultSubjectId,
+  defaultTopic,
+  defaultStudyType,
   onDone,
 }: {
   subjects: StudySubject[];
   defaultSubjectId?: string;
+  defaultTopic?: string;
+  defaultStudyType?: StudyType;
   onDone: () => void;
 }) {
   const { sync } = useStudy();
   const [subjectId, setSubjectId] = useState(
     subjects.some((s) => s.id === defaultSubjectId) ? defaultSubjectId : subjects[0]?.id,
   );
-  const [studyType, setStudyType] = useState<StudyType>("theory");
-  const [topic, setTopic] = useState("");
+  const [studyType, setStudyType] = useState<StudyType>(defaultStudyType ?? "theory");
+  const [topic, setTopic] = useState((defaultTopic ?? "").slice(0, 200));
   const [pending, startTransition] = useTransition();
 
   const start = () => {

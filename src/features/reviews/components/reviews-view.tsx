@@ -22,7 +22,10 @@ export function ReviewsView({
   view,
   subjectId,
   counts,
+  materials,
 }: {
+  /** Assunto → link do tópico correspondente na Biblioteca. */
+  materials?: Record<string, string>;
   reviews: Review[];
   subjects: (StudySubject & { archived: boolean })[];
   todayISO: string;
@@ -133,7 +136,13 @@ export function ReviewsView({
         </div>
       ) : view === "historico" ? (
         <div className="mt-6 border-t border-border">
-          <ReviewList reviews={reviews} subjects={subjects} activeSubjects={active} todayISO={todayISO} />
+          <ReviewList
+            reviews={reviews}
+            subjects={subjects}
+            activeSubjects={active}
+            todayISO={todayISO}
+            materials={materials}
+          />
         </div>
       ) : (
         <div className="mt-6 flex flex-col gap-8">
@@ -148,7 +157,13 @@ export function ReviewsView({
                 {GROUP_TITLE[g]}
                 <span className="text-[12.5px] font-normal text-fg-3 tabular-nums">{items.length}</span>
               </h2>
-              <ReviewList reviews={items} subjects={subjects} activeSubjects={active} todayISO={todayISO} />
+              <ReviewList
+                reviews={items}
+                subjects={subjects}
+                activeSubjects={active}
+                todayISO={todayISO}
+                materials={materials}
+              />
             </section>
           ))}
         </div>

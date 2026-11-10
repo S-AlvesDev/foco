@@ -4,6 +4,7 @@ import {
   ChartColumn,
   CalendarDays,
   HeartHandshake,
+  LibraryBig,
   History,
   LayoutGrid,
   ListChecks,
@@ -24,6 +25,7 @@ export type NavGroup = { label: string; items: NavItem[] };
 export const PRIMARY_NAV: NavItem[] = [
   { href: "/painel", label: "Painel", icon: LayoutGrid },
   { href: "/questoes", label: "Questões", icon: ListChecks },
+  { href: "/biblioteca", label: "Biblioteca", icon: LibraryBig },
   { href: "/sessoes", label: "Sessões", icon: History },
   { href: "/materias", label: "Matérias", icon: BookOpen },
   { href: "/revisoes", label: "Revisões", icon: CalendarClock },
@@ -49,7 +51,10 @@ export const SETTINGS_NAV: NavItem = {
 const pick = (...hrefs: string[]) => hrefs.map((h) => PRIMARY_NAV.find((i) => i.href === h)!);
 
 export const NAV_GROUPS: NavGroup[] = [
-  { label: "Estudo", items: pick("/painel", "/questoes", "/sessoes", "/materias", "/revisoes") },
+  {
+    label: "Estudo",
+    items: pick("/painel", "/questoes", "/biblioteca", "/sessoes", "/materias", "/revisoes"),
+  },
   { label: "Planejamento", items: pick("/calendario", "/metas") },
   { label: "Registros", items: pick("/anotacoes", "/diario") },
   { label: "Análise", items: pick("/desempenho", "/jornada") },

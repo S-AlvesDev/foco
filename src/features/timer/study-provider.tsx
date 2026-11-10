@@ -12,7 +12,8 @@ import {
   useTransition,
 } from "react";
 import { toast } from "sonner";
-import { clock, localDateISO } from "@/lib/format";
+import { clock, localDateISO, stripAccents } from "@/lib/format";
+import type { StudyType } from "@/lib/study-types";
 import { createClient } from "@/lib/supabase/client";
 import { SessionFormDialog, type SessionDraft } from "@/features/sessions/components/session-form-dialog";
 import { pauseTimerAction, resumeTimerAction, startTimerAction } from "./actions";
@@ -40,8 +41,11 @@ type Snapshot = {
   busy: boolean;
 };
 
+export type StartPrefill = { topic?: string; subjectName?: string; studyType?: StudyType };
+
 type Actions = {
-  openStart: (subjectId?: string) => void;
+  /** Abre o início do cronômetro. `opts` pré-preenche assunto/tipo e acha a matéria pelo nome. */
+  openStart: (subjectId?: string, opts?: StartPrefill) => void;
   openFinish: () => void;
   openManual: (draft?: Partial<SessionDraft>) => void;
   /** Agendar revisão (opcionalmente já com matéria, assunto, anotação ou sessão). */
@@ -96,7 +100,7 @@ const CHANNEL = "foco-timer";
 export function StudyProvider({ children }: { children: React.ReactNode }) {
   const [store] = useState(createStore);
   const [busy, startTransition] = useTransition();
-  const [startOpen, setStartOpen] = useState<{ subjectId?: string } | null>(null);
+  const [startOpen, setStartOpen] = useState<({ subjectId?: string } & StartPrefill) | null>(null);
   const [finishOpen, setFinishOpen] = useState(false);
   const [manual, setManual] = useState<Partial<SessionDraft> | null>(null);
   const [review, setReview] = useState<ReviewDraft | null>(null);
@@ -229,7 +233,7 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
         }
       });
     return {
-      openStart: (subjectId) => setStartOpen({ subjectId }),
+      openStart: (subjectId, opts) => setStartOpen({ subjectId, ...opts }),
       openFinish: () => setFinishOpen(true),
       openManual: (draft) => setManual(draft ?? {}),
       openReview: (draft) => setReview(draft ?? {}),
@@ -254,7 +258,13 @@ export function StudyProvider({ children }: { children: React.ReactNode }) {
             open={startOpen !== null}
             onOpenChange={(o) => !o && setStartOpen(null)}
             subjects={data.subjects}
-            defaultSubjectId={startOpen?.subjectId ?? data.lastSubjectId ?? undefined}
+            defaultSubjectId={
+              startOpen?.subjectId ??
+              matchSubject(data.subjects, startOpen?.subjectName) ??
+              (startOpen?.subjectName ? undefined : (data.lastSubjectId ?? undefined))
+            }
+            defaultTopic={startOpen?.topic}
+            defaultStudyType={startOpen?.studyType}
           />
           <FinishTimerDialog open={finishOpen} onOpenChange={setFinishOpen} />
           <ReviewDialog
@@ -332,4 +342,12 @@ function TitleClock() {
   }, [timer, elapsed, subject]);
 
   return null;
+}
+
+/** Matéria da pessoa com o mesmo nome (sem diferenciar maiúsculas e acentos). */
+function matchSubject(subjects: { id: string; name: string }[], name?: string) {
+  if (!name) return undefined;
+  const fold = (v: string) => stripAccents(v).toLowerCase().replace(/\s+/g, " ").trim();
+  const target = fold(name);
+  return subjects.find((s) => fold(s.name) === target)?.id;
 }

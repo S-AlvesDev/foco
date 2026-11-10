@@ -1099,6 +1099,396 @@ export type Database = {
           },
         ];
       };
+      library_blocks: {
+        Row: {
+          anchor_text: string;
+          archived_at: string | null;
+          created_at: string;
+          data: Json;
+          id: string;
+          kind: string;
+          position: number;
+          search: unknown | null;
+          search_text: string;
+          sources: Json;
+          text_hash: string;
+          topic_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          anchor_text?: string;
+          archived_at?: string | null;
+          created_at?: string;
+          data: Json;
+          id: string;
+          kind: string;
+          position?: number;
+          search_text?: string;
+          sources?: Json;
+          text_hash?: string;
+          topic_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          anchor_text?: string;
+          archived_at?: string | null;
+          created_at?: string;
+          data?: Json;
+          id?: string;
+          kind?: string;
+          position?: number;
+          search_text?: string;
+          sources?: Json;
+          text_hash?: string;
+          topic_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_blocks_topic_id_fkey";
+            columns: ["topic_id"];
+            isOneToOne: false;
+            referencedRelation: "library_topics";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      library_chapters: {
+        Row: {
+          archived_at: string | null;
+          created_at: string;
+          discipline_id: string;
+          id: string;
+          number: string | null;
+          position: number;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          created_at?: string;
+          discipline_id: string;
+          id: string;
+          number?: string | null;
+          position?: number;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          created_at?: string;
+          discipline_id?: string;
+          id?: string;
+          number?: string | null;
+          position?: number;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_chapters_discipline_id_fkey";
+            columns: ["discipline_id"];
+            isOneToOne: false;
+            referencedRelation: "library_disciplines";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      library_contests: {
+        Row: {
+          archived_at: string | null;
+          created_at: string;
+          id: string;
+          name: string;
+          position: number;
+          updated_at: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          created_at?: string;
+          id: string;
+          name: string;
+          position?: number;
+          updated_at?: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          created_at?: string;
+          id?: string;
+          name?: string;
+          position?: number;
+          updated_at?: string;
+        };
+        Relationships: [];
+      };
+      library_disciplines: {
+        Row: {
+          archived_at: string | null;
+          contest_id: string;
+          created_at: string;
+          description: string | null;
+          id: string;
+          imported_by: string | null;
+          name: string;
+          position: number;
+          updated_at: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          contest_id: string;
+          created_at?: string;
+          description?: string | null;
+          id: string;
+          imported_by?: string | null;
+          name: string;
+          position?: number;
+          updated_at?: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          contest_id?: string;
+          created_at?: string;
+          description?: string | null;
+          id?: string;
+          imported_by?: string | null;
+          name?: string;
+          position?: number;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_disciplines_contest_id_fkey";
+            columns: ["contest_id"];
+            isOneToOne: false;
+            referencedRelation: "library_contests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "library_disciplines_imported_by_fkey";
+            columns: ["imported_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      library_marks: {
+        Row: {
+          block_id: string | null;
+          body: string | null;
+          color: string | null;
+          created_at: string;
+          end_offset: number | null;
+          id: string;
+          kind: string;
+          quote: string | null;
+          start_offset: number | null;
+          status: string;
+          topic_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          block_id?: string | null;
+          body?: string | null;
+          color?: string | null;
+          created_at?: string;
+          end_offset?: number | null;
+          id?: string;
+          kind: string;
+          quote?: string | null;
+          start_offset?: number | null;
+          status?: string;
+          topic_id: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          block_id?: string | null;
+          body?: string | null;
+          color?: string | null;
+          created_at?: string;
+          end_offset?: number | null;
+          id?: string;
+          kind?: string;
+          quote?: string | null;
+          start_offset?: number | null;
+          status?: string;
+          topic_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_marks_block_id_fkey";
+            columns: ["block_id"];
+            isOneToOne: false;
+            referencedRelation: "library_blocks";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "library_marks_topic_id_fkey";
+            columns: ["topic_id"];
+            isOneToOne: false;
+            referencedRelation: "library_topics";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "library_marks_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      library_progress: {
+        Row: {
+          completed_at: string | null;
+          last_block_id: string | null;
+          last_read_at: string;
+          percent: number;
+          status: string;
+          topic_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          completed_at?: string | null;
+          last_block_id?: string | null;
+          last_read_at?: string;
+          percent?: number;
+          status?: string;
+          topic_id: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          completed_at?: string | null;
+          last_block_id?: string | null;
+          last_read_at?: string;
+          percent?: number;
+          status?: string;
+          topic_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_progress_topic_id_fkey";
+            columns: ["topic_id"];
+            isOneToOne: false;
+            referencedRelation: "library_topics";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "library_progress_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      library_sources: {
+        Row: {
+          created_at: string;
+          discipline_id: string;
+          file_name: string;
+          id: string;
+          title: string | null;
+          updated_at: string;
+        };
+        Insert: {
+          created_at?: string;
+          discipline_id: string;
+          file_name: string;
+          id: string;
+          title?: string | null;
+          updated_at?: string;
+        };
+        Update: {
+          created_at?: string;
+          discipline_id?: string;
+          file_name?: string;
+          id?: string;
+          title?: string | null;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_sources_discipline_id_fkey";
+            columns: ["discipline_id"];
+            isOneToOne: false;
+            referencedRelation: "library_disciplines";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      library_topics: {
+        Row: {
+          archived_at: string | null;
+          block_count: number;
+          chapter_id: string;
+          created_at: string;
+          discipline_id: string;
+          id: string;
+          number: string | null;
+          parent_id: string | null;
+          position: number;
+          title: string;
+          updated_at: string;
+        };
+        Insert: {
+          archived_at?: string | null;
+          block_count?: number;
+          chapter_id: string;
+          created_at?: string;
+          discipline_id: string;
+          id: string;
+          number?: string | null;
+          parent_id?: string | null;
+          position?: number;
+          title: string;
+          updated_at?: string;
+        };
+        Update: {
+          archived_at?: string | null;
+          block_count?: number;
+          chapter_id?: string;
+          created_at?: string;
+          discipline_id?: string;
+          id?: string;
+          number?: string | null;
+          parent_id?: string | null;
+          position?: number;
+          title?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_topics_chapter_id_fkey";
+            columns: ["chapter_id"];
+            isOneToOne: false;
+            referencedRelation: "library_chapters";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "library_topics_discipline_id_fkey";
+            columns: ["discipline_id"];
+            isOneToOne: false;
+            referencedRelation: "library_disciplines";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "library_topics_parent_id_fkey";
+            columns: ["parent_id"];
+            isOneToOne: false;
+            referencedRelation: "library_topics";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
     };
     Views: { [_ in never]: never };
     Functions: {
@@ -1308,6 +1698,44 @@ export type Database = {
       question_search: {
         Args: { p: Json; p_offset?: number; p_limit?: number; p_seed?: string };
         Returns: { id: string; total: number }[];
+      };
+      library_archive: { Args: { p_kind: string; p_id: string; p_restore?: boolean }; Returns: undefined };
+      library_can_read: { Args: never; Returns: boolean };
+      library_import_blocks: { Args: { p_topic: string; p_blocks: Json }; Returns: Json };
+      library_import_structure: { Args: { p: Json; p_mode?: string }; Returns: Json };
+      library_overview: {
+        Args: never;
+        Returns: {
+          contest_id: string;
+          contest_name: string;
+          discipline_id: string;
+          discipline_name: string;
+          description: string;
+          chapters: number;
+          topics: number;
+          done: number;
+          read_percent: number;
+          last_topic_id: string;
+          last_read_at: string;
+        }[];
+      };
+      library_search: {
+        Args: { p_query: string; p_discipline?: string; p_limit?: number };
+        Returns: {
+          kind: string;
+          discipline_id: string;
+          discipline_name: string;
+          chapter_title: string;
+          topic_id: string;
+          topic_title: string;
+          block_id: string;
+          block_text: string;
+          rank: number;
+        }[];
+      };
+      library_touch: {
+        Args: { p_topic: string; p_percent?: number; p_block?: string; p_status?: string };
+        Returns: Database["public"]["Tables"]["library_progress"]["Row"];
       };
     };
     Enums: {

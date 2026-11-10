@@ -473,4 +473,145 @@ check("discursiva: só C ou E", fails(a, "insert into question_attempts (questio
 a.execute("insert into question_attempts (question_id, answer, response) values ('T-0001','C','texto')")
 check("objetiva não guarda texto", one(a, "select response from question_attempts where question_id='T-0001' order by created_at desc limit 1")[0] is None)
 
+# ---------------------------------------------------------------------
+# Biblioteca
+# ---------------------------------------------------------------------
+import json as _json
+in_couple = one(root, "select count(*) from couple_members cm join couple_members cm2 on cm2.couple_id = cm.couple_id where cm.user_id=%s and cm2.user_id=%s", (A, B))[0]
+if not in_couple:
+    if one(root, "select count(*) from couple_members where user_id=%s", (B,))[0]:
+        b.execute("select couple_leave()")
+    if not one(root, "select count(*) from couple_members where user_id=%s", (A,))[0]:
+        a.execute("select couple_create('Nossa Jornada')")
+    b.execute("select couple_join(%s)", (one(a, "select invite_code from couples")[0],))
+check("biblioteca: admin e parceiro podem ler; terceiro não",
+      one(a, "select library_can_read()")[0] and one(b, "select library_can_read()")[0]
+      and not one(c3, "select library_can_read()")[0])
+
+STRUCT = {
+  "concurso": {"id": "prf", "nome": "PRF"},
+  "disciplina": {"id": "prf-adm", "nome": "Direito Administrativo", "ordem": 1},
+  "fontes": [{"id": "prf-adm.pdf1", "arquivo": "Apostila Adm.pdf"}],
+  "capitulos": [
+    {"id": "prf-adm.c1", "numero": "1", "titulo": "Introdução", "topicos": [
+      {"id": "prf-adm.c1.t1", "numero": "1.1", "titulo": "Conceito", "subtopicos": [
+        {"id": "prf-adm.c1.t1.s1", "numero": "1.1.1", "titulo": "Critérios"}]},
+      {"id": "prf-adm.c1.t2", "numero": "1.2", "titulo": "Fontes do Direito Administrativo"}]},
+    {"id": "prf-adm.c2", "numero": "2", "titulo": "Licitações", "topicos": [
+      {"id": "prf-adm.c2.t1", "numero": "2.1", "titulo": "Modalidades"}]}]}
+check("biblioteca: só o admin importa", fails(b, "select library_import_structure(%s::jsonb)", (_json.dumps(STRUCT),), contains="administradora"))
+r = one(a, "select library_import_structure(%s::jsonb)", (_json.dumps(STRUCT),))[0]
+check("biblioteca: estrutura importada (2 capítulos, 4 tópicos com subtópico)",
+      r["chapters"] == 2 and r["topics"] == 4 and r["new_topics"] == 4)
+check("biblioteca: ordem linear e subtópico ligado ao pai",
+      [x[0] for x in a.execute("select id from library_topics order by position").fetchall()]
+      == ["prf-adm.c1.t1", "prf-adm.c1.t1.s1", "prf-adm.c1.t2", "prf-adm.c2.t1"]
+      and one(a, "select parent_id from library_topics where id='prf-adm.c1.t1.s1'")[0] == "prf-adm.c1.t1")
+
+def blk(i, text, kind="paragrafo"):
+    return {"id": f"prf-adm.c1.t1.b{i}", "tipo": kind, "dados": {"texto": text}, "anchor_text": text,
+            "search_text": text, "fontes": [{"fonte": "prf-adm.pdf1", "pagina": 3}]}
+B1 = "O Direito Administrativo é o ramo do direito público que rege a Administração."
+B2 = "A licitação busca a proposta mais vantajosa e o desenvolvimento nacional sustentável."
+r = one(a, "select library_import_blocks('prf-adm.c1.t1', %s::jsonb)", (_json.dumps([blk(1, B1), blk(2, B2)]),))[0]
+check("biblioteca: blocos importados", r["blocks"] == 2 and r["new"] == 2)
+check("biblioteca: parceiro lê o conteúdo; terceiro não vê nada",
+      one(b, "select count(*) from library_blocks")[0] == 2 and one(c3, "select count(*) from library_blocks")[0] == 0
+      and one(c3, "select count(*) from library_topics")[0] == 0)
+check("biblioteca: ninguém escreve direto no catálogo",
+      fails(a, "insert into library_contests (id,name) values ('x','X')") and fails(b, "update library_blocks set anchor_text='x'")
+      or one(root, "select count(*) from library_blocks where anchor_text='x'")[0] == 0)
+
+q1 = "ramo do direito público"; s1 = B1.index(q1)
+q2 = "proposta mais vantajosa"; s2 = B2.index(q2)
+b.execute("insert into library_marks (kind, topic_id, block_id, start_offset, end_offset, quote, color) values ('highlight','prf-adm.c1.t1','prf-adm.c1.t1.b1',%s,%s,%s,'yellow')", (s1, s1 + len(q1), q1))
+b.execute("insert into library_marks (kind, topic_id, block_id, start_offset, end_offset, quote, color, body) values ('highlight','x','prf-adm.c1.t1.b2',%s,%s,%s,'pink','anotar isso')", (s2, s2 + len(q2), q2))
+check("biblioteca: o tópico da marcação vem do bloco", one(b, "select topic_id from library_marks where color='pink'")[0] == "prf-adm.c1.t1")
+b.execute("insert into library_marks (kind, topic_id, body) values ('note','prf-adm.c1.t1','Revisar conceito')")
+b.execute("insert into library_marks (kind, topic_id) values ('favorite','prf-adm.c1.t1')")
+check("biblioteca: um favorito de tópico por pessoa", fails(b, "insert into library_marks (kind, topic_id) values ('favorite','prf-adm.c1.t1')"))
+check("biblioteca: marcação precisa de trecho e cor", fails(b, "insert into library_marks (kind, topic_id, color) values ('highlight','prf-adm.c1.t1','yellow')"))
+check("biblioteca: cor fora da lista recusada", fails(b, "insert into library_marks (kind, topic_id, block_id, start_offset, end_offset, quote, color) values ('highlight','prf-adm.c1.t1','prf-adm.c1.t1.b1',0,2,'O ','red')"))
+check("biblioteca: anotação vazia recusada", fails(b, "insert into library_marks (kind, topic_id, body) values ('note','prf-adm.c1.t1','  ')"))
+check("biblioteca: marcações são de quem criou", one(a, "select count(*) from library_marks")[0] == 0
+      and one(b, "select count(*) from library_marks")[0] == 4)
+mid = one(b, "select id from library_marks where color='yellow'")[0]
+a.execute("update library_marks set color='green' where id=%s", (mid,)); a.execute("delete from library_marks where id=%s", (mid,))
+check("biblioteca: outra pessoa não altera nem apaga", one(b, "select color from library_marks where id=%s", (mid,))[0] == "yellow")
+check("biblioteca: terceiro não cria marcação", fails(c3, "insert into library_marks (kind, topic_id) values ('favorite','prf-adm.c1.t1')"))
+check("biblioteca: dono não troca o dono", (b.execute("update library_marks set user_id=%s where id=%s", (A, mid)), one(root, "select user_id::text from library_marks where id=%s", (mid,))[0] == B)[1])
+
+# progresso
+p = one(b, "select status, percent from library_touch('prf-adm.c1.t1', 40, 'prf-adm.c1.t1.b1')")
+check("biblioteca: leitura registra andamento", p == ("in_progress", 40))
+check("biblioteca: % não desce ao rolar para cima", one(b, "select percent from library_touch('prf-adm.c1.t1', 10)")[0] == 40)
+check("biblioteca: concluído só quando a pessoa marca",
+      one(b, "select status, completed_at is not null from library_touch('prf-adm.c1.t1', 100)") == ("in_progress", False)
+      and one(b, "select status, completed_at is not null from library_touch('prf-adm.c1.t1', null, null, 'done')") == ("done", True))
+check("biblioteca: progresso é individual", one(a, "select count(*) from library_progress")[0] == 0)
+ov = b.execute("select discipline_name, chapters, topics, done, read_percent, last_topic_id from library_overview()").fetchall()
+check("biblioteca: visão geral com contagens e progresso", ov == [("Direito Administrativo", 2, 4, 1, 25, "prf-adm.c1.t1")])
+check("biblioteca: terceiro não vê a visão geral", c3.execute("select * from library_overview()").fetchall() == [])
+
+# busca
+res = b.execute("select kind, topic_title, block_text from library_search('licitacao')").fetchall()
+check("biblioteca: busca sem acento acha capítulo e conteúdo",
+      any(k == "topic" and t == "Modalidades" for k, t, _ in res) and any(k == "block" and "licitação" in (s or "") for k, _, s in res))
+check("biblioteca: busca por título de tópico", any(t == "Fontes do Direito Administrativo" for _, t, _ in b.execute("select kind, topic_title, block_text from library_search('fontes')").fetchall()))
+check("biblioteca: terceiro não busca", c3.execute("select * from library_search('licitação')").fetchall() == [])
+
+# atualização do material: marcação acompanha o texto; texto ambíguo vai para revisão; nada some
+B1b = "Conceito: o Direito Administrativo é o ramo do direito público que rege a Administração Pública."
+B2b = "Proposta mais vantajosa? A licitação busca a proposta mais vantajosa e a proposta mais vantajosa é..."
+r = one(a, "select library_import_blocks('prf-adm.c1.t1', %s::jsonb)", (_json.dumps([blk(1, B1b), blk(2, B2b), blk(3, "Novo parágrafo.")]),))[0]
+check("biblioteca: atualização reporta mudanças", r["changed"] == 2 and r["new"] == 1 and r["marks_moved"] == 1 and r["marks_review"] == 1)
+st, en, q = one(b, "select start_offset, end_offset, quote from library_marks where color='yellow'")
+check("biblioteca: marcação reposicionada no mesmo bloco", B1b[st:en] == q == q1)
+check("biblioteca: trecho repetido fica para revisar (não pula de lugar)",
+      one(b, "select status, block_id from library_marks where color='pink'") == ("review", "prf-adm.c1.t1.b2"))
+r = one(a, "select library_import_blocks('prf-adm.c1.t1', %s::jsonb)", (_json.dumps([blk(2, B2b), blk(3, "Novo parágrafo.")]),))[0]
+check("biblioteca: bloco removido é arquivado e a marcação vai para revisão",
+      one(root, "select archived_at is not null from library_blocks where id='prf-adm.c1.t1.b1'")[0]
+      and one(b, "select status from library_marks where color='yellow'")[0] == "review"
+      and one(b, "select count(*) from library_marks")[0] == 4)
+r = one(a, "select library_import_blocks('prf-adm.c1.t1', %s::jsonb)", (_json.dumps([blk(1, B1b), blk(2, B2b), blk(3, "Novo parágrafo.")]),))[0]
+check("biblioteca: bloco que volta com o mesmo texto recupera a marcação",
+      one(b, "select status from library_marks where color='yellow'")[0] == "ok")
+check("biblioteca: reimportar igual não muda nada", r["unchanged"] == 2 or r["unchanged"] == 3)
+check("biblioteca: marcação nova em bloco arquivado é recusada", (a.execute("select library_import_blocks('prf-adm.c1.t1', %s::jsonb)", (_json.dumps([blk(2, B2b)]),)),
+      fails(b, "insert into library_marks (kind, topic_id, block_id, start_offset, end_offset, quote, color) values ('highlight','prf-adm.c1.t1','prf-adm.c1.t1.b3',0,4,'Novo','blue')"))[1])
+check("biblioteca: bloco não pode mudar de tópico às escondidas",
+      fails(a, "select library_import_blocks('prf-adm.c1.t2', %s::jsonb)", (_json.dumps([blk(2, B2b)]),), contains="outro tópico"))
+
+S2 = _json.loads(_json.dumps(STRUCT)); S2["capitulos"] = [S2["capitulos"][0]]
+r = one(a, "select library_import_structure(%s::jsonb)", (_json.dumps(S2),))[0]
+check("biblioteca: disciplina sem um capítulo arquiva o capítulo, sem apagar",
+      one(root, "select archived_at is not null from library_chapters where id='prf-adm.c2'")[0]
+      and one(b, "select count(*) from library_search('Modalidades') where kind='topic'")[0] == 0)
+S3 = {**STRUCT, "capitulos": [STRUCT["capitulos"][1]]}
+one(a, "select library_import_structure(%s::jsonb, 'chapters')", (_json.dumps(S3),))
+check("biblioteca: importar só um capítulo não arquiva os outros",
+      one(root, "select count(*) from library_chapters where archived_at is null")[0] == 2
+      and [x[0] for x in a.execute("select id from library_topics where archived_at is null order by position").fetchall()][-1] == "prf-adm.c2.t1")
+S4 = _json.loads(_json.dumps(STRUCT)); S4["capitulos"] = [{**STRUCT["capitulos"][0], "topicos": [STRUCT["capitulos"][0]["topicos"][0]]}]
+r = one(a, "select library_import_structure(%s::jsonb, 'chapters')", (_json.dumps(S4),))[0]
+check("biblioteca: capítulo reenviado sem um tópico arquiva só esse tópico",
+      r["archived_topics"] == 1 and one(root, "select archived_at is not null from library_topics where id='prf-adm.c1.t2'")[0]
+      and one(root, "select archived_at is null from library_topics where id='prf-adm.c2.t1'")[0])
+one(a, "select library_import_structure(%s::jsonb, 'chapters')", (_json.dumps({**STRUCT, "capitulos": [STRUCT["capitulos"][0]]}),))
+a.execute("select library_archive('topic','prf-adm.c1.t1')")
+check("biblioteca: excluir tópico arquiva o tópico e os subtópicos; marcações continuam guardadas",
+      one(root, "select count(*) from library_topics where archived_at is not null and id like 'prf-adm.c1.t1%%'")[0] == 2
+      and one(b, "select count(*) from library_marks")[0] == 4)
+check("biblioteca: só o admin exclui", fails(b, "select library_archive('topic','prf-adm.c1.t2')"))
+a.execute("select library_archive('topic','prf-adm.c1.t1', true)")
+check("biblioteca: imagens só para quem lê; envio só do admin",
+      fails(b, "insert into storage.objects (bucket_id, name) values ('library','prf-adm/x.png')")
+      and (a.execute("insert into storage.objects (bucket_id, name) values ('library','prf-adm/x.png')"), True)[1]
+      and one(b, "select count(*) from storage.objects where bucket_id='library'")[0] == 1
+      and one(c3, "select count(*) from storage.objects where bucket_id='library'")[0] == 0)
+b.execute("select couple_leave()")
+check("biblioteca: quem sai do espaço deixa de ler", not one(b, "select library_can_read()")[0]
+      and one(b, "select count(*) from library_blocks")[0] == 0)
+
 print(f"\n{ok} checks passed")

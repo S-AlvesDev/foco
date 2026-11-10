@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useRef, useState, useTransition } from "react";
-import { Plus, Search, Settings2, Star } from "lucide-react";
+import { LibraryBig, Plus, Search, Settings2, Star } from "lucide-react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Segmented } from "@/components/ui/segmented";
@@ -144,6 +144,12 @@ export function NotesView({
           </p>
         </div>
         <div className="flex gap-2">
+          <Button asChild variant="ghost">
+            <Link href="/biblioteca/anotacoes" title="Marcações e anotações feitas nas apostilas">
+              <LibraryBig />
+              <span className="hidden sm:inline">Da biblioteca</span>
+            </Link>
+          </Button>
           <Button variant="ghost" onClick={() => setLabelsOpen(true)}>
             <Settings2 />
             <span className="hidden sm:inline">Categorias e etiquetas</span>

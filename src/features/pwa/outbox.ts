@@ -21,9 +21,17 @@ export type FinishPayload = {
   subjectId: string;
 };
 
+/** Biblioteca: marcações, anotações, favoritos e progresso feitos sem internet (reenviar é seguro). */
+export type LibraryPayload =
+  | { op: "create"; input: Record<string, unknown> }
+  | { op: "update"; input: { id: string; color?: string; body?: string | null } }
+  | { op: "delete"; id: string }
+  | { op: "progress"; topicId: string; percent?: number; blockId?: string | null; status?: string };
+
 export type OutboxItem =
   | { id: string; kind: "session"; createdAt: number; payload: SessionPayload }
-  | { id: string; kind: "finish"; createdAt: number; payload: FinishPayload };
+  | { id: string; kind: "finish"; createdAt: number; payload: FinishPayload }
+  | { id: string; kind: "library"; createdAt: number; payload: LibraryPayload };
 
 const USER_KEY = "alpha:uid";
 const EVENT = "alpha-outbox";
@@ -74,6 +82,25 @@ export function enqueue(item: Omit<OutboxItem, "id" | "createdAt"> & { id?: stri
   } catch {
     return false;
   }
+}
+
+/** Biblioteca: guarda a operação; progresso do mesmo tópico substitui o anterior (só o último importa). */
+export function enqueueLibrary(payload: LibraryPayload): boolean {
+  const uid = currentUserId();
+  if (!uid) return false;
+  if (payload.op === "progress") {
+    const rest = readOutbox(uid).filter(
+      (i) =>
+        !(
+          i.kind === "library" &&
+          i.payload.op === "progress" &&
+          i.payload.topicId === payload.topicId &&
+          !i.payload.status
+        ),
+    );
+    write(uid, rest);
+  }
+  return enqueue({ kind: "library", payload });
 }
 
 export function removeFromOutbox(id: string) {

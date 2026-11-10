@@ -335,3 +335,82 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/* ------------------------------------------------------------------
+   Biblioteca: leitor de apostilas
+   ------------------------------------------------------------------ */
+.apostila {
+  --hl-yellow: rgb(250 204 21 / 0.34);
+  --hl-green: rgb(74 222 128 / 0.3);
+  --hl-blue: rgb(96 165 250 / 0.32);
+  --hl-pink: rgb(244 114 182 / 0.32);
+  font-size: 16.5px;
+  line-height: 1.75;
+  color: var(--text-1);
+  overflow-wrap: break-word;
+}
+.dark .apostila {
+  --hl-yellow: rgb(250 204 21 / 0.26);
+  --hl-green: rgb(74 222 128 / 0.22);
+  --hl-blue: rgb(96 165 250 / 0.26);
+  --hl-pink: rgb(244 114 182 / 0.26);
+}
+.apostila [data-block] {
+  scroll-margin-top: 88px;
+  border-radius: 8px;
+}
+.apostila [data-block]:target,
+.apostila [data-block][data-flash] {
+  animation: block-flash 2.2s ease-out;
+}
+@keyframes block-flash {
+  0%,
+  40% {
+    background: var(--accent-subtle);
+    box-shadow: 0 0 0 8px var(--accent-subtle);
+  }
+  100% {
+    background: transparent;
+    box-shadow: 0 0 0 8px transparent;
+  }
+}
+.apostila mark {
+  color: inherit;
+  border-radius: 2px;
+  padding: 0.05em 0;
+  cursor: pointer;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
+}
+.apostila mark[data-color="yellow"] { background: var(--hl-yellow); }
+.apostila mark[data-color="green"] { background: var(--hl-green); }
+.apostila mark[data-color="blue"] { background: var(--hl-blue); }
+.apostila mark[data-color="pink"] { background: var(--hl-pink); }
+.apostila mark[data-color="none"] { background: transparent; }
+.apostila mark[data-note] {
+  text-decoration: underline dotted var(--accent);
+  text-decoration-thickness: 2px;
+  text-underline-offset: 4px;
+}
+.apostila ::selection {
+  background: rgb(115 102 239 / 0.35);
+}
+.apostila ul,
+.apostila ol {
+  padding-left: 1.4em;
+}
+.apostila ul { list-style: disc; }
+.apostila ol { list-style: decimal; }
+.apostila ul ul { list-style: circle; }
+.apostila li + li,
+.apostila li > ul,
+.apostila li > ol {
+  margin-top: 0.3em;
+}
+.apostila li::marker {
+  color: var(--text-3);
+}
+.hl-swatch[data-color="yellow"] { background: rgb(250 204 21); }
+.hl-swatch[data-color="green"] { background: rgb(74 222 128); }
+.hl-swatch[data-color="blue"] { background: rgb(96 165 250); }
+.hl-swatch[data-color="pink"] { background: rgb(244 114 182); }
