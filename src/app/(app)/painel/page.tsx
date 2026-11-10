@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { addDays } from "@/lib/dates";
 import { QuestionsTodayCard } from "@/features/questions/components/question-insights";
 import { LibraryCard } from "@/features/library/components/library-card";
+import { MemoryCard } from "@/features/memory/components/memory-card";
 import { getQuestionDaily } from "@/features/questions/queries";
 import type { Route } from "next";
 import {
@@ -352,6 +353,10 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
         </Card>
 
         <QuestionsTodayCard rows={qRows} today={today} from={qFrom} />
+
+        <Suspense>
+          <MemoryCard />
+        </Suspense>
 
         <Suspense>
           <LibraryCard />

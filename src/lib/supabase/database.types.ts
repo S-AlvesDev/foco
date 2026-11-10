@@ -4,6 +4,258 @@ export type Json = string | number | boolean | null | { [key: string]: Json | un
 export type Database = {
   public: {
     Tables: {
+      library_topic_links: {
+        Row: {
+          assunto: string;
+          created_at: string;
+          disciplina: string;
+          topic_id: string;
+        };
+        Insert: {
+          assunto: string;
+          created_at?: string;
+          disciplina: string;
+          topic_id: string;
+        };
+        Update: {
+          assunto?: string;
+          created_at?: string;
+          disciplina?: string;
+          topic_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_topic_links_topic_id_fkey";
+            columns: ["topic_id"];
+            isOneToOne: false;
+            referencedRelation: "library_topics";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      library_topic_meta: {
+        Row: {
+          incidence: string;
+          topic_id: string;
+          updated_at: string;
+        };
+        Insert: {
+          incidence?: string;
+          topic_id: string;
+          updated_at?: string;
+        };
+        Update: {
+          incidence?: string;
+          topic_id?: string;
+          updated_at?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_topic_meta_topic_id_fkey";
+            columns: ["topic_id"];
+            isOneToOne: true;
+            referencedRelation: "library_topics";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      memory_items: {
+        Row: {
+          content_changed_at: string | null;
+          created_at: string;
+          difficulty: number | null;
+          due_on: string;
+          lapses: number;
+          last_review_at: string | null;
+          last_review_on: string | null;
+          recent: Json;
+          reps: number;
+          stability: number | null;
+          state: string;
+          topic_id: string;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          content_changed_at?: string | null;
+          created_at?: string;
+          difficulty?: number | null;
+          due_on: string;
+          lapses?: number;
+          last_review_at?: string | null;
+          last_review_on?: string | null;
+          recent?: Json;
+          reps?: number;
+          stability?: number | null;
+          state?: string;
+          topic_id: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          content_changed_at?: string | null;
+          created_at?: string;
+          difficulty?: number | null;
+          due_on?: string;
+          lapses?: number;
+          last_review_at?: string | null;
+          last_review_on?: string | null;
+          recent?: Json;
+          reps?: number;
+          stability?: number | null;
+          state?: string;
+          topic_id?: string;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "memory_items_topic_id_fkey";
+            columns: ["topic_id"];
+            isOneToOne: false;
+            referencedRelation: "library_topics";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "memory_items_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      memory_reviews: {
+        Row: {
+          client_id: string;
+          d_after: number;
+          d_before: number | null;
+          elapsed_days: number;
+          grade: number;
+          id: string;
+          questions_correct: number;
+          questions_total: number;
+          r_before: number | null;
+          reviewed_at: string;
+          reviewed_on: string;
+          s_after: number;
+          s_before: number | null;
+          scheduled_days: number;
+          seconds: number | null;
+          self_grade: number | null;
+          source: string;
+          target: number | null;
+          topic_id: string;
+          user_id: string;
+        };
+        Insert: {
+          client_id: string;
+          d_after: number;
+          d_before?: number | null;
+          elapsed_days: number;
+          grade: number;
+          id?: string;
+          questions_correct?: number;
+          questions_total?: number;
+          r_before?: number | null;
+          reviewed_at?: string;
+          reviewed_on: string;
+          s_after: number;
+          s_before?: number | null;
+          scheduled_days: number;
+          seconds?: number | null;
+          self_grade?: number | null;
+          source: string;
+          target?: number | null;
+          topic_id: string;
+          user_id?: string;
+        };
+        Update: {
+          client_id?: string;
+          d_after?: number;
+          d_before?: number | null;
+          elapsed_days?: number;
+          grade?: number;
+          id?: string;
+          questions_correct?: number;
+          questions_total?: number;
+          r_before?: number | null;
+          reviewed_at?: string;
+          reviewed_on?: string;
+          s_after?: number;
+          s_before?: number | null;
+          scheduled_days?: number;
+          seconds?: number | null;
+          self_grade?: number | null;
+          source?: string;
+          target?: number | null;
+          topic_id?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "memory_reviews_topic_id_fkey";
+            columns: ["topic_id"];
+            isOneToOne: false;
+            referencedRelation: "library_topics";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "memory_reviews_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
+      memory_settings: {
+        Row: {
+          calibrated_at: string | null;
+          daily_minutes: number;
+          exam_date: string | null;
+          final_retention: number;
+          interval_factor: number;
+          max_interval: number;
+          params: Json | null;
+          target_retention: number;
+          updated_at: string;
+          user_id: string;
+        };
+        Insert: {
+          calibrated_at?: string | null;
+          daily_minutes?: number;
+          exam_date?: string | null;
+          final_retention?: number;
+          interval_factor?: number;
+          max_interval?: number;
+          params?: Json | null;
+          target_retention?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Update: {
+          calibrated_at?: string | null;
+          daily_minutes?: number;
+          exam_date?: string | null;
+          final_retention?: number;
+          interval_factor?: number;
+          max_interval?: number;
+          params?: Json | null;
+          target_retention?: number;
+          updated_at?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "memory_settings_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: true;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       achievements: {
         Row: {
           achieved_on: string;
@@ -1492,6 +1744,25 @@ export type Database = {
     };
     Views: { [_ in never]: never };
     Functions: {
+      memory_practice_stats: {
+        Args: { p_question: string };
+        Returns: {
+          topic_id: string;
+          total: number;
+          correct: number;
+          wrong: number;
+          chance_sum: unknown;
+        }[];
+      };
+      memory_topic_questions: {
+        Args: { p_topic: string; p_limit?: number };
+        Returns: { id: string; tipo: string; choices: number }[];
+      };
+      question_subjects: {
+        Args: never;
+        Returns: { disciplina: string; assunto: string; total: number }[];
+      };
+      memory_record: { Args: { p: Json }; Returns: Database["public"]["Tables"]["memory_items"]["Row"] };
       push_claim: {
         Args: { p_secret: string; p_limit?: number };
         Returns: {

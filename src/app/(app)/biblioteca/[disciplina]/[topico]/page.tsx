@@ -4,6 +4,7 @@ import { Suspense } from "react";
 import { libraryGate } from "@/features/library/components/gate";
 import { Reader } from "@/features/library/components/reader";
 import { getTopicPage } from "@/features/library/queries";
+import { TopicMemory } from "@/features/memory/components/topic-memory";
 
 export const metadata: Metadata = { title: "Leitura" };
 
@@ -21,7 +22,22 @@ async function TopicLoader({ params }: { params: PageProps<"/biblioteca/[discipl
   if (gate) return <div className="mx-auto max-w-[720px] px-4 pt-10">{gate}</div>;
   const page = await getTopicPage(decodeURIComponent(disciplina), decodeURIComponent(topico));
   if (!page) notFound();
-  return <Reader key={page.topic.id} page={page} />;
+  return (
+    <Reader
+      key={page.topic.id}
+      page={page}
+      memory={
+        <Suspense>
+          <TopicMemory
+            topicId={page.topic.id}
+            topicTitle={page.topic.title}
+            disciplineName={page.discipline.name}
+            done={page.progress?.status === "done"}
+          />
+        </Suspense>
+      }
+    />
+  );
 }
 
 function Skeleton() {

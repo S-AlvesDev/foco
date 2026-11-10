@@ -28,10 +28,21 @@ export type LibraryPayload =
   | { op: "delete"; id: string }
   | { op: "progress"; topicId: string; percent?: number; blockId?: string | null; status?: string };
 
+/** Revisão feita sem internet (o servidor calcula a próxima data quando chegar). */
+export type MemoryPayload = {
+  clientId: string;
+  topicId: string;
+  reviewedOn: string;
+  selfGrade?: 1 | 2 | 3 | 4 | null;
+  questions?: { total: number; correct: number; chanceSum: number } | null;
+  seconds?: number | null;
+};
+
 export type OutboxItem =
   | { id: string; kind: "session"; createdAt: number; payload: SessionPayload }
   | { id: string; kind: "finish"; createdAt: number; payload: FinishPayload }
-  | { id: string; kind: "library"; createdAt: number; payload: LibraryPayload };
+  | { id: string; kind: "library"; createdAt: number; payload: LibraryPayload }
+  | { id: string; kind: "memory"; createdAt: number; payload: MemoryPayload };
 
 const USER_KEY = "alpha:uid";
 const EVENT = "alpha-outbox";
@@ -101,6 +112,10 @@ export function enqueueLibrary(payload: LibraryPayload): boolean {
     write(uid, rest);
   }
   return enqueue({ kind: "library", payload });
+}
+
+export function enqueueMemory(payload: MemoryPayload): boolean {
+  return enqueue({ id: payload.clientId, kind: "memory", payload });
 }
 
 export function removeFromOutbox(id: string) {

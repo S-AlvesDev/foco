@@ -9,6 +9,7 @@ import { uuid } from "@/features/subjects/schemas";
 import { getProfile } from "@/lib/auth";
 import { localDateISO } from "@/lib/format";
 import { findTopicsByTitle } from "@/features/library/queries";
+import { MemoryCard } from "@/features/memory/components/memory-card";
 
 export const metadata: Metadata = { title: "Revisões" };
 
@@ -45,6 +46,11 @@ async function Reviews({ searchParams }: { searchParams: PageProps<"/revisoes">[
     <ReviewsView
       reviews={reviews}
       materials={materials}
+      library={
+        <Suspense>
+          <MemoryCard always />
+        </Suspense>
+      }
       subjects={subjects.map((s) => ({
         id: s.id,
         name: s.name,

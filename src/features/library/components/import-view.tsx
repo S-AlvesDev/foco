@@ -19,6 +19,7 @@ import {
   type ImportPreview,
 } from "../actions";
 import { BlockBody } from "./blocks";
+import { importTopicMetaAction } from "@/features/memory/actions";
 
 type Ready = Extract<ImportCheck, { ok: true }>;
 type Report = {
@@ -166,6 +167,18 @@ export function LibraryImportView() {
         rep.unchanged += r.unchanged;
         rep.marksMoved += r.marksMoved;
         rep.marksReview += r.marksReview;
+      }
+      // 4. revisão adaptativa: incidência no edital e assuntos do banco de questões (quando vierem)
+      const meta = ready.topics
+        .filter((t) => t.incidence || t.links)
+        .map((t) => ({ topicId: t.id, incidence: t.incidence, links: t.links }));
+      if (meta.length) {
+        setProgress({ label: "Ligando questões aos tópicos", done: 0, total: 1 });
+        const m = await importTopicMetaAction(meta).catch(() => ({
+          ok: false as const,
+          message: "falha de conexão",
+        }));
+        if (!m.ok) errors.push({ where: "incidência e assuntos de questões", message: m.message });
       }
       setReport(rep);
       await finishImportAction();

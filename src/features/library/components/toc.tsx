@@ -3,6 +3,8 @@ import { Check, Star } from "lucide-react";
 import { cn } from "@/lib/utils";
 import type { ReadStatus } from "../model";
 import type { TocChapter, TocTopic } from "../queries";
+import type { Level } from "@/features/memory/fsrs";
+import { LevelDot } from "@/features/memory/components/level-badge";
 
 export function topicHref(disciplineId: string, topicId: string, blockId?: string | null) {
   return `/biblioteca/${encodeURIComponent(disciplineId)}/${encodeURIComponent(topicId)}${blockId ? `#${blockId}` : ""}`;
@@ -38,9 +40,12 @@ export function Toc({
   currentId,
   onNavigate,
   dense = false,
+  levels,
 }: {
   disciplineId: string;
   chapters: TocChapter[];
+  /** Nível de domínio por tópico (revisão adaptativa), quando houver. */
+  levels?: Record<string, Level>;
   currentId?: string;
   onNavigate?: () => void;
   dense?: boolean;
@@ -62,6 +67,7 @@ export function Toc({
                 current={t.id === currentId}
                 onNavigate={onNavigate}
                 dense={dense}
+                level={levels?.[t.id]}
               />
             ))}
           </ul>
@@ -77,7 +83,9 @@ function TocRow({
   current,
   onNavigate,
   dense,
+  level,
 }: {
+  level?: Level;
   t: TocTopic;
   disciplineId: string;
   current: boolean;
@@ -104,6 +112,11 @@ function TocRow({
           {t.number && <span className="mr-1.5 text-fg-3 tabular-nums">{t.number}</span>}
           {t.title}
         </span>
+        {level && (
+          <span className="mt-[7px]">
+            <LevelDot level={level} />
+          </span>
+        )}
         {t.favorite && (
           <Star className="mt-[3px] size-3.5 shrink-0 fill-gold text-gold" aria-label="Favorito" />
         )}

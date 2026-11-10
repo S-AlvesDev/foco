@@ -21,6 +21,7 @@ import {
 import { Toc, topicHref } from "@/features/library/components/toc";
 import { MARK_COLORS, topicLabel, type MarkColor } from "@/features/library/model";
 import { getDiscipline, listMarks, searchLibrary } from "@/features/library/queries";
+import { getDisciplineLevels } from "@/features/memory/queries";
 
 export const metadata: Metadata = { title: "Biblioteca" };
 
@@ -50,10 +51,11 @@ async function Discipline({
   const tab = sp.aba === "marcacoes" ? "marks" : "content";
   const color = MARK_COLORS.includes(sp.cor as MarkColor) ? (sp.cor as MarkColor) : undefined;
   const q = typeof sp.q === "string" ? sp.q.trim().slice(0, 120) : "";
-  const [admin, marks, hits] = await Promise.all([
+  const [admin, marks, hits, levels] = await Promise.all([
     isQuestionAdmin().catch(() => false),
     tab === "marks" ? listMarks({ disciplineId: d.id, kind: "excerpts", color }) : Promise.resolve([]),
     q ? searchLibrary(q, d.id) : Promise.resolve(null),
+    getDisciplineLevels(d.id).catch(() => ({})),
   ]);
 
   const total = d.topics.length;
@@ -127,7 +129,7 @@ async function Discipline({
             </TabLink>
           </div>
           {tab === "content" ? (
-            <Toc disciplineId={d.id} chapters={d.chapters} />
+            <Toc disciplineId={d.id} chapters={d.chapters} levels={levels} />
           ) : (
             <div className="flex flex-col gap-4">
               <ColorFilter base={base} current={color} params={{ aba: "marcacoes" }} />

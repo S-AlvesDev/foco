@@ -610,6 +610,86 @@ check("biblioteca: imagens só para quem lê; envio só do admin",
       and (a.execute("insert into storage.objects (bucket_id, name) values ('library','prf-adm/x.png')"), True)[1]
       and one(b, "select count(*) from storage.objects where bucket_id='library'")[0] == 1
       and one(c3, "select count(*) from storage.objects where bucket_id='library'")[0] == 0)
+# ---------------------------------------------------------------------
+# Revisão espaçada (memory_*)
+# ---------------------------------------------------------------------
+import decimal as _dec
+TB = one(root, "select (now() at time zone 'America/Sao_Paulo')::date")[0]
+check("memória: concluir tópico cria item com primeira revisão amanhã",
+      one(b, "select state, due_on - %s::date, reps from memory_items where topic_id='prf-adm.c1.t1'", (TB,)) == ("new", 1, 0))
+check("memória: item é de quem leu", one(a, "select count(*) from memory_items")[0] == 0)
+check("memória: reconcluir não duplica nem reagenda",
+      (one(b, "select status from library_touch('prf-adm.c1.t1', null, null, 'in_progress')"),
+       one(b, "select status from library_touch('prf-adm.c1.t1', null, null, 'done')"),
+       one(b, "select count(*) from memory_items")[0])[2] == 1)
+check("memória: terceiro não cria item", fails(c3, "insert into memory_items (topic_id, due_on) values ('prf-adm.c1.t2', current_date)"))
+check("memória: ninguém escreve direto no registro",
+      fails(b, "insert into memory_reviews (topic_id, client_id, reviewed_on, elapsed_days, grade, source, s_after, d_after, scheduled_days) values ('prf-adm.c1.t1', gen_random_uuid(), current_date, 0, 3, 'self', 3, 5, 5)"))
+
+def rec(conn, on, grade=3, days=5, s=3.17, d=5.3, cid=None, qt=0, qc=0):
+    import uuid as _u
+    p = {"topic_id": "prf-adm.c1.t1", "client_id": cid or str(_u.uuid4()), "reviewed_on": str(on), "grade": grade,
+         "source": "self", "self_grade": grade, "questions_total": qt, "questions_correct": qc, "seconds": 300,
+         "r_before": None, "s_after": s, "d_after": d, "scheduled_days": days, "target": 0.85}
+    return one(conn, "select state, due_on, reps, lapses, jsonb_array_length(recent) from memory_record(%s::jsonb)", (_json.dumps(p),))
+
+import datetime as _dt
+cid = "11111111-2222-3333-4444-555555555555"
+r = rec(b, TB, cid=cid)
+check("memória: revisão grava estado e próxima data", r == ("review", TB + _dt.timedelta(days=5), 1, 0, 1))
+check("memória: reenviar a mesma revisão não duplica",
+      rec(b, TB, cid=cid)[2] == 1 and one(b, "select count(*) from memory_reviews")[0] == 1)
+try:
+    rec(b, TB - _dt.timedelta(days=3)); stale = False
+except psycopg.Error as e:
+    stale = "mais recente" in str(e)
+check("memória: revisão mais antiga que a última é recusada", stale)
+check("memória: data no futuro é recusada", fails(b, "select memory_record(%s::jsonb)", (_json.dumps({"topic_id": "prf-adm.c1.t1", "client_id": "99999999-2222-3333-4444-555555555555", "reviewed_on": str(TB + _dt.timedelta(days=9)), "grade": 3, "source": "self", "s_after": 3, "d_after": 5, "scheduled_days": 3}),), contains="inválida"))
+for i, g in enumerate([1, 3, 4, 2]):
+    r = rec(b, TB + _dt.timedelta(days=1 if i == 3 else 0), grade=g, days=2)
+check("memória: esquecimentos contados e só as últimas 4 notas guardadas", r[3] == 1 and r[4] == 4
+      and one(b, "select recent->0->>'g', recent->3->>'g' from memory_items")[0:2] == ("1", "2"))
+check("memória: elapsed_days vem do banco", one(b, "select elapsed_days from memory_reviews order by reviewed_on desc limit 1")[0] == 1)
+check("memória: outra pessoa não grava no item alheio",
+      fails(a, "select memory_record(%s::jsonb)", (_json.dumps({"topic_id": "prf-adm.c1.t1", "client_id": "88888888-2222-3333-4444-555555555555", "reviewed_on": str(TB), "grade": 3, "source": "self", "s_after": 3, "d_after": 5, "scheduled_days": 3}),), contains="ainda não está"))
+check("memória: registro é privado", one(a, "select count(*) from memory_reviews")[0] == 0 and one(b, "select count(*) from memory_reviews")[0] == 5)
+b.execute("update memory_items set due_on = %s::date + 60", (TB,))
+one(a, "select library_import_blocks('prf-adm.c1.t1', %s::jsonb)", (_json.dumps([blk(1, B1b), blk(2, B2b + " Atualizado."), blk(3, "Novo parágrafo.")]),))
+check("memória: conteúdo atualizado traz a revisão para até 3 dias",
+      one(b, "select due_on <= %s::date + 3, content_changed_at is not null from memory_items", (TB,)) == (True, True))
+a.execute("insert into library_topic_links (topic_id, disciplina, assunto) values ('prf-adm.c1.t1','Direito Administrativo','Conceito')")
+a.execute("insert into library_topic_meta (topic_id, incidence) values ('prf-adm.c1.t1','alta')")
+check("memória: ligações e peso visíveis para quem lê; só o admin escreve",
+      one(b, "select count(*) from library_topic_links")[0] == 1 and one(c3, "select count(*) from library_topic_links")[0] == 0
+      and fails(b, "insert into library_topic_links (topic_id, disciplina, assunto) values ('prf-adm.c1.t1','X','Y')")
+      and one(b, "select incidence from library_topic_meta")[0] == "alta")
+a.execute("insert into library_topic_links (topic_id, disciplina, assunto) values ('prf-adm.c1.t1','Português','Crase'), ('prf-adm.c1.t1','Português','Vírgula')")
+qs = [x[0] for x in b.execute("select id from memory_topic_questions('prf-adm.c1.t1', 8)").fetchall()]
+check("memória: questões do tópico pela ligação, sem discursivas", set(qs) == {"T-0001", "T-0002"})
+check("memória: assuntos do banco listados", ("Português", "Crase", 1) in b.execute("select * from question_subjects()").fetchall())
+root.execute("delete from memory_reviews where user_id=%s", (B,))
+root.execute("update memory_items set last_review_on = %s::date - 3 where user_id=%s", (TB, B))
+for qid, ans in [("T-0001", "C"), ("T-0001", "E"), ("T-0002", "B"), ("T-0002", "A")]:
+    b.execute("insert into question_attempts (question_id, answer) values (%s, %s)", (qid, ans))
+st = one(b, "select total, correct, wrong, chance_sum from memory_practice_stats('T-0001')")
+check("memória: questões avulsas de hoje somadas por tópico", st is not None and st[0] == 5 and st[1] + st[2] == 5 and abs(st[3] - 2.0) < 1e-4)
+check("memória: questão sem ligação não conta", one(b, "select count(*) from memory_practice_stats('T-0003')")[0] == 0)
+check("memória: quem não tem o tópico em revisão não conta", one(a, "select count(*) from memory_practice_stats('T-0001')")[0] == 0)
+root.execute("update memory_items set due_on = %s where user_id = %s", (TB, B))
+root.execute("""insert into notification_prefs (user_id, reviews_time) values (%s, ((now() at time zone 'America/Sao_Paulo')::time - interval '1 minute')::time)
+                on conflict (user_id) do update set reviews_time = excluded.reviews_time""", (B,))
+n1 = one(root, "select generate_memory_notifications()")[0]
+n2 = one(root, "select generate_memory_notifications()")[0]
+check("memória: aviso diário com a contagem, uma vez por dia",
+      one(root, "select count(*), max(title), max(url) from notifications where user_id=%s and dedupe_key like 'memory:%%'", (B,)) == (1, "1 tópico para revisar", "/revisoes/hoje"))
+root.execute("select run_notifications()")
+check("memória: agendador continua rodando", True)
+b.execute("insert into memory_settings (daily_minutes, exam_date) values (45, '2027-06-01')")
+check("memória: ajustes são pessoais e validados",
+      one(b, "select daily_minutes, target_retention from memory_settings") == (45, _dec.Decimal("0.85"))
+      and one(a, "select count(*) from memory_settings")[0] == 0
+      and fails(b, "update memory_settings set target_retention = 0.99"))
+
 b.execute("select couple_leave()")
 check("biblioteca: quem sai do espaço deixa de ler", not one(b, "select library_can_read()")[0]
       and one(b, "select count(*) from library_blocks")[0] == 0)

@@ -96,7 +96,7 @@ async function run<T extends { ok: boolean }>(
   }
 }
 
-export function Reader({ page }: { page: TopicPage }) {
+export function Reader({ page, memory }: { page: TopicPage; memory?: React.ReactNode }) {
   const { discipline, topic, chapter, index } = page;
   const total = discipline.topics.length;
   const prev = index > 0 ? discipline.topics[index - 1] : null;
@@ -364,6 +364,8 @@ export function Reader({ page }: { page: TopicPage }) {
         if (!r.ok) {
           setStatus(before);
           toast.error(r.message);
+        } else if (s === "done" && before !== "done") {
+          toast.success("Leitura concluída. A primeira revisão fica para amanhã, em Revisões de hoje.");
         }
       })
       .catch(() => setStatus(before));
@@ -487,6 +489,7 @@ export function Reader({ page }: { page: TopicPage }) {
                 { value: "done", label: "Concluído" },
               ]}
             />
+            {memory}
           </div>
         </header>
 
@@ -580,8 +583,8 @@ export function Reader({ page }: { page: TopicPage }) {
           ) : (
             <p className="flex items-center gap-2 text-[13.5px] text-fg-2">
               <StatusDot status="done" percent={100} />
-              Leitura concluída. Isso registra que você terminou o material, não que dominou o assunto: revise
-              e resolva questões.
+              Leitura concluída. Isso registra que você terminou o material, não que dominou o assunto: o
+              tópico entra nas suas revisões, com a primeira amanhã.
             </p>
           )}
           <div className="mt-4 grid gap-2 border-t border-border pt-4 sm:grid-cols-2">

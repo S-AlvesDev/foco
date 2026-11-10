@@ -7,6 +7,7 @@ import { createClient } from "@/lib/supabase/server";
 import { dbErrorMessage } from "@/lib/errors";
 import { importItemSchema, REPORT_CATEGORIES } from "./model";
 import { getCommunity, getSolution, type Community, type Solution } from "./queries";
+import { recordPracticeFromQuestion } from "@/features/memory/actions";
 
 type Fail = { ok: false; message: string };
 
@@ -15,7 +16,11 @@ const questionId = z.string().regex(/^[A-Za-z0-9][A-Za-z0-9_-]{0,39}$/);
 export type AnswerResult = { ok: true; correct: boolean; solution: Solution; community: Community } | Fail;
 
 /** Registra a resposta; o banco confere com o gabarito. Devolve a solução completa. */
-export async function answerQuestionAction(id: string, answer: string): Promise<AnswerResult> {
+export async function answerQuestionAction(
+  id: string,
+  answer: string,
+  opts: { inReview?: boolean } = {},
+): Promise<AnswerResult> {
   await requireUser();
   if (!questionId.safeParse(id).success || !/^[A-E]$/.test(answer))
     return { ok: false, message: "Resposta inválida." };
@@ -26,6 +31,8 @@ export async function answerQuestionAction(id: string, answer: string): Promise<
     .select("is_correct")
     .single();
   if (error) return { ok: false, message: dbErrorMessage(error) };
+  // Fora do modo revisão, questões de um tópico em revisão contam como revisão dele.
+  if (!opts.inReview) await recordPracticeFromQuestion(id);
   const [solution, community] = await Promise.all([getSolution(id), getCommunity(id)]);
   if (!solution) return { ok: false, message: "Questão não encontrada." };
   return { ok: true, correct: data.is_correct, solution, community };

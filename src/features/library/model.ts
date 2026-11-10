@@ -127,6 +127,8 @@ type TopicInput = {
   id: string;
   numero?: string;
   titulo: string;
+  incidencia?: "alta" | "media" | "baixa";
+  assuntos_questoes?: { disciplina: string; assunto: string }[];
   blocos?: z.input<typeof blockInput>[];
   subtopicos?: TopicInput[];
 };
@@ -135,6 +137,13 @@ const topicInput: z.ZodType<TopicInput> = z.lazy(() =>
     id: idField("tópico"),
     numero: z.string().trim().max(20).optional(),
     titulo: text("título do tópico", 300),
+    incidencia: z
+      .enum(["alta", "media", "baixa"], { error: 'incidencia deve ser "alta", "media" ou "baixa"' })
+      .optional(),
+    assuntos_questoes: z
+      .array(z.object({ disciplina: text("disciplina", 120), assunto: text("assunto", 200) }))
+      .max(50)
+      .optional(),
     blocos: z.array(blockInput).max(2000).optional(),
     subtopicos: z.array(topicInput).max(200).optional(),
   }),
@@ -196,6 +205,9 @@ export type PreparedTopic = {
   depth: number;
   chapterId: string;
   blocks: PreparedBlock[];
+  /** Revisão adaptativa: peso no edital e assuntos do banco de questões (só quando vierem no arquivo). */
+  incidence?: "alta" | "media" | "baixa";
+  links?: { disciplina: string; assunto: string }[];
 };
 export type ImportIssue = { path: string; message: string };
 export type ImportCheck =
@@ -275,7 +287,16 @@ export function checkLibraryImport(raw: unknown): ImportCheck {
     blocks += prepared.length;
     if (!prepared.length && !(t.subtopicos ?? []).length)
       warnings.push({ path: here, message: "tópico sem conteúdo" });
-    topics.push({ id: t.id, numero: t.numero, titulo: t.titulo, depth, chapterId, blocks: prepared });
+    topics.push({
+      id: t.id,
+      numero: t.numero,
+      titulo: t.titulo,
+      depth,
+      chapterId,
+      blocks: prepared,
+      incidence: t.incidencia,
+      links: t.assuntos_questoes,
+    });
     for (const s of t.subtopicos ?? []) walk(s, chapterId, depth + 1, here);
   };
   for (const ch of data.capitulos) {

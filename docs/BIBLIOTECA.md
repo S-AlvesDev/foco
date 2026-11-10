@@ -38,6 +38,8 @@ concurso → disciplina → capítulos → tópicos → subtópicos (até 3 nív
           "id": "prf-adm.c01.t01",
           "numero": "1.1",
           "titulo": "Conceito",
+          "incidencia": "alta",
+          "assuntos_questoes": [{ "disciplina": "Direito Administrativo", "assunto": "Princípios e Poderes da Administração" }],
           "blocos": [
             {
               "id": "prf-adm.c01.t01.b001",
@@ -53,6 +55,14 @@ concurso → disciplina → capítulos → tópicos → subtópicos (até 3 nív
   ]
 }
 ```
+
+### Revisão adaptativa (campos opcionais do tópico)
+
+- `incidencia`: `"alta"`, `"media"` ou `"baixa"` — peso do tópico no edital. Na fila do dia, alta vem antes quando
+  falta tempo. Sem o campo, vale média (ou o que já estiver salvo).
+- `assuntos_questoes`: assuntos do banco de questões (disciplina + assunto, exatamente como estão no banco) cujas
+  questões entram na revisão do tópico e decidem a nota. Quando o campo vem, substitui as ligações do tópico; sem
+  ele, nada muda. Também dá para ligar pelo leitor (conta administradora → **Questões e peso**).
 
 ### Ids (o mais importante)
 

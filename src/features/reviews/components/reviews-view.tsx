@@ -23,7 +23,10 @@ export function ReviewsView({
   subjectId,
   counts,
   materials,
+  library,
 }: {
+  /** Card da revisão adaptativa da Biblioteca (some quando não disponível). */
+  library?: React.ReactNode;
   /** Assunto → link do tópico correspondente na Biblioteca. */
   materials?: Record<string, string>;
   reviews: Review[];
@@ -79,6 +82,8 @@ export function ReviewsView({
           Agendar revisão
         </Button>
       </div>
+
+      {library && <div className="mb-6 empty:hidden">{library}</div>}
 
       <div className={cn("flex flex-wrap items-center gap-2 transition-opacity", pending && "opacity-60")}>
         <Segmented<View>
