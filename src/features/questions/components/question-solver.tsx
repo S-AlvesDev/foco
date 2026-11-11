@@ -235,8 +235,9 @@ export function QuestionSolver({
                 <Meta label="Concurso" value={q.concurso} />
                 {q.cargo && <Meta label="Cargo" value={q.cargo} />}
                 <Difficulty value={q.dificuldade} />
-                <span>{TIPO_LABELS[q.tipo]}</span>
-                <span>{areaLabel(q.area)}</span>
+                <span className="whitespace-nowrap">
+                  {TIPO_LABELS[q.tipo]} · {areaLabel(q.area)}
+                </span>
               </div>
             </div>
             <button
@@ -804,8 +805,8 @@ function SolutionPanel({ result, tipo }: { result: Answered; tipo: PublicQuestio
       {tipo === "discursiva" ? (
         s.respostaEsperada && <ExpectedAnswer text={s.respostaEsperada} />
       ) : (
-        <p className="flex items-center gap-2 text-[14px] font-semibold text-fg">
-          <CircleCheck className="size-4 text-success" aria-hidden />
+        <p className="font-display flex items-center gap-2 text-[17px] font-semibold text-fg">
+          <CircleCheck className="size-[18px] text-success" aria-hidden />
           Gabarito: {gabLabel}
         </p>
       )}
@@ -817,8 +818,8 @@ function SolutionPanel({ result, tipo }: { result: Answered; tipo: PublicQuestio
       )}
       {s.comentario && (
         <div>
-          <p className="text-[12.5px] font-semibold text-fg-2">Comentário</p>
-          <p className="mt-1 text-[15px] leading-[1.7] whitespace-pre-wrap break-words text-fg">
+          <p className="text-[12.5px] font-medium text-fg-3">Comentário</p>
+          <p className="mt-1.5 max-w-[70ch] text-[15.5px] leading-[1.75] whitespace-pre-wrap break-words text-fg sm:text-[16px]">
             {s.comentario}
           </p>
         </div>
@@ -828,7 +829,7 @@ function SolutionPanel({ result, tipo }: { result: Answered; tipo: PublicQuestio
       )}
       {s.referencias.length > 0 && (
         <div>
-          <p className="text-[12.5px] font-semibold text-fg-2">Para conferir na fonte</p>
+          <p className="text-[12.5px] font-medium text-fg-3">Para conferir na fonte</p>
           <ul className="mt-1.5 flex flex-col gap-1.5">
             {s.referencias.map((r, i) => (
               <li key={i} className="text-[13.5px]">
@@ -916,11 +917,11 @@ function StatsPanel({ q, result }: { q: PublicQuestion; result: Answered }) {
           const pct = c.total ? Math.round((n / c.total) * 100) : 0;
           const right = q.tipo === "discursiva" ? v === "C" : v === result.solution.gabarito;
           return (
-            <li key={v} className="grid grid-cols-[72px_1fr_72px] items-center gap-3 text-[13px]">
+            <li key={v} className="grid grid-cols-[64px_1fr_76px] items-center gap-3 text-[13.5px]">
               <span className={cn("font-semibold", right ? "text-success" : "text-fg-2")}>{label(v)}</span>
-              <span className="h-2 overflow-hidden rounded-full bg-surface-3">
+              <span className="h-2.5 overflow-hidden rounded-full bg-surface-3">
                 <span
-                  className={cn("block h-full rounded-full", right ? "bg-success" : "bg-fg-3/60")}
+                  className={cn("grow-x block h-full rounded-full", right ? "bg-success" : "bg-fg-3/50")}
                   style={{ width: `${pct}%` }}
                 />
               </span>

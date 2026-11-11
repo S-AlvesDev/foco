@@ -41,20 +41,20 @@ function SidebarLinkView({ item, active }: { item: NavItem; active: boolean }) {
       href={item.href}
       aria-current={active ? "page" : undefined}
       className={cn(
-        "group relative flex h-10 items-center gap-3 rounded-xl px-3 text-[14px] transition-colors duration-150",
+        "group relative flex h-9 items-center gap-3 rounded-[10px] px-3 text-[13.5px] transition-colors duration-150",
         active
-          ? "bg-[linear-gradient(90deg,rgb(115_102_239/0.26),rgb(115_102_239/0.07))] font-semibold text-white shadow-[inset_0_0_0_1px_rgb(140_125_255/0.18)]"
-          : "text-fg-2 hover:bg-white/[0.045] hover:text-fg",
+          ? "bg-[linear-gradient(90deg,rgb(123_108_246/0.24),rgb(123_108_246/0.06))] font-medium text-white shadow-[inset_0_0_0_1px_rgb(140_125_255/0.14)]"
+          : "text-fg-2 hover:bg-white/[0.05] hover:text-fg",
       )}
     >
       {active && (
-        <span
-          className="absolute top-2.5 bottom-2.5 -left-3 w-[3px] rounded-r-full bg-[linear-gradient(180deg,#9a7bff,#6d4ef4)] shadow-[0_0_10px_rgb(140_110_255/0.7)]"
-          aria-hidden
-        />
+        <span className="absolute top-2 bottom-2 -left-3 w-[3px] rounded-r-full bg-accent" aria-hidden />
       )}
       <Icon
-        className={cn("size-[18px] shrink-0", active ? "text-[#a48cff]" : "text-fg-3 group-hover:text-fg-2")}
+        className={cn(
+          "size-[17px] shrink-0 transition-colors",
+          active ? "text-[#a99bff]" : "text-fg-3 group-hover:text-fg-2",
+        )}
         strokeWidth={1.75}
       />
       {item.label}
@@ -88,10 +88,13 @@ function TabBarLinkView({ item, active }: { item: NavItem; active: boolean }) {
 
 export function SidebarNav() {
   return (
-    <nav aria-label="Principal" className="flex flex-1 flex-col gap-5 overflow-y-auto px-3 pt-3 pb-4">
+    <nav
+      aria-label="Principal"
+      className="flex flex-1 flex-col gap-6 overflow-y-auto px-3 pt-3 pb-6 [mask-image:linear-gradient(180deg,#000_calc(100%-28px),transparent)] [scrollbar-width:none]"
+    >
       {NAV_GROUPS.map((g) => (
         <div key={g.label} className="flex flex-col gap-0.5">
-          <p className="px-3 pb-1.5 text-[11.5px] font-semibold tracking-[0.02em] text-fg-3">{g.label}</p>
+          <p className="px-3 pb-2 text-[11.5px] font-medium tracking-[0.01em] text-fg-3/90">{g.label}</p>
           {g.items.map((item) => (
             <SidebarLink key={item.href} item={item} />
           ))}
@@ -109,7 +112,7 @@ export function TabBar() {
   return (
     <nav
       aria-label="Principal"
-      className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-surface-1/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl md:hidden"
+      className="fixed inset-x-0 bottom-0 z-30 flex border-t border-border bg-surface-1/85 pb-[env(safe-area-inset-bottom)] backdrop-blur-xl lg:hidden"
     >
       {/* Painel, Questões, [+], Sessões, Mais */}
       {TAB_ITEMS.slice(0, 2).map((item) => (

@@ -243,7 +243,7 @@ export function QuestionFilters({
       </section>
 
       {/* Resultado e início */}
-      <div className="z-20 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface-1/90 px-4 py-3 shadow-pop backdrop-blur-xl md:sticky md:bottom-4">
+      <div className="z-20 flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-border bg-surface-1/90 px-4 py-3 shadow-pop backdrop-blur-xl lg:sticky lg:bottom-4">
         <p className="text-[14px] text-fg-2" aria-live="polite">
           <strong className="text-[18px] font-bold text-fg tabular-nums">
             {total.toLocaleString("pt-BR")}

@@ -205,7 +205,7 @@ export function OfflineRuntime() {
   if (!show) return null;
 
   return (
-    <div className="pointer-events-none fixed inset-x-0 top-[calc(64px+env(safe-area-inset-top))] z-40 flex justify-center px-4 md:top-4 md:left-[264px]">
+    <div className="pointer-events-none fixed inset-x-0 top-[calc(64px+env(safe-area-inset-top))] z-40 flex justify-center px-4 lg:top-4 lg:left-[264px]">
       <div
         role="status"
         aria-live="polite"

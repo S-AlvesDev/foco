@@ -33,8 +33,11 @@ export function ProfileForm({
   return (
     <form action={formAction} className="flex max-w-[420px] flex-col gap-5" noValidate>
       <AvatarEditor userId={userId} name={draft.trim() || email} src={avatarUrl} />
-      <div className="min-w-0 -mt-2">
-        <p className="truncate text-[13px] text-fg-3">{email}</p>
+      <div className="-mt-1 min-w-0">
+        <p className="font-display truncate text-[18px] leading-tight font-semibold text-fg">
+          {draft.trim() || email}
+        </p>
+        <p className="mt-0.5 truncate text-[13px] text-fg-3">{email}</p>
       </div>
 
       {state.status === "error" && state.message && (

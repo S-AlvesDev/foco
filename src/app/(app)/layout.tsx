@@ -18,7 +18,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
       <div className="flex min-h-dvh">
         {/* Sidebar: tablet e desktop */}
         {/* Sempre escura, nos dois temas: é o painel da marca, como na tela de entrada. */}
-        <aside className="dark sticky top-0 isolate hidden h-dvh w-[264px] shrink-0 flex-col overflow-hidden border-r border-white/[0.06] bg-[linear-gradient(180deg,#0f0c25_0%,#0a0a17_40%,#0a0915_70%,#120e2c_100%)] text-fg md:flex">
+        <aside className="dark sticky top-0 isolate hidden h-dvh w-[264px] shrink-0 flex-col overflow-hidden border-r border-white/[0.06] bg-[linear-gradient(180deg,#0f0c25_0%,#0a0a17_40%,#0a0915_70%,#120e2c_100%)] text-fg lg:flex">
           <OrbitArcs className="pointer-events-none absolute -top-14 -left-20 -z-10 w-[330px] opacity-35" />
           <div
             aria-hidden
@@ -50,10 +50,10 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
           {/* Brilho violeta discreto no topo do conteúdo (só no tema escuro). */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-x-0 top-0 -z-10 hidden h-[420px] bg-[radial-gradient(60%_80%_at_100%_0%,rgb(109_75_255/0.07),transparent_70%)] dark:block"
+            className="pointer-events-none absolute inset-x-0 top-0 -z-10 hidden h-[560px] bg-[radial-gradient(55%_75%_at_100%_0%,rgb(123_108_246/0.09),transparent_70%),radial-gradient(40%_60%_at_0%_0%,rgb(123_108_246/0.035),transparent_70%)] dark:block"
           />
           {/* Barra superior: celular */}
-          <header className="sticky top-0 z-30 flex h-[calc(56px+env(safe-area-inset-top))] items-end border-b border-border/70 bg-bg/80 px-4 pb-2.5 backdrop-blur-xl md:hidden">
+          <header className="sticky top-0 z-30 flex h-[calc(56px+env(safe-area-inset-top))] items-end border-b border-border/70 bg-bg/80 px-4 pb-2.5 backdrop-blur-xl lg:hidden">
             <Link
               href="/painel"
               className="flex flex-1 items-center gap-2.5 rounded-md"
@@ -69,7 +69,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
             </Suspense>
           </header>
 
-          <main className="flex-1 overflow-x-clip pb-[calc(64px+env(safe-area-inset-bottom))] md:pb-0">
+          <main className="flex-1 overflow-x-clip pb-[calc(64px+env(safe-area-inset-bottom))] lg:pb-0">
             {children}
             <MobileTimerSpacer />
           </main>

@@ -404,9 +404,20 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
   /* --------------------------- tela --------------------------------- */
 
   const activeMarks = active ? marks.filter((m) => active.ids.includes(m.id)) : [];
+  const outline = laid.flatMap((l) =>
+    l.layout.kind === "titulo" && l.layout.level <= 3
+      ? [
+          {
+            id: l.block.id,
+            level: l.layout.level,
+            text: l.layout.text.tokens.map((t) => (t.type === "math" ? "" : t.text)).join(""),
+          },
+        ]
+      : [],
+  );
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] px-4 pt-4 pb-16 sm:px-8 sm:pt-6 lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:gap-12">
+    <div className="mx-auto w-full max-w-[1180px] px-4 pt-4 pb-16 sm:px-8 sm:pt-6 lg:grid lg:grid-cols-[256px_minmax(0,1fr)] lg:gap-10 xl:gap-14 2xl:max-w-[1440px] 2xl:grid-cols-[272px_minmax(0,1fr)_216px]">
       {/* Sumário (desktop) */}
       <aside className="hidden lg:block">
         <div className="sticky top-6 max-h-[calc(100dvh-48px)] overflow-y-auto pr-1 pb-6">
@@ -421,9 +432,9 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
         </div>
       </aside>
 
-      <article className="mx-auto w-full max-w-[700px] min-w-0">
+      <article className="mx-auto w-full max-w-[720px] min-w-0">
         {/* Barra do leitor */}
-        <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 -mx-4 mb-8 flex items-center gap-1 border-b border-border/70 bg-bg/85 px-2 py-1.5 backdrop-blur-xl sm:-mx-8 sm:px-6 md:top-0 lg:mx-0 lg:px-0">
+        <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 -mx-4 mb-8 flex items-center gap-1 border-b border-border/70 bg-bg/85 px-2 py-1.5 backdrop-blur-xl sm:-mx-8 sm:px-6 lg:top-0 lg:mx-0 lg:px-0">
           <span aria-hidden className="read-progress" />
           <Button
             variant="ghost"
@@ -437,12 +448,12 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
           </Button>
           <Link
             href={`/biblioteca/${encodeURIComponent(discipline.id)}`}
-            className="hidden items-center gap-1 rounded-md px-2 text-[13px] text-fg-3 hover:text-fg sm:flex lg:hidden"
+            className="hidden min-w-0 items-center gap-1 truncate rounded-md px-2 text-[13px] text-fg-3 hover:text-fg sm:flex lg:hidden"
           >
             <ChevronLeft className="size-4" />
             {discipline.name}
           </Link>
-          <span className="ml-1 min-w-0 flex-1 truncate text-[12.5px] text-fg-3 tabular-nums">
+          <span className="ml-1 flex-1 text-[12.5px] whitespace-nowrap text-fg-3 tabular-nums">
             Tópico {index + 1} de {total}
           </span>
           <Button
@@ -470,7 +481,7 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
           </Button>
         </div>
 
-        <header className="mb-10">
+        <header className="mb-8">
           <p className="text-[13px] text-fg-3">
             {chapter.number && (
               <span className="num mr-2 font-semibold text-accent">Capítulo {chapter.number}</span>
@@ -478,17 +489,17 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
             {chapter.title}
           </p>
           {topic.number && (
-            <p aria-hidden className="outline-num mt-6 text-[64px] select-none sm:text-[84px]">
+            <p aria-hidden className="outline-num mt-5 text-[44px] select-none sm:text-[56px]">
               {topic.number}
             </p>
           )}
-          <h1 className="font-display mt-4 text-[32px] leading-[1.08] font-semibold tracking-[-0.015em] text-balance text-fg sm:text-[44px]">
+          <h1 className="font-display mt-3 text-[30px] leading-[1.1] font-semibold tracking-[-0.015em] text-balance text-fg sm:text-[40px]">
             {topic.number && <span className="sr-only">{topic.number} </span>}
             {topic.title}
           </h1>
           <span
             aria-hidden
-            className="mt-6 block h-[3px] w-16 rounded-full bg-[linear-gradient(90deg,var(--accent),var(--gold))]"
+            className="mt-5 block h-[3px] w-14 rounded-full bg-[linear-gradient(90deg,var(--accent),var(--gold))]"
           />
           <div className="mt-6 flex flex-wrap items-center gap-3">
             <Segmented
@@ -541,7 +552,7 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
           </p>
         )}
 
-        <div ref={contentRef} className="apostila flex flex-col gap-4" onClick={onContentClick}>
+        <div ref={contentRef} className="apostila flex flex-col gap-[1.15em]" onClick={onContentClick}>
           {laid.map((l) => (
             <div key={l.block.id} id={l.block.id} data-block={l.block.id} className="relative">
               <BlockBody
@@ -603,27 +614,25 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
               </Button>
             </div>
           ) : (
-            <p className="flex items-start gap-3 rounded-2xl border border-success/30 bg-success/[0.06] p-5 text-[13.5px] leading-relaxed text-fg-2">
+            <p className="flex items-start gap-3 rounded-2xl border border-border bg-surface-1 px-5 py-4 text-[13px] leading-relaxed text-fg-3">
               <span className="mt-0.5 flex">
                 <StatusDot status="done" percent={100} />
               </span>
               <span>
-                <strong className="font-display block text-[16px] font-semibold text-fg">
-                  Leitura concluída
-                </strong>
-                Isso registra que você terminou o material, não que dominou o assunto: o tópico entra nas suas
-                revisões, com a primeira amanhã.
+                <strong className="mr-1.5 font-semibold text-fg">Leitura concluída.</strong>O tópico entrou
+                nas suas revisões, com a primeira amanhã. Concluir registra que você terminou o material, não
+                que dominou o assunto.
               </span>
             </p>
           )}
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="mt-3 grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2">
             {prev ? (
               <Link
                 href={topicHref(discipline.id, prev.id)}
                 className="group flex items-center gap-3 rounded-2xl border border-border px-4 py-4 transition-colors hover:border-border-strong hover:bg-surface-1"
               >
                 <ArrowLeft className="size-4 shrink-0 text-fg-3 transition-transform group-hover:-translate-x-0.5" />
-                <span className="min-w-0">
+                <span className="min-w-0 flex-1">
                   <span className="block text-[12px] text-fg-3">Anterior</span>
                   <span className="block truncate text-[14px] text-fg-2 group-hover:text-fg">
                     {topicLabel(prev)}
@@ -638,7 +647,7 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
                 href={topicHref(discipline.id, next.id)}
                 className="mission-frame group flex items-center justify-end gap-3 rounded-2xl px-4 py-4 text-right"
               >
-                <span className="min-w-0">
+                <span className="min-w-0 flex-1">
                   <span className="block text-[12px] text-fg-3">Próximo tópico</span>
                   <span className="font-display block truncate text-[16px] font-semibold text-fg">
                     {topicLabel(next)}
@@ -650,6 +659,33 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
           </div>
         </div>
       </article>
+
+      {/* Neste tópico (telas grandes): as seções do texto, para pular direto. */}
+      <aside className="hidden 2xl:block">
+        {outline.length > 1 && (
+          <nav
+            aria-label="Neste tópico"
+            className="sticky top-8 max-h-[calc(100dvh-64px)] overflow-y-auto pb-6"
+          >
+            <p className="font-display px-2 text-[13.5px] font-semibold text-fg">Neste tópico</p>
+            <ul className="mt-2 flex flex-col border-l border-border">
+              {outline.map((o) => (
+                <li key={o.id}>
+                  <a
+                    href={`#${o.id}`}
+                    className={cn(
+                      "-ml-px block border-l border-transparent py-1 pr-2 text-[12.5px] leading-snug text-fg-3 transition-colors hover:border-accent hover:text-fg",
+                      o.level > 2 ? "pl-6" : "pl-3",
+                    )}
+                  >
+                    {o.text}
+                  </a>
+                </li>
+              ))}
+            </ul>
+          </nav>
+        )}
+      </aside>
 
       {/* Sumário (celular/tablet) */}
       <Dialog open={tocOpen} onOpenChange={setTocOpen}>
@@ -740,7 +776,7 @@ const floatingClass =
   "z-[60] flex items-center gap-1 rounded-xl border border-border bg-surface-1/95 p-1.5 shadow-pop backdrop-blur-xl";
 /** Celular: barra presa logo abaixo da barra do leitor (embaixo ficam o cronômetro e as abas). */
 const dockedClass =
-  "fixed inset-x-3 top-[calc(56px+env(safe-area-inset-top)+52px)] mx-auto max-w-[420px] md:top-auto md:bottom-6";
+  "fixed inset-x-3 top-[calc(56px+env(safe-area-inset-top)+52px)] mx-auto max-w-[420px] lg:top-auto lg:bottom-6";
 
 function SelectionBar({
   rect,

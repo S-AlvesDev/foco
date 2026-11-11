@@ -474,7 +474,7 @@ function Toolbar({ editor }: { editor: Editor }) {
     <div
       role="toolbar"
       aria-label="Formatação"
-      className="sticky top-[calc(52px+env(safe-area-inset-top))] z-20 -mx-1 flex items-center gap-0.5 overflow-x-auto border-b border-border bg-bg/90 px-1 py-1.5 backdrop-blur-md md:top-0"
+      className="sticky top-[calc(52px+env(safe-area-inset-top))] z-20 -mx-1 flex items-center gap-0.5 overflow-x-auto border-b border-border bg-bg/90 px-1 py-1.5 backdrop-blur-md lg:top-0"
     >
       {groups.map((g, gi) => (
         <div key={gi} className="flex items-center gap-0.5">

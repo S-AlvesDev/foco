@@ -53,11 +53,11 @@ export function Toc({
   dense?: boolean;
 }) {
   return (
-    <nav aria-label="Sumário" className={cn("flex flex-col", dense ? "gap-5" : "gap-4")}>
+    <nav aria-label="Sumário" className={cn("flex flex-col", dense ? "gap-0.5" : "gap-4")}>
       {chapters.map((c) => {
         const done = c.topics.filter((t) => t.status === "done").length;
         const rows = (
-          <ul className={cn("flex flex-col", dense ? "mt-1.5" : "mt-2")}>
+          <ul className={cn("flex flex-col", dense ? "" : "mt-2")}>
             {c.topics.map((t) => (
               <TocRow
                 key={t.id}
@@ -71,16 +71,38 @@ export function Toc({
             ))}
           </ul>
         );
-        if (dense)
+        if (dense) {
+          const here = c.topics.some((t) => t.id === currentId);
+          // No leitor, só o capítulo atual abre: o tópico em leitura fica sempre à vista.
           return (
-            <div key={c.id}>
-              <p className="px-2 text-[12.5px] font-semibold text-fg">
-                {c.number ? `${c.number}. ` : ""}
-                {c.title}
-              </p>
-              {rows}
-            </div>
+            <details key={c.id} open={here} className="group/ch">
+              <summary className="flex cursor-pointer list-none items-baseline gap-2 rounded-lg px-2 py-1.5 transition-colors select-none hover:bg-surface-2/70 [&::-webkit-details-marker]:hidden">
+                {c.number && (
+                  <span className={cn("num w-5 shrink-0 text-[12.5px]", here ? "text-accent" : "text-fg-3")}>
+                    {String(c.number).padStart(2, "0")}
+                  </span>
+                )}
+                <span
+                  className={cn(
+                    "min-w-0 flex-1 text-[13px] leading-snug",
+                    here ? "font-semibold text-fg" : "text-fg-2 group-open/ch:text-fg",
+                  )}
+                >
+                  {c.title}
+                </span>
+                <span
+                  className={cn(
+                    "num shrink-0 text-[11.5px]",
+                    done === c.topics.length && done > 0 ? "text-success" : "text-fg-3",
+                  )}
+                >
+                  {done}/{c.topics.length}
+                </span>
+              </summary>
+              <div className="mt-0.5 mb-2 ml-[11px] border-l border-border pl-2">{rows}</div>
+            </details>
           );
+        }
         return (
           <section key={c.id} className="list-box px-3 py-4 sm:px-4">
             <div className="flex items-baseline gap-3 px-2">
@@ -135,9 +157,11 @@ function TocRow({
         onClick={onNavigate}
         aria-current={current ? "page" : undefined}
         className={cn(
-          "flex items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-2",
+          "relative flex items-start gap-2.5 rounded-lg px-2 py-1.5 transition-colors hover:bg-surface-2",
           dense ? "text-[13px]" : "text-[14px]",
-          current ? "bg-accent-subtle text-fg" : "text-fg-2",
+          current
+            ? "bg-accent-subtle font-medium text-fg before:absolute before:inset-y-1.5 before:-left-[9px] before:w-[2px] before:rounded-full before:bg-accent"
+            : "text-fg-2 hover:text-fg",
         )}
         style={{ paddingLeft: `${8 + t.depth * 16}px` }}
       >

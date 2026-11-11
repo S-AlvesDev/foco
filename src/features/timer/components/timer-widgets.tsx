@@ -130,7 +130,7 @@ export function MobileTimerPill() {
   const running = timer.status === "running";
   return (
     <div
-      className="fixed inset-x-3 bottom-[calc(64px+env(safe-area-inset-bottom)+8px)] z-30 flex items-center gap-3 rounded-xl border border-border bg-surface-3/95 py-1.5 pr-1.5 pl-4 shadow-pop backdrop-blur-md md:hidden"
+      className="fixed inset-x-3 bottom-[calc(64px+env(safe-area-inset-bottom)+8px)] z-30 flex items-center gap-3 rounded-xl border border-border bg-surface-3/95 py-1.5 pr-1.5 pl-4 shadow-pop backdrop-blur-md lg:hidden"
       role="timer"
       aria-label={`Cronômetro: ${subject?.name ?? ""}`}
     >
@@ -162,7 +162,7 @@ export function MobileTimerPill() {
 /** Reserva espaço no fim da página para a pílula não cobrir conteúdo. */
 export function MobileTimerSpacer() {
   const { timer } = useStudy();
-  return timer ? <div className="h-[68px] md:hidden" aria-hidden /> : null;
+  return timer ? <div className="h-[68px] lg:hidden" aria-hidden /> : null;
 }
 
 /** Botão central da navegação inferior: cronômetro ou registro manual. */
