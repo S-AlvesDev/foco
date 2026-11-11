@@ -3,7 +3,7 @@ import { cn } from "@/lib/utils";
 
 export const BRAND_NAME = "Missão Alpha-01";
 
-/** Marca reduzida (o escudo com a caveira), para tamanhos pequenos: menu, topo do celular. */
+/** Marca reduzida (a águia no ladrilho roxo), para tamanhos pequenos: menu, topo do celular. */
 export function BrandMark({ className }: { className?: string }) {
   return (
     <img
@@ -18,13 +18,13 @@ export function BrandMark({ className }: { className?: string }) {
   );
 }
 
-/** Emblema completo, com o nome. Para telas de entrada e espaços grandes. */
+/** Emblema grande (a águia no ladrilho roxo). Para telas de entrada e espaços grandes. */
 export function BrandEmblem({ className }: { className?: string }) {
   return (
     <img
       src="/brand/emblema.webp"
       alt={BRAND_NAME}
-      width={366}
+      width={400}
       height={400}
       decoding="async"
       className={cn("h-auto w-[132px] object-contain drop-shadow-[0_12px_32px_rgb(0_0_0/0.45)]", className)}
@@ -33,7 +33,7 @@ export function BrandEmblem({ className }: { className?: string }) {
 }
 
 /**
- * Assinatura da marca: escudo, filete vertical e o nome em duas linhas
+ * Assinatura da marca: águia, filete vertical e o nome em duas linhas
  * ("MISSÃO" pequeno e espaçado, "ALPHA-01" grande, com o 01 em dourado).
  */
 export function BrandWordmark({ size = "sm", className }: { size?: "sm" | "lg"; className?: string }) {
