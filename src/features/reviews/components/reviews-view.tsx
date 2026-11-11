@@ -153,22 +153,19 @@ export function ReviewsView({
         <div className="mt-6 flex flex-col gap-8">
           {groups.map(({ g, items }) => (
             <section key={g} aria-label={GROUP_TITLE[g]}>
-              <h2
-                className={cn(
-                  "flex items-baseline justify-between border-b border-border pb-2 text-[13px] font-semibold",
-                  g === "overdue" ? "text-danger" : "text-fg",
-                )}
-              >
+              <h2 className={cn("list-head", g === "overdue" ? "text-danger" : "text-fg")}>
                 {GROUP_TITLE[g]}
                 <span className="text-[12.5px] font-normal text-fg-3 tabular-nums">{items.length}</span>
               </h2>
-              <ReviewList
-                reviews={items}
-                subjects={subjects}
-                activeSubjects={active}
-                todayISO={todayISO}
-                materials={materials}
-              />
+              <div className="list-box">
+                <ReviewList
+                  reviews={items}
+                  subjects={subjects}
+                  activeSubjects={active}
+                  todayISO={todayISO}
+                  materials={materials}
+                />
+              </div>
             </section>
           ))}
         </div>

@@ -163,13 +163,13 @@ export function GoalList({
             const done = list.filter((g) => g.done).length;
             return (
               <section key={p} aria-label={PERIOD_WINDOW_LABEL[p]}>
-                <div className="flex items-baseline justify-between border-b border-border pb-2">
-                  <h2 className="text-[13px] font-semibold text-fg">{PERIOD_WINDOW_LABEL[p]}</h2>
+                <div className="list-head">
+                  <h2 className="text-fg">{PERIOD_WINDOW_LABEL[p]}</h2>
                   <span className="text-[12.5px] text-fg-3 tabular-nums">
                     {done} de {list.length} cumprida{list.length === 1 ? "" : "s"}
                   </span>
                 </div>
-                {rows(list, false)}
+                <div className="list-box">{rows(list, false)}</div>
               </section>
             );
           })}

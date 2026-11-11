@@ -301,12 +301,12 @@ export function NotesView({
           {groups.map((g) => (
             <section key={g.key} aria-label={typeof g.title === "string" ? g.title : undefined}>
               {g.title && (
-                <h2 className="flex items-baseline justify-between border-b border-border pb-2 text-[13px] font-semibold text-fg">
+                <h2 className="list-head text-fg">
                   {g.title}
                   <span className="text-[12.5px] font-normal text-fg-3 tabular-nums">{g.items.length}</span>
                 </h2>
               )}
-              <ul className={cn("divide-y divide-border", !g.title && "border-t border-border")}>
+              <ul className="list-box divide-y divide-border">
                 {g.items.map((n) => {
                   const cat = n.category_id ? byLabel.get(n.category_id) : undefined;
                   const subj = n.subject_id ? bySubject.get(n.subject_id) : undefined;

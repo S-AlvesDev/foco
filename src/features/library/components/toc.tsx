@@ -53,14 +53,11 @@ export function Toc({
   dense?: boolean;
 }) {
   return (
-    <nav aria-label="Sumário" className="flex flex-col gap-5">
-      {chapters.map((c) => (
-        <div key={c.id}>
-          <p className={cn("px-2 font-semibold text-fg", dense ? "text-[12.5px]" : "text-[13.5px]")}>
-            {c.number ? `${c.number}. ` : ""}
-            {c.title}
-          </p>
-          <ul className="mt-1.5 flex flex-col">
+    <nav aria-label="Sumário" className={cn("flex flex-col", dense ? "gap-5" : "gap-4")}>
+      {chapters.map((c) => {
+        const done = c.topics.filter((t) => t.status === "done").length;
+        const rows = (
+          <ul className={cn("flex flex-col", dense ? "mt-1.5" : "mt-2")}>
             {c.topics.map((t) => (
               <TocRow
                 key={t.id}
@@ -73,8 +70,45 @@ export function Toc({
               />
             ))}
           </ul>
-        </div>
-      ))}
+        );
+        if (dense)
+          return (
+            <div key={c.id}>
+              <p className="px-2 text-[12.5px] font-semibold text-fg">
+                {c.number ? `${c.number}. ` : ""}
+                {c.title}
+              </p>
+              {rows}
+            </div>
+          );
+        return (
+          <section key={c.id} className="list-box px-3 py-4 sm:px-4">
+            <div className="flex items-baseline gap-3 px-2">
+              {c.number && (
+                <span
+                  aria-hidden
+                  className="num w-7 shrink-0 text-[22px] leading-none font-semibold text-fg-3"
+                >
+                  {String(c.number).padStart(2, "0")}
+                </span>
+              )}
+              <h3 className="font-display min-w-0 flex-1 text-[16.5px] leading-snug font-semibold text-fg">
+                <span className="sr-only">{c.number ? `Capítulo ${c.number}: ` : ""}</span>
+                {c.title}
+              </h3>
+              <span
+                className={cn(
+                  "num shrink-0 text-[12.5px]",
+                  done === c.topics.length && done > 0 ? "text-success" : "text-fg-3",
+                )}
+              >
+                {done}/{c.topics.length}
+              </span>
+            </div>
+            {rows}
+          </section>
+        );
+      })}
     </nav>
   );
 }
@@ -107,7 +141,7 @@ function TocRow({
         )}
         style={{ paddingLeft: `${8 + t.depth * 16}px` }}
       >
-        <span className="mt-[3px]">
+        <span className="mt-[3px] flex">
           <StatusDot status={t.status} percent={t.percent} />
         </span>
         <span className="min-w-0 flex-1 leading-snug">

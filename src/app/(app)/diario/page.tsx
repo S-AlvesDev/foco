@@ -114,7 +114,7 @@ async function Diary({ searchParams }: { searchParams: PageProps<"/diario">["sea
         <aside className="flex flex-col gap-8" aria-label="Contexto do dia">
           <section aria-labelledby="day-sessions">
             <div className="flex items-baseline justify-between border-b border-border pb-2">
-              <h2 id="day-sessions" className="text-[13px] font-semibold text-fg">
+              <h2 id="day-sessions" className="font-display text-[15.5px] font-semibold text-fg">
                 Sessões do dia
               </h2>
               <span className="text-[12.5px] text-fg-2 tabular-nums">{formatDuration(total)}</span>
@@ -148,7 +148,10 @@ async function Diary({ searchParams }: { searchParams: PageProps<"/diario">["sea
           </section>
 
           <section aria-labelledby="recent-entries">
-            <h2 id="recent-entries" className="border-b border-border pb-2 text-[13px] font-semibold text-fg">
+            <h2
+              id="recent-entries"
+              className="font-display border-b border-border pb-2 text-[15.5px] font-semibold text-fg"
+            >
               Entradas recentes
             </h2>
             {(recent.data ?? []).length === 0 ? (

@@ -117,7 +117,7 @@ function ColumnHeads({ withHandle }: { withHandle: boolean }) {
     <div
       aria-hidden
       className={cn(
-        "hidden h-8 items-center gap-3 border-b border-border px-2 text-[12px] text-fg-3 md:grid",
+        "hidden h-10 items-center gap-3 border-b border-border px-2 text-[12px] text-fg-3 md:grid",
         withHandle
           ? "grid-cols-[20px_minmax(0,1fr)_96px_96px_88px_32px]"
           : "grid-cols-[minmax(0,1fr)_96px_96px_88px_32px]",
@@ -184,7 +184,7 @@ function SortableList({ subjects, todayISO }: { subjects: SubjectItem[]; todayIS
   };
 
   return (
-    <div>
+    <div className="list-box px-2">
       <ColumnHeads withHandle />
       <DndContext
         sensors={sensors}
@@ -199,7 +199,7 @@ function SortableList({ subjects, todayISO }: { subjects: SubjectItem[]; todayIS
         }}
       >
         <SortableContext items={ids} strategy={verticalListSortingStrategy}>
-          <ul className="divide-y divide-border border-b border-border">
+          <ul className="divide-y divide-border">
             {ordered.map((s) => (
               <SortableRow key={s.id} subject={s} todayISO={todayISO} />
             ))}
@@ -317,9 +317,9 @@ function ArchivedList({ subjects, todayISO }: { subjects: SubjectItem[]; todayIS
       <p className="mt-1.5 text-[12.5px] text-fg-3">
         Não aparecem ao registrar sessões, mas o histórico continua contando.
       </p>
-      <div className="mt-3 opacity-80">
+      <div className="list-box mt-3 px-2 opacity-80">
         <ColumnHeads withHandle={false} />
-        <ul className="divide-y divide-border border-b border-border">
+        <ul className="divide-y divide-border">
           {subjects.map((s) => (
             <li key={s.id} className="relative">
               <Row subject={s} todayISO={todayISO} />

@@ -124,11 +124,11 @@ export function SessionsView({
         <div className="mt-6 flex flex-col gap-8">
           {groups.map((g) => (
             <section key={g.date} aria-label={dayHeading(g.date, todayISO)}>
-              <div className="flex items-baseline justify-between border-b border-border pb-2">
-                <h2 className="text-[13px] font-semibold text-fg">{dayHeading(g.date, todayISO)}</h2>
+              <div className="list-head">
+                <h2 className="text-fg">{dayHeading(g.date, todayISO)}</h2>
                 <span className="text-[13px] text-fg-2 tabular-nums">{formatDuration(g.seconds)}</span>
               </div>
-              <ul className="divide-y divide-border">
+              <ul className="list-box divide-y divide-border">
                 {g.items.map((s) => (
                   <SessionItem
                     key={s.id}
