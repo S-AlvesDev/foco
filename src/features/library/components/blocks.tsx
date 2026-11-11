@@ -307,7 +307,7 @@ export const BlockBody = memo(function BlockBody({
           ) : (
             <div
               data-no-anchor=""
-              className="rounded-xl border border-dashed border-border-strong px-4 py-8 text-center text-[13px] text-fg-3"
+              className="rounded-2xl border border-dashed border-border-strong px-4 py-8 text-center text-[13px] text-fg-3"
             >
               Imagem indisponível: {layout.alt}
             </div>

@@ -113,7 +113,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
   const top = d.bySubject[0];
 
   const hero = (onImage: boolean) => (
-    <header className="flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
+    <header className="flex flex-col gap-6 md:max-lg:flex-row md:max-lg:items-end md:max-lg:justify-between xl:flex-row xl:items-end xl:justify-between">
       <div className="min-w-0">
         <p className={cn("text-[13px] first-letter:uppercase", onImage ? "text-fg-2" : "text-fg-3")}>
           {longDate(tz, now)}
@@ -544,7 +544,9 @@ function Stat({
         <Icon className={cn("size-4 shrink-0 text-fg-3", iconClassName)} strokeWidth={1.9} aria-hidden />
         {label}
       </dt>
-      <dd className="num mt-2.5 text-[26px] leading-none font-semibold text-fg sm:text-[32px]">{value}</dd>
+      <dd className="num mt-2.5 text-[24px] leading-none font-semibold whitespace-nowrap text-fg sm:text-[28px] xl:text-[32px]">
+        {value}
+      </dd>
       {children}
     </div>
   );

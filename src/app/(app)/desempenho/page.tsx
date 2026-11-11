@@ -95,7 +95,7 @@ async function Performance({ searchParams }: { searchParams: PageProps<"/desempe
     return (
       <>
         <Header period={period} />
-        <div className="rounded-lg border border-dashed border-border-strong px-6 py-12 text-center">
+        <div className="rounded-2xl border border-dashed border-border-strong px-6 py-12 text-center">
           <p className="text-[14px] font-medium text-fg">Ainda não há sessões para analisar</p>
           <p className="mx-auto mt-1.5 max-w-[440px] text-[13.5px] leading-relaxed text-fg-2">
             Registre suas sessões de estudo e aqui aparecem horas por matéria, por semana e por mês, a

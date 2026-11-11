@@ -233,7 +233,7 @@ export function DashboardStudyActions({ onImage = false }: { onImage?: boolean }
   const noSubjects = data?.subjects.length === 0;
   const big = "h-12 rounded-xl text-[14.5px] [&_svg]:size-[18px]";
   return (
-    <div className="grid w-full grid-cols-2 gap-3 md:w-auto md:min-w-[400px]">
+    <div className="grid w-full grid-cols-2 gap-3 md:max-lg:w-auto md:max-lg:min-w-[400px] xl:w-auto xl:min-w-[400px]">
       {timer ? (
         <Button
           variant="primary"

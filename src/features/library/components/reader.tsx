@@ -417,9 +417,9 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
   );
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] px-4 pt-4 pb-16 sm:px-8 sm:pt-6 lg:grid lg:grid-cols-[256px_minmax(0,1fr)] lg:gap-10 xl:gap-14 2xl:max-w-[1440px] 2xl:grid-cols-[272px_minmax(0,1fr)_216px]">
+    <div className="mx-auto w-full max-w-[1180px] px-4 pt-4 pb-16 sm:px-8 sm:pt-6 xl:grid xl:grid-cols-[256px_minmax(0,1fr)] xl:gap-12 2xl:max-w-[1440px] 2xl:grid-cols-[272px_minmax(0,1fr)_216px]">
       {/* Sumário (desktop) */}
-      <aside className="hidden lg:block">
+      <aside className="hidden xl:block">
         <div className="sticky top-6 max-h-[calc(100dvh-48px)] overflow-y-auto pr-1 pb-6">
           <Link
             href={`/biblioteca/${encodeURIComponent(discipline.id)}`}
@@ -434,12 +434,12 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
 
       <article className="mx-auto w-full max-w-[720px] min-w-0">
         {/* Barra do leitor */}
-        <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 -mx-4 mb-8 flex items-center gap-1 border-b border-border/70 bg-bg/85 px-2 py-1.5 backdrop-blur-xl sm:-mx-8 sm:px-6 lg:top-0 lg:mx-0 lg:px-0">
+        <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 -mx-4 mb-8 flex items-center gap-1 border-b border-border/70 bg-bg/85 px-2 py-1.5 backdrop-blur-xl sm:-mx-8 sm:px-6 lg:top-0 xl:mx-0 xl:px-0">
           <span aria-hidden className="read-progress" />
           <Button
             variant="ghost"
             size="sm"
-            className="lg:hidden"
+            className="xl:hidden"
             onClick={() => setTocOpen(true)}
             aria-label="Abrir sumário"
           >
@@ -448,7 +448,7 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
           </Button>
           <Link
             href={`/biblioteca/${encodeURIComponent(discipline.id)}`}
-            className="hidden min-w-0 items-center gap-1 truncate rounded-md px-2 text-[13px] text-fg-3 hover:text-fg sm:flex lg:hidden"
+            className="hidden min-w-0 items-center gap-1 truncate rounded-md px-2 text-[13px] text-fg-3 hover:text-fg sm:flex xl:hidden"
           >
             <ChevronLeft className="size-4" />
             {discipline.name}
@@ -547,7 +547,7 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
         )}
 
         {laid.length === 0 && (
-          <p className="rounded-xl border border-dashed border-border-strong px-4 py-8 text-center text-[14px] text-fg-3">
+          <p className="rounded-2xl border border-dashed border-border-strong px-4 py-8 text-center text-[14px] text-fg-3">
             Este tópico não tem texto próprio: o conteúdo está nos subtópicos.
           </p>
         )}

@@ -58,7 +58,7 @@ export async function PlanCard() {
     >
       <span
         aria-hidden
-        className="outline-num pointer-events-none absolute top-5 right-5 text-[96px] select-none sm:top-7 sm:right-7 sm:text-[150px]"
+        className="outline-num pointer-events-none absolute top-5 right-5 text-[88px] select-none sm:top-7 sm:right-7 sm:text-[120px] xl:text-[150px]"
       >
         {m.id}
       </span>
@@ -77,7 +77,7 @@ export async function PlanCard() {
 
       <h2
         id="plan-title"
-        className="font-display relative mt-4 max-w-[20ch] text-[26px] leading-[1.12] font-semibold tracking-[-0.01em] text-balance text-fg sm:text-[32px]"
+        className="font-display relative mt-4 max-w-[22ch] pr-24 text-[26px] leading-[1.12] font-semibold tracking-[-0.01em] text-balance text-fg sm:pr-36 sm:text-[30px] xl:text-[32px]"
       >
         {title}
       </h2>

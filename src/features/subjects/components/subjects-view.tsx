@@ -97,7 +97,7 @@ export function SubjectsView({ subjects, todayISO }: { subjects: SubjectItem[]; 
 
 function EmptyState({ onCreate, hasArchived }: { onCreate: () => void; hasArchived: boolean }) {
   return (
-    <div className="rounded-lg border border-dashed border-border-strong px-6 py-12 text-center">
+    <div className="rounded-2xl border border-dashed border-border-strong px-6 py-12 text-center">
       <p className="text-[14px] font-medium text-fg">
         {hasArchived ? "Nenhuma matéria ativa" : "Nenhuma matéria ainda"}
       </p>

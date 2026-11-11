@@ -42,7 +42,7 @@ export function GoalsView({
       {plan && <div className="-mt-3 mb-8">{plan}</div>}
 
       {goals.length === 0 ? (
-        <div className="rounded-lg border border-dashed border-border-strong px-6 py-12 text-center">
+        <div className="rounded-2xl border border-dashed border-border-strong px-6 py-12 text-center">
           <p className="text-[14px] font-medium text-fg">Nenhuma meta ainda</p>
           <p className="mx-auto mt-1.5 max-w-[420px] text-[13.5px] leading-relaxed text-fg-2">
             Metas podem ser de horas, de sessões ou de questões resolvidas, para todas as matérias ou para uma

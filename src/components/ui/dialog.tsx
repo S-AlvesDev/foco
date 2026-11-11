@@ -92,9 +92,9 @@ export function DialogContent({
           "fixed z-50 flex flex-col bg-surface-1 shadow-pop outline-none",
           // celular: folha inferior
           // (sobe junto com o teclado do iPhone: ver useKeyboardInset)
-          "inset-x-0 bottom-[var(--kb,0px)] max-h-[min(92dvh,calc(var(--vvh,100dvh)-16px))] rounded-t-xl pb-[env(safe-area-inset-bottom)] data-[keyboard]:pb-0 data-[state=open]:animate-sheet",
+          "inset-x-0 bottom-[var(--kb,0px)] max-h-[min(92dvh,calc(var(--vvh,100dvh)-16px))] rounded-t-2xl pb-[env(safe-area-inset-bottom)] data-[keyboard]:pb-0 data-[state=open]:animate-sheet",
           // tablet/desktop: centralizado
-          "sm:inset-auto sm:top-[12vh] sm:left-1/2 sm:max-h-[76vh] sm:w-[min(460px,calc(100vw-32px))] sm:-translate-x-1/2 sm:rounded-xl sm:pb-0 sm:data-[state=open]:animate-pop",
+          "sm:inset-auto sm:top-[12vh] sm:left-1/2 sm:max-h-[76vh] sm:w-[min(460px,calc(100vw-32px))] sm:-translate-x-1/2 sm:rounded-2xl sm:pb-0 sm:data-[state=open]:animate-pop",
           className,
         )}
         {...props}
@@ -103,7 +103,9 @@ export function DialogContent({
         <div className="mx-auto mt-2 h-1 w-9 rounded-full bg-border-strong sm:hidden" aria-hidden />
         <div className="flex items-start justify-between gap-4 px-5 pt-4 pb-1 sm:pt-5">
           <div className="min-w-0">
-            <D.Title className="text-[16px] font-semibold tracking-[-0.01em] text-fg">{title}</D.Title>
+            <D.Title className="font-display text-[18px] leading-tight font-semibold text-fg">
+              {title}
+            </D.Title>
             {description ? (
               <D.Description className="mt-1 text-[13px] leading-relaxed text-fg-2">
                 {description}

@@ -113,7 +113,7 @@ export function ReviewsView({
       </div>
 
       {reviews.length === 0 ? (
-        <div className="mt-6 rounded-lg border border-dashed border-border-strong px-6 py-12 text-center">
+        <div className="mt-6 rounded-2xl border border-dashed border-border-strong px-6 py-12 text-center">
           <CalendarClock className="mx-auto size-5 text-fg-3" />
           <p className="mt-3 text-[14px] font-medium text-fg">
             {view === "historico"

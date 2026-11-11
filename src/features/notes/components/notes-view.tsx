@@ -276,7 +276,7 @@ export function NotesView({
       </div>
 
       {notes.length === 0 ? (
-        <div className="mt-6 rounded-lg border border-dashed border-border-strong px-6 py-12 text-center">
+        <div className="mt-6 rounded-2xl border border-dashed border-border-strong px-6 py-12 text-center">
           <p className="text-[14px] font-medium text-fg">
             {filtered ? "Nada encontrado com esses filtros" : "Nenhuma anotação ainda"}
           </p>

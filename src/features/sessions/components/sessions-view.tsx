@@ -105,7 +105,7 @@ export function SessionsView({
       <Filters subjects={subjects} period={period} subjectId={subjectId} />
 
       {groups.length === 0 ? (
-        <div className="mt-6 rounded-lg border border-dashed border-border-strong px-6 py-12 text-center">
+        <div className="mt-6 rounded-2xl border border-dashed border-border-strong px-6 py-12 text-center">
           <p className="text-[14px] font-medium text-fg">
             {subjects.length === 0 ? "Cadastre uma matéria para começar" : "Nada registrado neste período"}
           </p>
