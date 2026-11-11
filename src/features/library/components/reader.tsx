@@ -470,7 +470,7 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
         </div>
 
         <header className="mb-7">
-          <p className="text-[13px] font-medium text-steel">
+          <p className="text-[13px] font-medium text-fg-3">
             {chapter.number ? `Capítulo ${chapter.number} · ` : ""}
             {chapter.title}
           </p>

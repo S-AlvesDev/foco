@@ -15,7 +15,7 @@ export const metadata: Metadata = { title: "Diário" };
 
 export default function DiaryPage({ searchParams }: PageProps<"/diario">) {
   return (
-    <Page className="max-w-[1040px]">
+    <Page>
       <Suspense fallback={<DiarySkeleton />}>
         <Diary searchParams={searchParams} />
       </Suspense>

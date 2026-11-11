@@ -63,7 +63,7 @@ export const metadata: Metadata = { title: "Painel" };
 
 export default function DashboardPage({ searchParams }: PageProps<"/painel">) {
   return (
-    <Page className="relative isolate max-w-[1120px]">
+    <Page className="relative isolate">
       <Suspense fallback={<DashboardSkeleton />}>
         <Dashboard searchParams={searchParams} />
       </Suspense>
@@ -183,7 +183,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
         </section>
       )}
 
-      <dl className="mt-8 grid grid-cols-2 gap-3 lg:grid-cols-4">
+      <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border shadow-card lg:grid-cols-4">
         <Stat icon={Clock3} label="Hoje" value={formatDuration(cmp.today.current)}>
           <Delta c={cmp.today} versus="ontem" absolute />
         </Stat>
@@ -221,247 +221,277 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
         </Stat>
       </dl>
 
-      <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
-        <Card aria-labelledby="evolution-title">
-          <CardHeader
-            id="evolution-title"
-            icon={ChartColumn}
-            title="Sua evolução"
-            action={<PeriodTabs value={period} defaultValue="7" />}
-          />
-          <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-fg-2 tabular-nums">
-            <span>
-              <span className="font-medium text-fg">{formatDuration(d.period.seconds)}</span> em{" "}
-              {plural(d.period.sessions, "sessão", "sessões")}
-            </span>
-            <span>Média de {formatDuration(d.period.dailyAverage)} por dia</span>
-            <span>
-              {d.period.studiedDays} de {d.period.days} dias com estudo
-            </span>
-            {d.period.questions > 0 && <span>{plural(d.period.questions, "questão", "questões")}</span>}
-          </p>
-          <div className="mt-5">
-            <EvolutionChart
-              buckets={d.buckets}
-              subjects={meta}
-              goalSeconds={d.granularity === "day" && dailyGoal ? dailyGoal.target * 60 : undefined}
-              caption={`Horas estudadas por ${d.granularity === "day" ? "dia" : d.granularity === "week" ? "semana" : "mês"}, últimos ${periodLabel}`}
+      {/* Para hoje: o que fazer agora. Os cards somem sozinhos quando o recurso não está disponível. */}
+      <section aria-labelledby="today-title" className="mt-10">
+        <h2 id="today-title" className="text-[13px] font-medium text-fg-2">
+          Para hoje
+        </h2>
+        <div className="mt-3 grid gap-4 lg:auto-cols-fr lg:grid-flow-col">
+          <Suspense>
+            <PlanCard />
+          </Suspense>
+          <Suspense>
+            <MemoryCard />
+          </Suspense>
+          <QuestionsTodayCard rows={qRows} today={today} from={qFrom} />
+        </div>
+      </section>
+
+      <section aria-labelledby="progress-title" className="mt-10">
+        <h2 id="progress-title" className="text-[13px] font-medium text-fg-2">
+          Seu progresso
+        </h2>
+        <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+          <Card aria-labelledby="evolution-title">
+            <CardHeader
+              id="evolution-title"
+              icon={ChartColumn}
+              title="Sua evolução"
+              action={<PeriodTabs value={period} defaultValue="7" />}
             />
-          </div>
-          <p className="mt-4 border-t border-border pt-3.5 text-[12.5px] text-fg-3 tabular-nums">
-            Total acumulado: <span className="font-medium text-fg-2">{formatDuration(allTime.seconds)}</span>{" "}
-            em {plural(allTime.sessions, "sessão", "sessões")}
-          </p>
-        </Card>
-
-        <Card aria-labelledby="subjects-title">
-          <CardHeader
-            id="subjects-title"
-            icon={Layers}
-            title="Distribuição por matéria"
-            sub={`Últimos ${periodLabel}`}
-            action={
-              <Link
-                href="/desempenho"
-                aria-label="Ver desempenho"
-                className="-mr-1.5 flex size-8 items-center justify-center rounded-lg text-fg-3 transition-colors hover:bg-surface-2 hover:text-fg"
-              >
-                <ChevronRight className="size-[18px]" />
-              </Link>
-            }
-          />
-          {d.bySubject.length === 0 ? (
-            <p className="mt-5 text-[13.5px] text-fg-2">Nenhum estudo registrado neste período.</p>
-          ) : (
-            <ul className="mt-5 flex flex-col gap-4">
-              {d.bySubject.slice(0, 8).map((s) => (
-                <li key={s.subjectId}>
-                  <div className="flex items-baseline justify-between gap-3 text-[13.5px]">
-                    <Link
-                      href={`/materias/${s.subjectId}`}
-                      className="flex min-w-0 items-center gap-2.5 text-fg hover:underline hover:decoration-border-strong hover:underline-offset-[3px]"
-                    >
-                      <span
-                        className="size-2.5 shrink-0 rounded-full"
-                        style={{ background: meta[s.subjectId]?.color }}
-                      />
-                      <span className="truncate">{meta[s.subjectId]?.name ?? "Matéria excluída"}</span>
-                      {s === top && d.bySubject.length > 1 && (
-                        <span className="hidden shrink-0 rounded-full bg-surface-2 px-2 py-px text-[11.5px] text-fg-2 sm:inline">
-                          mais estudada
-                        </span>
-                      )}
-                    </Link>
-                    <span className="shrink-0 text-fg-2 tabular-nums">
-                      {formatDuration(s.seconds)}
-                      <span className="ml-2 inline-block w-9 text-right font-medium text-fg">
-                        {Math.round(s.share * 100)}%
-                      </span>
-                    </span>
-                  </div>
-                  <div className="mt-2 h-1.5 rounded-full bg-surface-3/70" aria-hidden>
-                    <div
-                      className="h-full rounded-full"
-                      style={{
-                        width: `${Math.max(s.share * 100, 1.5)}%`,
-                        background: meta[s.subjectId]?.color,
-                      }}
-                    />
-                  </div>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card aria-labelledby="reviews-title">
-          <CardHeader
-            id="reviews-title"
-            icon={RefreshCcw}
-            title="Próximas revisões"
-            sub={
-              upcoming.overdue > 0 ? (
-                <Link href="/revisoes" className="text-warning hover:underline hover:underline-offset-2">
-                  {plural(upcoming.overdue, "atrasada", "atrasadas")}
-                </Link>
-              ) : (
-                "Próximos 7 dias"
-              )
-            }
-            action={<CardLink href="/revisoes">Ver todas</CardLink>}
-          />
-          {upcoming.reviews.length === 0 ? (
-            <p className="mt-4 text-[13.5px] leading-relaxed text-fg-2">
-              Nada para revisar nos próximos 7 dias. Agende revisões a partir de uma sessão, anotação ou da
-              página de revisões.
+            <p className="mt-4 flex flex-wrap gap-x-4 gap-y-1 text-[13px] text-fg-2 tabular-nums">
+              <span>
+                <span className="font-medium text-fg">{formatDuration(d.period.seconds)}</span> em{" "}
+                {plural(d.period.sessions, "sessão", "sessões")}
+              </span>
+              <span>Média de {formatDuration(d.period.dailyAverage)} por dia</span>
+              <span>
+                {d.period.studiedDays} de {d.period.days} dias com estudo
+              </span>
+              {d.period.questions > 0 && <span>{plural(d.period.questions, "questão", "questões")}</span>}
+              {d.granularity === "day" && dailyGoal && (
+                <span className="inline-flex items-center gap-1.5">
+                  <span aria-hidden className="w-4 border-t border-dashed border-success" />
+                  Meta de {formatDuration(dailyGoal.target * 60)} por dia
+                </span>
+              )}
             </p>
-          ) : (
-            <div className="mt-2">
-              <ReviewList
-                reviews={upcoming.reviews}
-                subjects={subjects.map((s) => ({
-                  id: s.id,
-                  name: s.name,
-                  color: s.color,
-                  archived: Boolean(s.archived_at),
-                }))}
-                activeSubjects={activeList}
-                todayISO={today}
-                compact
+            <div className="mt-5">
+              <EvolutionChart
+                buckets={d.buckets}
+                subjects={meta}
+                goalSeconds={d.granularity === "day" && dailyGoal ? dailyGoal.target * 60 : undefined}
+                caption={`Horas estudadas por ${d.granularity === "day" ? "dia" : d.granularity === "week" ? "semana" : "mês"}, últimos ${periodLabel}`}
               />
             </div>
-          )}
-        </Card>
-
-        <QuestionsTodayCard rows={qRows} today={today} from={qFrom} />
-
-        <Suspense>
-          <PlanCard />
-        </Suspense>
-
-        <Suspense>
-          <MemoryCard />
-        </Suspense>
-
-        <Suspense>
-          <LibraryCard />
-        </Suspense>
-
-        <Card aria-labelledby="goals-title">
-          <CardHeader
-            id="goals-title"
-            icon={Target}
-            title="Metas"
-            action={<CardLink href="/metas">{goals.length ? "Ver todas" : "Criar meta"}</CardLink>}
-          />
-          <div className="mt-2">
-            <GoalList
-              goals={goals.slice(0, 4)}
-              subjects={activeList}
-              editable={false}
-              emptyText="Defina quanto quer estudar por dia, semana ou mês e acompanhe o progresso aqui."
+            <p className="mt-4 border-t border-border pt-3.5 text-[12.5px] text-fg-3 tabular-nums">
+              Total acumulado:{" "}
+              <span className="font-medium text-fg-2">{formatDuration(allTime.seconds)}</span> em{" "}
+              {plural(allTime.sessions, "sessão", "sessões")}
+            </p>
+          </Card>
+          <Card aria-labelledby="subjects-title">
+            <CardHeader
+              id="subjects-title"
+              icon={Layers}
+              title="Distribuição por matéria"
+              sub={`Últimos ${periodLabel}`}
+              action={
+                <Link
+                  href="/desempenho"
+                  aria-label="Ver desempenho"
+                  className="-mr-1.5 flex size-8 items-center justify-center rounded-lg text-fg-3 transition-colors hover:bg-surface-2 hover:text-fg"
+                >
+                  <ChevronRight className="size-[18px]" />
+                </Link>
+              }
             />
-          </div>
-        </Card>
+            {d.bySubject.length === 0 ? (
+              <p className="mt-5 text-[13.5px] text-fg-2">Nenhum estudo registrado neste período.</p>
+            ) : (
+              <ul className="mt-5 flex flex-col gap-4">
+                {d.bySubject.slice(0, 8).map((s) => (
+                  <li key={s.subjectId}>
+                    <div className="flex items-baseline justify-between gap-3 text-[13.5px]">
+                      <Link
+                        href={`/materias/${s.subjectId}`}
+                        className="flex min-w-0 items-center gap-2.5 text-fg hover:underline hover:decoration-border-strong hover:underline-offset-[3px]"
+                      >
+                        <span
+                          className="size-2.5 shrink-0 rounded-full"
+                          style={{ background: meta[s.subjectId]?.color }}
+                        />
+                        <span className="truncate">{meta[s.subjectId]?.name ?? "Matéria excluída"}</span>
+                        {s === top && d.bySubject.length > 1 && (
+                          <span className="hidden shrink-0 rounded-full bg-surface-2 px-2 py-px text-[11.5px] text-fg-2 sm:inline">
+                            mais estudada
+                          </span>
+                        )}
+                      </Link>
+                      <span className="shrink-0 text-fg-2 tabular-nums">
+                        {formatDuration(s.seconds)}
+                        <span className="ml-2 inline-block w-9 text-right font-medium text-fg">
+                          {Math.round(s.share * 100)}%
+                        </span>
+                      </span>
+                    </div>
+                    <div className="mt-2 h-1.5 rounded-full bg-surface-3/70" aria-hidden>
+                      <div
+                        className="h-full rounded-full"
+                        style={{
+                          width: `${Math.max(s.share * 100, 1.5)}%`,
+                          background: meta[s.subjectId]?.color,
+                        }}
+                      />
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </Card>
+        </div>
+      </section>
 
-        <Card aria-labelledby="recent-title">
-          <CardHeader
-            id="recent-title"
-            icon={History}
-            title="Últimas sessões"
-            action={<CardLink href="/sessoes">Ver todas</CardLink>}
-          />
-          {recent.length === 0 ? (
-            <p className="mt-4 text-[13.5px] text-fg-2">
-              Use o cronômetro enquanto estuda ou registre uma sessão que já aconteceu.
-            </p>
-          ) : (
-            <ul className="mt-2 divide-y divide-border">
-              {recent.map((s) => (
-                <li key={s.id} className="flex items-center gap-3 py-3">
-                  <span
-                    className="size-2.5 shrink-0 rounded-full"
-                    style={{ background: meta[s.subject_id]?.color }}
-                    aria-hidden
+      <section aria-labelledby="follow-title" className="mt-10">
+        <h2 id="follow-title" className="text-[13px] font-medium text-fg-2">
+          Acompanhamento
+        </h2>
+        <div className="mt-3 grid items-start gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+          <div className="flex min-w-0 flex-col gap-4">
+            <Card aria-labelledby="reviews-title">
+              <CardHeader
+                id="reviews-title"
+                icon={RefreshCcw}
+                title="Próximas revisões"
+                sub={
+                  upcoming.overdue > 0 ? (
+                    <Link href="/revisoes" className="text-warning hover:underline hover:underline-offset-2">
+                      {plural(upcoming.overdue, "atrasada", "atrasadas")}
+                    </Link>
+                  ) : (
+                    "Próximos 7 dias"
+                  )
+                }
+                action={<CardLink href="/revisoes">Ver todas</CardLink>}
+              />
+              {upcoming.reviews.length === 0 ? (
+                <p className="mt-4 text-[13.5px] leading-relaxed text-fg-2">
+                  Nada para revisar nos próximos 7 dias. Agende revisões a partir de uma sessão, anotação ou
+                  da página de revisões.
+                </p>
+              ) : (
+                <div className="mt-2">
+                  <ReviewList
+                    reviews={upcoming.reviews}
+                    subjects={subjects.map((s) => ({
+                      id: s.id,
+                      name: s.name,
+                      color: s.color,
+                      archived: Boolean(s.archived_at),
+                    }))}
+                    activeSubjects={activeList}
+                    todayISO={today}
+                    compact
                   />
-                  <span className="min-w-0 flex-1">
-                    <span className="block truncate text-[13.5px] text-fg">
-                      {s.topic || meta[s.subject_id]?.name || "Matéria"}
-                    </span>
-                    <span className="flex items-center gap-2 text-[12.5px] text-fg-3">
-                      {s.topic ? (meta[s.subject_id]?.name ?? "Matéria") : studyTypeLabel(s.study_type)}
-                      {s.source === "timer" && <TimerIcon className="size-3" aria-label="cronômetro" />}
-                    </span>
-                  </span>
-                  <span className="shrink-0 text-right">
-                    <span className="block text-[13.5px] text-fg tabular-nums">
-                      {formatDuration(s.duration_seconds)}
-                    </span>
-                    <span className="block text-[12px] text-fg-3">{relativeDay(s.session_date, today)}</span>
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-
-        <Card aria-labelledby="notes-title">
-          <CardHeader
-            id="notes-title"
-            icon={NotebookPen}
-            title="Anotações recentes"
-            action={<CardLink href="/anotacoes">{notes.length ? "Ver todas" : "Ir para anotações"}</CardLink>}
-          />
-          {notes.length === 0 ? (
-            <p className="mt-4 text-[13.5px] text-fg-2">
-              Resumos, dúvidas e pontos importantes aparecem aqui.
-            </p>
-          ) : (
-            <ul className="mt-2 divide-y divide-border">
-              {notes.map((n) => (
-                <li key={n.id}>
-                  <Link
-                    href={`/anotacoes/${n.id}`}
-                    className="-mx-2 block rounded-lg px-2 py-2.5 hover:bg-surface-2/60"
-                  >
-                    <span className="flex items-baseline justify-between gap-3">
-                      <span className={`truncate text-[13.5px] ${n.title ? "text-fg" : "text-fg-3"}`}>
-                        {n.title || "Sem título"}
+                </div>
+              )}
+            </Card>
+            <Card aria-labelledby="recent-title">
+              <CardHeader
+                id="recent-title"
+                icon={History}
+                title="Últimas sessões"
+                action={<CardLink href="/sessoes">Ver todas</CardLink>}
+              />
+              {recent.length === 0 ? (
+                <p className="mt-4 text-[13.5px] text-fg-2">
+                  Use o cronômetro enquanto estuda ou registre uma sessão que já aconteceu.
+                </p>
+              ) : (
+                <ul className="mt-2 divide-y divide-border">
+                  {recent.map((s) => (
+                    <li key={s.id} className="flex items-center gap-3 py-3">
+                      <span
+                        className="size-2.5 shrink-0 rounded-full"
+                        style={{ background: meta[s.subject_id]?.color }}
+                        aria-hidden
+                      />
+                      <span className="min-w-0 flex-1">
+                        <span className="block truncate text-[13.5px] text-fg">
+                          {s.topic || meta[s.subject_id]?.name || "Matéria"}
+                        </span>
+                        <span className="flex items-center gap-2 text-[12.5px] text-fg-3">
+                          {s.topic ? (meta[s.subject_id]?.name ?? "Matéria") : studyTypeLabel(s.study_type)}
+                          {s.source === "timer" && <TimerIcon className="size-3" aria-label="cronômetro" />}
+                        </span>
                       </span>
-                      <span className="shrink-0 text-[12px] text-fg-3">
-                        {relativeDay(n.updated_at.slice(0, 10), today)}
+                      <span className="shrink-0 text-right">
+                        <span className="block text-[13.5px] text-fg tabular-nums">
+                          {formatDuration(s.duration_seconds)}
+                        </span>
+                        <span className="block text-[12px] text-fg-3">
+                          {relativeDay(s.session_date, today)}
+                        </span>
                       </span>
-                    </span>
-                    {n.snippet && (
-                      <span className="mt-0.5 line-clamp-1 block text-[12.5px] text-fg-3">{n.snippet}</span>
-                    )}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          )}
-        </Card>
-      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          </div>
+          <div className="flex min-w-0 flex-col gap-4">
+            <Card aria-labelledby="goals-title">
+              <CardHeader
+                id="goals-title"
+                icon={Target}
+                title="Metas"
+                action={<CardLink href="/metas">{goals.length ? "Ver todas" : "Criar meta"}</CardLink>}
+              />
+              <div className="mt-2">
+                <GoalList
+                  goals={goals.slice(0, 4)}
+                  subjects={activeList}
+                  editable={false}
+                  emptyText="Defina quanto quer estudar por dia, semana ou mês e acompanhe o progresso aqui."
+                />
+              </div>
+            </Card>
+            <Suspense>
+              <LibraryCard />
+            </Suspense>
+            <Card aria-labelledby="notes-title">
+              <CardHeader
+                id="notes-title"
+                icon={NotebookPen}
+                title="Anotações recentes"
+                action={
+                  <CardLink href="/anotacoes">{notes.length ? "Ver todas" : "Ir para anotações"}</CardLink>
+                }
+              />
+              {notes.length === 0 ? (
+                <p className="mt-4 text-[13.5px] text-fg-2">
+                  Resumos, dúvidas e pontos importantes aparecem aqui.
+                </p>
+              ) : (
+                <ul className="mt-2 divide-y divide-border">
+                  {notes.map((n) => (
+                    <li key={n.id}>
+                      <Link
+                        href={`/anotacoes/${n.id}`}
+                        className="-mx-2 block rounded-lg px-2 py-2.5 hover:bg-surface-2/60"
+                      >
+                        <span className="flex items-baseline justify-between gap-3">
+                          <span className={`truncate text-[13.5px] ${n.title ? "text-fg" : "text-fg-3"}`}>
+                            {n.title || "Sem título"}
+                          </span>
+                          <span className="shrink-0 text-[12px] text-fg-3">
+                            {relativeDay(n.updated_at.slice(0, 10), today)}
+                          </span>
+                        </span>
+                        {n.snippet && (
+                          <span className="mt-0.5 line-clamp-1 block text-[12.5px] text-fg-3">
+                            {n.snippet}
+                          </span>
+                        )}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              )}
+            </Card>
+          </div>
+        </div>
+      </section>
     </>
   );
 }
@@ -492,9 +522,9 @@ function Stat({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="min-w-0 rounded-2xl border border-border bg-surface-1 p-4 shadow-card">
+    <div className="min-w-0 bg-surface-1 p-4 sm:px-5">
       <dt className="flex items-center gap-2 text-[12.5px] text-fg-2">
-        <Icon className={cn("size-4 shrink-0 text-steel", iconClassName)} strokeWidth={1.9} aria-hidden />
+        <Icon className={cn("size-4 shrink-0 text-fg-3", iconClassName)} strokeWidth={1.9} aria-hidden />
         {label}
       </dt>
       <dd className="mt-2 text-[22px] leading-tight font-semibold tracking-[-0.02em] text-fg tabular-nums sm:text-[24px]">

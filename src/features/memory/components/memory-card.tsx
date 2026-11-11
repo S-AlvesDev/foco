@@ -26,16 +26,16 @@ export async function MemoryCard({ always = false }: { always?: boolean }) {
     .filter((i) => i.state !== "suspended" && i.dueOn > q.today)
     .sort((a, b) => a.dueOn.localeCompare(b.dueOn))[0];
   return (
-    <Card aria-labelledby="memory-title">
+    <Card aria-labelledby="memory-title" className="flex flex-col">
       <CardHeader
         id="memory-title"
         icon={BrainCircuit}
-        title="Revisões de hoje · Biblioteca"
+        title="Revisões de hoje"
         sub={
           q.now.length
-            ? `${plural(q.now.length, "tópico", "tópicos")} · ~${q.minutes} min`
+            ? `Biblioteca · ${plural(q.now.length, "tópico", "tópicos")} · ~${q.minutes} min`
             : q.total
-              ? "Nada vencido hoje"
+              ? "Biblioteca · nada vencido hoje"
               : "Revisão adaptativa dos tópicos concluídos"
         }
         action={
@@ -61,12 +61,14 @@ export async function MemoryCard({ always = false }: { always?: boolean }) {
             ))}
           </ul>
           {q.now.length > 3 && <p className="mt-1.5 text-[12.5px] text-fg-3">e mais {q.now.length - 3}</p>}
-          <Button asChild variant="primary" className="mt-4 w-full">
-            <Link href="/revisoes/hoje">
-              <Play />
-              Começar revisão
-            </Link>
-          </Button>
+          <div className="mt-auto pt-5">
+            <Button asChild className="w-full">
+              <Link href="/revisoes/hoje">
+                <Play />
+                Começar revisão
+              </Link>
+            </Button>
+          </div>
         </>
       ) : (
         <p className="mt-4 text-[13.5px] leading-relaxed text-fg-2">

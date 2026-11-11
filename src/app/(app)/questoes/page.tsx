@@ -19,7 +19,7 @@ export const metadata: Metadata = { title: "Banco de questões" };
 
 export default function QuestionsPage({ searchParams }: PageProps<"/questoes">) {
   return (
-    <Page className="max-w-[1120px]">
+    <Page>
       <Suspense fallback={<QuestionsSkeleton />}>
         <Questions searchParams={searchParams} />
       </Suspense>

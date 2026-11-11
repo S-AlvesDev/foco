@@ -1,9 +1,24 @@
 import { cn } from "@/lib/utils";
 
 /** Container de página: largura de leitura, margens generosas, respiro no topo. */
-export function Page({ children, className }: { children: React.ReactNode; className?: string }) {
+const PAGE_SIZES = {
+  /** Fluxos de foco: resolver questões, revisar, ler uma lista curta. */
+  narrow: "max-w-[800px]",
+  /** Todas as outras páginas: a mesma largura, para o conteúdo não "pular" ao navegar. */
+  default: "max-w-[1040px]",
+} as const;
+
+export function Page({
+  children,
+  className,
+  size = "default",
+}: {
+  children: React.ReactNode;
+  className?: string;
+  size?: keyof typeof PAGE_SIZES;
+}) {
   return (
-    <div className={cn("mx-auto w-full max-w-[960px] px-4 pt-6 pb-12 sm:px-8 sm:pt-10", className)}>
+    <div className={cn("mx-auto w-full px-4 pt-6 pb-16 sm:px-8 sm:pt-10", PAGE_SIZES[size], className)}>
       {children}
     </div>
   );

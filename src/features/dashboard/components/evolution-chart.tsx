@@ -93,8 +93,8 @@ export function EvolutionChart({
           >
             <defs>
               <linearGradient id={gradient} x1="0" y1="0" x2="0" y2="1">
-                <stop offset="0" stopColor="var(--steel)" />
-                <stop offset="1" stopColor="var(--steel-soft)" />
+                <stop offset="0" stopColor="var(--accent)" />
+                <stop offset="1" stopColor="var(--accent)" stopOpacity="0.55" />
               </linearGradient>
             </defs>
             {ticks.map((t) => (
@@ -125,16 +125,9 @@ export function EvolutionChart({
                   y1={y(goalSeconds)}
                   y2={y(goalSeconds)}
                   stroke="var(--success)"
-                  strokeWidth={1.5}
+                  strokeWidth={1}
+                  strokeDasharray="4 4"
                 />
-                <text
-                  x={width - PAD.right}
-                  y={y(goalSeconds) - 5}
-                  textAnchor="end"
-                  className="fill-fg-2 text-[11px]"
-                >
-                  Meta {formatDuration(goalSeconds)}
-                </text>
               </g>
             ) : null}
             {buckets.map((b, i) => {

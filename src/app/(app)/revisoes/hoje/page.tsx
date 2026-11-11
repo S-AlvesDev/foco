@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Revisões de hoje" };
 
 export default function TodayPage({ searchParams }: PageProps<"/revisoes/hoje">) {
   return (
-    <Page className="max-w-[880px]">
+    <Page size="narrow">
       <Suspense fallback={<Skeleton />}>
         <Today searchParams={searchParams} />
       </Suspense>

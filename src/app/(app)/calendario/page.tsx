@@ -28,7 +28,7 @@ export const metadata: Metadata = { title: "Calendário" };
 
 export default function CalendarPage({ searchParams }: PageProps<"/calendario">) {
   return (
-    <Page className="max-w-[1040px]">
+    <Page>
       <Suspense fallback={<CalendarSkeleton />}>
         <Calendar searchParams={searchParams} />
       </Suspense>
@@ -44,7 +44,8 @@ async function Calendar({ searchParams }: { searchParams: PageProps<"/calendario
   const today = localDateISO(tz, new Date());
   const month = monthParam(sp.mes, today);
   const monthEnd = addDays(addMonths(month, 1), -1);
-  const day = dayParam(sp.dia, month, today);
+  // Sem dia escolhido no mês atual, abre em hoje: o painel ao lado nunca fica vazio.
+  const day = dayParam(sp.dia, month, today) ?? (month.slice(0, 7) === today.slice(0, 7) ? today : null);
   const heatFrom = heatmapStart(today, weekStartsOn);
 
   const [subjects, goals, heatRows, monthRows, daySessions] = await Promise.all([

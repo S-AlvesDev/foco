@@ -15,7 +15,7 @@ export function ProgressBar({ percent, className }: { percent: number; className
       aria-valuemax={100}
       aria-label={`${percent}% lido`}
     >
-      <div className="h-full rounded-full bg-steel transition-[width]" style={{ width: `${percent}%` }} />
+      <div className="h-full rounded-full bg-accent transition-[width]" style={{ width: `${percent}%` }} />
     </div>
   );
 }

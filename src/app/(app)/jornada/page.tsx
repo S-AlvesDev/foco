@@ -32,7 +32,7 @@ export const metadata: Metadata = { title: "Nossa Jornada" };
 
 export default function JourneyPage({ searchParams }: PageProps<"/jornada">) {
   return (
-    <Page className="max-w-[1040px]">
+    <Page>
       <Suspense fallback={<JourneySkeleton />}>
         <Journey searchParams={searchParams} />
       </Suspense>

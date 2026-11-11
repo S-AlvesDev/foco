@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArrowRight, BookMarked, Layers, NotebookPen, Star, Upload } from "lucide-react";
+import { ArrowRight, BookMarked, NotebookPen, Star, Upload } from "lucide-react";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
 import { plural } from "@/lib/format";
@@ -16,7 +16,7 @@ export const metadata: Metadata = { title: "Biblioteca" };
 
 export default function LibraryPage({ searchParams }: PageProps<"/biblioteca">) {
   return (
-    <Page className="max-w-[1120px]">
+    <Page>
       <Suspense fallback={<Skeleton />}>
         <Library searchParams={searchParams} />
       </Suspense>
@@ -170,18 +170,16 @@ function DisciplineCard({ d }: { d: DisciplineSummary }) {
       href={`/biblioteca/${encodeURIComponent(d.id)}`}
       className="group flex flex-col rounded-2xl border border-border bg-surface-1 p-4 shadow-card transition-colors hover:border-border-strong sm:p-5"
     >
-      <span className="flex items-start gap-3">
-        <span className="flex size-9 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-steel">
-          <Layers className="size-[18px]" strokeWidth={1.8} />
-        </span>
+      <span className="flex items-start justify-between gap-3">
         <span className="min-w-0">
           <span className="block text-[15px] leading-snug font-semibold text-fg">{d.name}</span>
-          <span className="mt-0.5 block text-[12.5px] text-fg-3">
+          <span className="mt-1 block text-[12.5px] text-fg-3">
             {plural(d.chapters, "capítulo", "capítulos")} · {plural(d.topics, "tópico", "tópicos")}
           </span>
         </span>
+        <ArrowRight className="mt-0.5 size-4 shrink-0 text-fg-3 opacity-0 transition-opacity group-hover:opacity-100" />
       </span>
-      <span className="mt-4 flex items-center justify-between text-[12.5px] text-fg-2">
+      <span className="mt-6 flex items-center justify-between text-[12.5px] text-fg-2">
         <span>{d.readPercent}% lido</span>
         <span className="text-fg-3">
           {d.done ? `${d.done} ${d.done === 1 ? "concluído" : "concluídos"}` : ""}

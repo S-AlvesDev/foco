@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Resolver questões" };
 
 export default function SolvePage({ searchParams }: PageProps<"/questoes/resolver">) {
   return (
-    <Page className="max-w-[880px]">
+    <Page size="narrow">
       <Suspense fallback={<SolveSkeleton />}>
         <Solve searchParams={searchParams} />
       </Suspense>

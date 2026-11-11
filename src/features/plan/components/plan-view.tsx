@@ -67,7 +67,7 @@ function MetaStatusIcon({ meta, current }: { meta: MetaState; current: boolean }
 /** Itens de uma meta: tópicos com situação de leitura, revisões e botões de marcar. */
 export function MetaBody({ meta, page }: { meta: MetaState; page: PlanPage }) {
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex flex-col divide-y divide-border [&>*+*]:pt-4 [&>*:not(:last-child)]:pb-4">
       {meta.items.map((item) => (
         <ItemBlock key={item.index} meta={meta} item={item} page={page} />
       ))}
@@ -91,7 +91,7 @@ function ItemBlock({ meta, item, page }: { meta: MetaState; item: ItemState; pag
   const unread = topics.filter((t) => t.status !== "done").length;
 
   return (
-    <div className="rounded-xl border border-border bg-surface-2/30 p-3.5 sm:p-4">
+    <div>
       <div className="flex flex-wrap items-start justify-between gap-x-4 gap-y-2">
         <div className="min-w-0">
           <p className="text-[12px] font-medium text-fg-3">
@@ -250,18 +250,13 @@ export function PlanList({ page }: { page: PlanPage }) {
               {g.metas.filter((m) => m.done).length}/{g.metas.length}
             </span>
           </h2>
-          <ul className="flex flex-col gap-2">
+          <ul className="divide-y divide-border overflow-hidden rounded-2xl border border-border bg-surface-1">
             {g.metas.map((m) => {
               const current = page.current?.id === m.id;
               return (
                 <li key={m.id}>
-                  <details
-                    className={cn(
-                      "group rounded-xl border bg-surface-1 transition-colors open:shadow-card",
-                      current ? "border-accent/50" : "border-border",
-                    )}
-                  >
-                    <summary className="flex cursor-pointer list-none items-center gap-3 px-3.5 py-3 [&::-webkit-details-marker]:hidden">
+                  <details className={cn("group", current && "bg-accent-subtle/60")}>
+                    <summary className="flex cursor-pointer list-none items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2/50 [&::-webkit-details-marker]:hidden">
                       <MetaStatusIcon meta={m} current={current} />
                       <span className="w-[66px] shrink-0 text-[13px] font-semibold text-fg tabular-nums">
                         {m.label}
@@ -282,7 +277,7 @@ export function PlanList({ page }: { page: PlanPage }) {
                         <ScrollText className="size-4 shrink-0 text-fg-3 group-open:text-fg-2" aria-hidden />
                       )}
                     </summary>
-                    <div className="border-t border-border px-3.5 py-3.5">
+                    <div className="border-t border-border/70 bg-bg/40 px-4 py-4 sm:pl-[52px]">
                       <MetaBody meta={m} page={page} />
                     </div>
                   </details>

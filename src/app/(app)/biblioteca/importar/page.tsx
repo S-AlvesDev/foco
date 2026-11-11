@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Importar materiais" };
 
 export default function LibraryImportPage() {
   return (
-    <Page className="max-w-[880px]">
+    <Page size="narrow">
       <Button asChild variant="ghost" className="-ml-2 mb-4">
         <Link href="/biblioteca">
           <ArrowLeft />

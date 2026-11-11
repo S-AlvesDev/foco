@@ -45,7 +45,7 @@ export const metadata: Metadata = { title: "Desempenho" };
 
 export default function PerformancePage({ searchParams }: PageProps<"/desempenho">) {
   return (
-    <Page className="max-w-[1040px]">
+    <Page>
       <Suspense fallback={<PerformanceSkeleton />}>
         <Performance searchParams={searchParams} />
       </Suspense>
@@ -136,7 +136,7 @@ async function Performance({ searchParams }: { searchParams: PageProps<"/desempe
         </p>
         <dl
           className={cn(
-            "grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-border",
+            "grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border",
             now.questions > 0 || before.questions > 0 ? "lg:grid-cols-3" : "lg:grid-cols-4",
           )}
         >
@@ -515,10 +515,12 @@ function Compare({
   points?: boolean;
 }) {
   return (
-    <div className="bg-bg px-4 py-3.5">
+    <div className="bg-surface-1 px-4 py-3.5">
       <dt className="text-[12.5px] text-fg-3">{label}</dt>
       <dd className="mt-1 flex items-baseline gap-2">
-        <span className="text-[20px] font-semibold tracking-[-0.015em] text-fg tabular-nums">{value}</span>
+        <span className="text-[17px] font-semibold tracking-[-0.015em] text-fg tabular-nums sm:text-[20px]">
+          {value}
+        </span>
         <DeltaPill d={d} points={points} />
       </dd>
       <dd className="mt-0.5 text-[12px] text-fg-3 tabular-nums">Antes: {prev}</dd>

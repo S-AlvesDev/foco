@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Desempenho nas revisões" };
 
 export default function StatsPage() {
   return (
-    <Page className="max-w-[960px]">
+    <Page>
       <Suspense fallback={<Skeleton />}>
         <Stats />
       </Suspense>

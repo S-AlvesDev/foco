@@ -27,7 +27,7 @@ export const metadata: Metadata = { title: "Biblioteca" };
 
 export default function DisciplinePage({ params, searchParams }: PageProps<"/biblioteca/[disciplina]">) {
   return (
-    <Page className="max-w-[920px]">
+    <Page>
       <Suspense fallback={<Skeleton />}>
         <Discipline params={params} searchParams={searchParams} />
       </Suspense>
@@ -79,7 +79,7 @@ async function Discipline({
       </Link>
       <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <p className="text-[13px] font-medium text-steel">{d.contestName}</p>
+          <p className="text-[13px] font-medium text-fg-3">{d.contestName}</p>
           <h1 className="mt-1 text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
             {d.name}
           </h1>

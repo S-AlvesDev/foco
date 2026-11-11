@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Notificações" };
 
 export default function NotificationsPage() {
   return (
-    <Page className="max-w-[760px]">
+    <Page size="narrow">
       <PageHeader
         title="Notificações"
         description="Revisões, lembretes, metas e avisos do app."

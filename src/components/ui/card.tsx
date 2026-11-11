@@ -34,16 +34,15 @@ export function CardHeader({
 }) {
   return (
     <div className={cn("flex flex-wrap items-center justify-between gap-x-4 gap-y-3", className)}>
-      <div className="flex min-w-0 items-center gap-3">
-        <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-surface-2 text-steel">
-          <Icon className="size-[17px]" strokeWidth={1.8} aria-hidden />
-        </span>
-        <div className="min-w-0">
-          <h2 id={id} className="truncate text-[15px] font-semibold tracking-[-0.01em] text-fg">
-            {title}
-          </h2>
-          {sub && <p className="truncate text-[12.5px] text-fg-3">{sub}</p>}
-        </div>
+      <div className="min-w-0">
+        <h2
+          id={id}
+          className="flex items-center gap-2 text-[14.5px] font-semibold tracking-[-0.01em] text-fg"
+        >
+          <Icon className="size-4 shrink-0 text-fg-3" strokeWidth={1.9} aria-hidden />
+          <span className="truncate">{title}</span>
+        </h2>
+        {sub && <p className="mt-0.5 truncate text-[12.5px] text-fg-3">{sub}</p>}
       </div>
       {action}
     </div>

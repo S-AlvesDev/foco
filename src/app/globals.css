@@ -382,11 +382,21 @@
   -webkit-box-decoration-break: clone;
   box-decoration-break: clone;
 }
-.apostila mark[data-color="yellow"] { background: var(--hl-yellow); }
-.apostila mark[data-color="green"] { background: var(--hl-green); }
-.apostila mark[data-color="blue"] { background: var(--hl-blue); }
-.apostila mark[data-color="pink"] { background: var(--hl-pink); }
-.apostila mark[data-color="none"] { background: transparent; }
+.apostila mark[data-color="yellow"] {
+  background: var(--hl-yellow);
+}
+.apostila mark[data-color="green"] {
+  background: var(--hl-green);
+}
+.apostila mark[data-color="blue"] {
+  background: var(--hl-blue);
+}
+.apostila mark[data-color="pink"] {
+  background: var(--hl-pink);
+}
+.apostila mark[data-color="none"] {
+  background: transparent;
+}
 .apostila mark[data-note] {
   text-decoration: underline dotted var(--accent);
   text-decoration-thickness: 2px;
@@ -399,9 +409,15 @@
 .apostila ol {
   padding-left: 1.4em;
 }
-.apostila ul { list-style: disc; }
-.apostila ol { list-style: decimal; }
-.apostila ul ul { list-style: circle; }
+.apostila ul {
+  list-style: disc;
+}
+.apostila ol {
+  list-style: decimal;
+}
+.apostila ul ul {
+  list-style: circle;
+}
 .apostila li + li,
 .apostila li > ul,
 .apostila li > ol {
@@ -410,7 +426,15 @@
 .apostila li::marker {
   color: var(--text-3);
 }
-.hl-swatch[data-color="yellow"] { background: rgb(250 204 21); }
-.hl-swatch[data-color="green"] { background: rgb(74 222 128); }
-.hl-swatch[data-color="blue"] { background: rgb(96 165 250); }
-.hl-swatch[data-color="pink"] { background: rgb(244 114 182); }
+.hl-swatch[data-color="yellow"] {
+  background: rgb(250 204 21);
+}
+.hl-swatch[data-color="green"] {
+  background: rgb(74 222 128);
+}
+.hl-swatch[data-color="blue"] {
+  background: rgb(96 165 250);
+}
+.hl-swatch[data-color="pink"] {
+  background: rgb(244 114 182);
+}

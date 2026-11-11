@@ -75,7 +75,7 @@ export function QuestionPerformance({
         </div>
       ) : (
         <div className="flex flex-col gap-4">
-          <dl className="grid grid-cols-2 gap-3 lg:grid-cols-4">
+          <dl className="grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border lg:grid-cols-4">
             <Kpi
               label="Resolvidas"
               value={n(s.answered)}
@@ -257,11 +257,11 @@ function Kpi({
   valueClass?: string;
 }) {
   return (
-    <div className="rounded-2xl border border-border bg-surface-1 p-4 shadow-card">
-      <dt className="text-[12.5px] font-medium text-fg-2">{label}</dt>
+    <div className="bg-surface-1 px-4 py-3.5">
+      <dt className="text-[12.5px] text-fg-3">{label}</dt>
       <dd
         className={cn(
-          "mt-2 text-[22px] leading-none font-bold tracking-[-0.02em] text-fg tabular-nums",
+          "mt-1.5 text-[20px] leading-tight font-semibold tracking-[-0.015em] text-fg tabular-nums",
           valueClass,
         )}
       >
@@ -280,7 +280,7 @@ export function QuestionsTodayCard({ rows, today, from }: { rows: QRow[]; today:
   const max = Math.max(...series.map((d) => d.answered), 1);
   const weak = weakFocus(rows, 1).items[0];
   return (
-    <Card aria-labelledby="questions-title">
+    <Card aria-labelledby="questions-title" className="flex flex-col">
       <CardHeader
         id="questions-title"
         icon={ListChecks}
@@ -311,7 +311,7 @@ export function QuestionsTodayCard({ rows, today, from }: { rows: QRow[]; today:
             {w.rate === null ? "sem respostas" : `${pct(w.rate)} de acerto`}
           </p>
         </div>
-        <div className="flex h-12 items-end gap-1" aria-hidden>
+        <div className="flex h-12 items-end gap-1 lg:hidden" aria-hidden>
           {series.map((d) => (
             <span
               key={d.day}
@@ -338,12 +338,14 @@ export function QuestionsTodayCard({ rows, today, from }: { rows: QRow[]; today:
           <ChevronRight className="size-4 shrink-0 text-fg-3" aria-hidden />
         </Link>
       )}
-      <Button asChild variant={t.answered ? "secondary" : "primary"} className="mt-4 w-full">
-        <Link href="/questoes">
-          <Play />
-          {t.answered ? "Continuar resolvendo" : "Resolver questões"}
-        </Link>
-      </Button>
+      <div className="mt-auto pt-5">
+        <Button asChild className="w-full">
+          <Link href="/questoes">
+            <Play />
+            {t.answered ? "Continuar resolvendo" : "Resolver questões"}
+          </Link>
+        </Button>
+      </div>
     </Card>
   );
 }

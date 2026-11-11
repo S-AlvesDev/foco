@@ -12,7 +12,7 @@ export const metadata: Metadata = { title: "Plano de metas" };
 
 export default function PlanPageRoute() {
   return (
-    <Page className="max-w-[880px]">
+    <Page>
       <Suspense fallback={<Skeleton />}>
         <PlanContent />
       </Suspense>
@@ -25,7 +25,7 @@ async function PlanContent() {
   const header = (
     <PageHeader
       title="Plano de metas"
-      description="Plano da PRF do seu curso, só com as matérias que têm apostila na Biblioteca. Cada meta abre direto os tópicos certos."
+      description="As metas do seu curso, ligadas às apostilas da Biblioteca."
       actions={
         <Button asChild variant="ghost" size="sm">
           <Link href="/metas">

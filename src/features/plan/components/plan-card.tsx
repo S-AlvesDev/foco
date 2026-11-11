@@ -21,7 +21,7 @@ export async function PlanCard() {
   const firstRead = m?.items.find((i) => i.kind === "read" && !i.done);
   const next = firstRead ? nextTopic(firstRead) : null;
   return (
-    <Card aria-labelledby="plan-title">
+    <Card aria-labelledby="plan-title" className="flex flex-col">
       <CardHeader
         id="plan-title"
         icon={Target}
@@ -73,16 +73,16 @@ export async function PlanCard() {
               </li>
             ))}
           </ul>
-          <div className="mt-4 flex flex-wrap gap-2">
+          <div className="mt-auto pt-5">
             {next ? (
-              <Button asChild size="sm" variant="primary">
+              <Button asChild variant="primary" className="w-full">
                 <Link href={topicHref(next.disciplineId, next.id) as Route}>
                   <BookOpen />
                   {firstRead && firstRead.readDone ? "Continuar a meta" : "Começar a meta"}
                 </Link>
               </Button>
             ) : (
-              <Button asChild size="sm" variant="primary">
+              <Button asChild variant="primary" className="w-full">
                 <Link href="/metas/plano">
                   {m.kind === "review" ? <RefreshCcw /> : <Target />}
                   {m.kind === "review" ? "Fazer a revisão geral" : "Abrir a meta"}

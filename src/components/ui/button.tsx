@@ -4,7 +4,7 @@ import { Spinner } from "./spinner";
 
 const variants = {
   primary:
-    "bg-accent bg-(image:--accent-fill) text-accent-fg shadow-[inset_0_1px_0_rgb(255_255_255/0.16),0_6px_18px_-8px_color-mix(in_oklab,var(--accent)_70%,transparent)] hover:brightness-110 disabled:hover:brightness-100",
+    "bg-accent bg-(image:--accent-fill) text-accent-fg shadow-[inset_0_1px_0_rgb(255_255_255/0.14),0_1px_2px_rgb(0_0_0/0.25)] hover:brightness-110 disabled:hover:brightness-100",
   secondary: "bg-surface-2 text-fg border border-border hover:bg-surface-3 hover:border-border-strong",
   ghost: "text-fg-2 hover:text-fg hover:bg-surface-2",
   danger: "bg-danger-subtle text-danger hover:bg-danger hover:text-white",

@@ -23,8 +23,10 @@ export function StatusDot({ status, percent }: { status: ReadStatus; percent: nu
   if (status === "in_progress" || percent > 0)
     return (
       <span
-        className="size-4 shrink-0 rounded-full border-2 border-steel/40"
-        style={{ background: `conic-gradient(var(--steel) ${Math.max(8, percent) * 3.6}deg, transparent 0)` }}
+        className="size-4 shrink-0 rounded-full border-2 border-accent/40"
+        style={{
+          background: `conic-gradient(var(--accent) ${Math.max(8, percent) * 3.6}deg, transparent 0)`,
+        }}
         aria-label={`Em andamento, ${percent}% lido`}
       />
     );

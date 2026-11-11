@@ -17,7 +17,7 @@ export const metadata: Metadata = { title: "Importar questões" };
 
 export default function ImportPage() {
   return (
-    <Page className="max-w-[880px]">
+    <Page size="narrow">
       <Button asChild variant="ghost" className="-ml-2 mb-4">
         <Link href="/questoes">
           <ArrowLeft />
