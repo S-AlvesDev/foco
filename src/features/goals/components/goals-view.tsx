@@ -8,7 +8,16 @@ import type { GoalProgress } from "../progress";
 import { GoalDialog } from "./goal-dialog";
 import { GoalList } from "./goal-list";
 
-export function GoalsView({ goals, subjects }: { goals: GoalProgress[]; subjects: StudySubject[] }) {
+export function GoalsView({
+  goals,
+  subjects,
+  plan,
+}: {
+  goals: GoalProgress[];
+  subjects: StudySubject[];
+  /** Atalho para o plano de metas, mostrado logo abaixo do título. */
+  plan?: React.ReactNode;
+}) {
   const [creating, setCreating] = useState(false);
   const done = goals.filter((g) => g.done).length;
   return (
@@ -29,6 +38,8 @@ export function GoalsView({ goals, subjects }: { goals: GoalProgress[]; subjects
           Nova meta
         </Button>
       </div>
+
+      {plan && <div className="-mt-3 mb-8">{plan}</div>}
 
       {goals.length === 0 ? (
         <div className="rounded-lg border border-dashed border-border-strong px-6 py-12 text-center">

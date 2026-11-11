@@ -860,6 +860,30 @@ export type Database = {
           },
         ];
       };
+      study_plan_marks: {
+        Row: {
+          done_at: string;
+          item: number;
+          meta: string;
+          plan_id: string;
+          user_id: string;
+        };
+        Insert: {
+          done_at?: string;
+          item?: number;
+          meta: string;
+          plan_id: string;
+          user_id?: string;
+        };
+        Update: {
+          done_at?: string;
+          item?: number;
+          meta?: string;
+          plan_id?: string;
+          user_id?: string;
+        };
+        Relationships: [];
+      };
       study_reviews: {
         Row: {
           comment: string | null;

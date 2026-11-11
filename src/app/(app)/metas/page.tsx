@@ -6,6 +6,8 @@ import { getGoalsProgress } from "@/features/goals/queries";
 import { listSubjects } from "@/features/subjects/queries";
 import { getProfile } from "@/lib/auth";
 import { localDateISO } from "@/lib/format";
+import { getPlanPage } from "@/features/plan/queries";
+import { PlanLink } from "@/features/plan/components/plan-view";
 
 export const metadata: Metadata = { title: "Metas" };
 
@@ -27,8 +29,10 @@ async function Goals() {
     weekStartsOn: profile.week_starts_on,
     subjectOrder: subjects.map((s) => s.id),
   });
+  const plan = await getPlanPage().catch(() => null);
   return (
     <GoalsView
+      plan={plan ? <PlanLink page={plan} /> : undefined}
       goals={goals}
       subjects={subjects
         .filter((s) => !s.archived_at)
