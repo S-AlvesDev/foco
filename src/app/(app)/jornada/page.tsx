@@ -164,7 +164,7 @@ async function Together({
             />
           </span>
           <div>
-            <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+            <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
               {couple.name}
             </h1>
             <p className="mt-0.5 text-[13.5px] text-fg-2">
@@ -204,7 +204,7 @@ async function Together({
               </p>
               {shares ? (
                 <>
-                  <p className="mt-1.5 text-[24px] font-semibold tracking-[-0.02em] text-fg tabular-nums">
+                  <p className="num mt-1.5 text-[26px] font-semibold text-fg">
                     {formatDuration(cur.seconds)}
                   </p>
                   <p className="mt-0.5 text-[12.5px] text-fg-3 tabular-nums">
@@ -492,7 +492,7 @@ async function Together({
 function Title({ name, sub }: { name: string; sub: string }) {
   return (
     <div className="mb-6">
-      <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+      <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
         {name}
       </h1>
       <p className="mt-1 text-[14px] text-fg-2">{sub}</p>
@@ -503,7 +503,7 @@ function Title({ name, sub }: { name: string; sub: string }) {
 function JourneySkeleton() {
   return (
     <div aria-hidden className="animate-pulse">
-      <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+      <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
         Nossa Jornada
       </h1>
       <div className="mt-2.5 h-3 w-56 rounded bg-surface-2" />

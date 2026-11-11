@@ -1,9 +1,19 @@
 import type { Metadata, Viewport } from "next";
 import { GeistSans } from "geist/font/sans";
 import { GeistMono } from "geist/font/mono";
+import localFont from "next/font/local";
 import { Providers } from "@/components/providers";
 import { themeScript } from "@/components/theme-script";
 import "./globals.css";
+
+// Saira (OFL): títulos e números. Variável em peso e largura; usada levemente condensada.
+const display = localFont({
+  src: "./fonts/saira.woff2",
+  variable: "--font-saira",
+  weight: "100 900",
+  display: "swap",
+  declarations: [{ prop: "font-stretch", value: "50% 125%" }],
+});
 
 export const metadata: Metadata = {
   title: { default: "Missão Alpha-01", template: "%s · Missão Alpha-01" },
@@ -109,7 +119,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html
       lang="pt-BR"
-      className={`${GeistSans.variable} ${GeistMono.variable} dark h-full antialiased`}
+      className={`${GeistSans.variable} ${GeistMono.variable} ${display.variable} dark h-full antialiased`}
       suppressHydrationWarning
     >
       <head>

@@ -107,7 +107,7 @@ function Header({ actions }: { actions?: React.ReactNode }) {
   return (
     <div className="mb-7 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+        <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
           Banco de questões
         </h1>
         <p className="mt-1 text-[14px] text-fg-2">
@@ -122,7 +122,7 @@ function Header({ actions }: { actions?: React.ReactNode }) {
 function QuestionsSkeleton() {
   return (
     <div aria-hidden className="animate-pulse">
-      <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+      <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
         Banco de questões
       </h1>
       <div className="mt-2.5 h-3 w-72 rounded bg-surface-2" />

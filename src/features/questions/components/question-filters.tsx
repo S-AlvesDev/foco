@@ -321,7 +321,7 @@ function Stat({
       </div>
       <p
         className={cn(
-          "mt-2 text-[24px] leading-none font-bold tracking-[-0.02em] text-fg tabular-nums",
+          "num mt-2 text-[26px] leading-none font-semibold text-fg",
           tone === "good" && "text-success",
           tone === "mid" && "text-warning",
           tone === "low" && "text-danger",

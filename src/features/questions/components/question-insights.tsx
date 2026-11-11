@@ -259,12 +259,7 @@ function Kpi({
   return (
     <div className="bg-surface-1 px-4 py-3.5">
       <dt className="text-[12.5px] text-fg-3">{label}</dt>
-      <dd
-        className={cn(
-          "mt-1.5 text-[20px] leading-tight font-semibold tracking-[-0.015em] text-fg tabular-nums",
-          valueClass,
-        )}
-      >
+      <dd className={cn("num mt-1.5 text-[24px] leading-tight font-semibold text-fg", valueClass)}>
         {value}
       </dd>
       {sub && <dd className="mt-1.5 text-[12px] text-fg-3">{sub}</dd>}
@@ -299,14 +294,14 @@ export function QuestionsTodayCard({ rows, today, from }: { rows: QRow[]; today:
       <div className="mt-4 grid grid-cols-[1fr_1fr_auto] items-end gap-4">
         <div>
           <p className="text-[12.5px] text-fg-3">Hoje</p>
-          <p className="mt-1 text-[22px] leading-none font-bold text-fg tabular-nums">{n(t.answered)}</p>
+          <p className="num mt-1.5 text-[26px] leading-none font-semibold text-fg">{n(t.answered)}</p>
           <p className={cn("mt-1 text-[12.5px] font-medium tabular-nums", toneText[rateTone(t.rate)])}>
             {t.rate === null ? "sem respostas" : `${pct(t.rate)} de acerto`}
           </p>
         </div>
         <div>
           <p className="text-[12.5px] text-fg-3">7 dias</p>
-          <p className="mt-1 text-[22px] leading-none font-bold text-fg tabular-nums">{n(w.answered)}</p>
+          <p className="num mt-1.5 text-[26px] leading-none font-semibold text-fg">{n(w.answered)}</p>
           <p className={cn("mt-1 text-[12.5px] font-medium tabular-nums", toneText[rateTone(w.rate)])}>
             {w.rate === null ? "sem respostas" : `${pct(w.rate)} de acerto`}
           </p>

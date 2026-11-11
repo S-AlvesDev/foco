@@ -430,7 +430,7 @@ function Header({ period }: { period: PerformancePeriod }) {
   return (
     <div className="mb-6 flex flex-wrap items-end justify-between gap-4">
       <div>
-        <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+        <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
           Desempenho
         </h1>
         <p className="mt-1 text-[14px] text-fg-2">Como seus estudos evoluem ao longo do tempo.</p>
@@ -518,9 +518,7 @@ function Compare({
     <div className="bg-surface-1 px-4 py-3.5">
       <dt className="text-[12.5px] text-fg-3">{label}</dt>
       <dd className="mt-1 flex items-baseline gap-2">
-        <span className="text-[17px] font-semibold tracking-[-0.015em] text-fg tabular-nums sm:text-[20px]">
-          {value}
-        </span>
+        <span className="num text-[19px] font-semibold text-fg sm:text-[24px]">{value}</span>
         <DeltaPill d={d} points={points} />
       </dd>
       <dd className="mt-0.5 text-[12px] text-fg-3 tabular-nums">Antes: {prev}</dd>
@@ -540,7 +538,7 @@ function Fact({ label, value }: { label: string; value: string }) {
 function PerformanceSkeleton() {
   return (
     <div aria-hidden className="animate-pulse">
-      <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+      <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
         Desempenho
       </h1>
       <div className="mt-2.5 h-3 w-64 rounded bg-surface-2" />

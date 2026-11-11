@@ -36,7 +36,7 @@ export function PageHeader({
   return (
     <div className="mb-8 flex flex-wrap items-end justify-between gap-4">
       <div className="min-w-0">
-        <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+        <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
           {title}
         </h1>
         {description && <div className="mt-1.5 text-[14px] text-fg-2">{description}</div>}
@@ -66,7 +66,7 @@ export function Section({
       )}
     >
       <div>
-        <h2 className="text-[14px] font-semibold text-fg">{title}</h2>
+        <h2 className="font-display text-[15.5px] font-semibold text-fg">{title}</h2>
         {description && <p className="mt-1 text-[13px] leading-relaxed text-fg-3">{description}</p>}
       </div>
       <div className="min-w-0">{children}</div>

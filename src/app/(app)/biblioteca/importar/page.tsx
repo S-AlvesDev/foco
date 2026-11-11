@@ -19,7 +19,7 @@ export default function LibraryImportPage() {
           Biblioteca
         </Link>
       </Button>
-      <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+      <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
         Importar materiais
       </h1>
       <Suspense fallback={<div className="mt-8 h-48 animate-pulse rounded-2xl bg-surface-2/60" />}>

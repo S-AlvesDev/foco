@@ -77,7 +77,7 @@ async function Calendar({ searchParams }: { searchParams: PageProps<"/calendario
 
   return (
     <>
-      <h1 className="mb-8 text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+      <h1 className="mb-8 font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
         Calendário
       </h1>
 
@@ -278,7 +278,7 @@ async function Calendar({ searchParams }: { searchParams: PageProps<"/calendario
 function CalendarSkeleton() {
   return (
     <div aria-hidden className="animate-pulse">
-      <h1 className="mb-8 text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+      <h1 className="mb-8 font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
         Calendário
       </h1>
       <div className="h-4 w-40 rounded bg-surface-2" />

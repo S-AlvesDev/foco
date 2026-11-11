@@ -1,7 +1,7 @@
 export function AuthHeader({ title, description }: { title: string; description?: React.ReactNode }) {
   return (
     <div className="mb-8">
-      <h1 className="text-[28px] leading-[1.1] font-bold tracking-[-0.03em] text-fg sm:text-[36px] lg:text-[40px]">
+      <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.02em] text-fg sm:text-[36px] lg:text-[40px]">
         {title}
       </h1>
       {description && (

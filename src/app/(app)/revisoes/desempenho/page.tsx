@@ -212,7 +212,7 @@ function Stat({ label, value, sub }: { label: string; value: string; sub: string
   return (
     <div className="rounded-2xl border border-border bg-surface-1 p-4 shadow-card">
       <p className="text-[12.5px] text-fg-3">{label}</p>
-      <p className="mt-1 text-[24px] font-bold tracking-[-0.02em] text-fg tabular-nums">{value}</p>
+      <p className="num mt-1 text-[26px] font-semibold text-fg">{value}</p>
       <p className="mt-0.5 text-[12px] leading-snug text-fg-3">{sub}</p>
     </div>
   );
@@ -294,7 +294,7 @@ function MonthChart({
 function Skeleton() {
   return (
     <div aria-hidden className="animate-pulse">
-      <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+      <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
         Desempenho nas revisões
       </h1>
       <div className="mt-8 grid gap-3 sm:grid-cols-3">

@@ -72,7 +72,7 @@ async function PlanContent() {
 function Skeleton() {
   return (
     <div aria-hidden className="animate-pulse">
-      <h1 className="text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+      <h1 className="font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
         Plano de metas
       </h1>
       <div className="mt-2.5 h-3 w-72 rounded bg-surface-2" />

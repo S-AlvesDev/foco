@@ -118,7 +118,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
         <p className={cn("text-[13px] first-letter:uppercase", onImage ? "text-fg-2" : "text-fg-3")}>
           {longDate(tz, now)}
         </p>
-        <h1 className="mt-1.5 text-[30px] leading-[1.1] font-bold tracking-[-0.03em] text-fg sm:text-[38px]">
+        <h1 className="font-display mt-2 text-[34px] leading-[1.02] font-semibold tracking-[-0.02em] text-fg sm:text-[48px]">
           {greeting(tz, now)}, {firstName}.
         </h1>
         <div className="mt-4">
@@ -183,7 +183,10 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
         </section>
       )}
 
-      <dl className="mt-6 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border shadow-card lg:grid-cols-4">
+      <dl
+        className="rise mt-5 grid grid-cols-2 gap-px overflow-hidden rounded-2xl border border-border bg-border shadow-card lg:grid-cols-4"
+        style={{ "--i": 1 } as React.CSSProperties}
+      >
         <Stat icon={Clock3} label="Hoje" value={formatDuration(cmp.today.current)}>
           <Delta c={cmp.today} versus="ontem" absolute />
         </Stat>
@@ -195,7 +198,7 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
         </Stat>
         <Stat
           icon={Flame}
-          iconClassName="text-warning"
+          iconClassName="text-gold"
           label="Sequência"
           value={plural(streak.current, "dia", "dias")}
         >
@@ -209,8 +212,8 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
                 title={`${shortDate(day.day)}: ${day.studied ? "estudou" : "sem estudo"}`}
                 className={cn(
                   "size-2 rounded-full",
-                  day.studied ? "bg-accent" : "bg-surface-3",
-                  day.day === today && "ring-2 ring-accent/30",
+                  day.studied ? "bg-gold" : "bg-surface-3",
+                  day.day === today && "ring-2 ring-gold/30",
                 )}
               />
             ))}
@@ -222,26 +225,36 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
       </dl>
 
       {/* Para hoje: o que fazer agora. Os cards somem sozinhos quando o recurso não está disponível. */}
-      <section aria-labelledby="today-title" className="mt-10">
-        <h2 id="today-title" className="text-[13px] font-medium text-fg-2">
+      <section
+        aria-labelledby="today-title"
+        className="rise mt-10"
+        style={{ "--i": 2 } as React.CSSProperties}
+      >
+        <h2 id="today-title" className="font-display text-[19px] font-semibold text-fg">
           Para hoje
         </h2>
-        <div className="mt-3 grid gap-4 lg:auto-cols-fr lg:grid-flow-col">
+        <div className="mt-4 grid gap-4 lg:has-[.mission-frame]:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <Suspense>
             <PlanCard />
           </Suspense>
-          <Suspense>
-            <MemoryCard />
-          </Suspense>
-          <QuestionsTodayCard rows={qRows} today={today} from={qFrom} />
+          <div className="grid min-w-0 gap-4 sm:max-lg:grid-cols-2 lg:grid-rows-[auto_1fr]">
+            <Suspense>
+              <MemoryCard />
+            </Suspense>
+            <QuestionsTodayCard rows={qRows} today={today} from={qFrom} />
+          </div>
         </div>
       </section>
 
-      <section aria-labelledby="progress-title" className="mt-10">
-        <h2 id="progress-title" className="text-[13px] font-medium text-fg-2">
+      <section
+        aria-labelledby="progress-title"
+        className="rise mt-12"
+        style={{ "--i": 3 } as React.CSSProperties}
+      >
+        <h2 id="progress-title" className="font-display text-[19px] font-semibold text-fg">
           Seu progresso
         </h2>
-        <div className="mt-3 grid gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+        <div className="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <Card aria-labelledby="evolution-title">
             <CardHeader
               id="evolution-title"
@@ -342,11 +355,15 @@ async function Dashboard({ searchParams }: { searchParams: PageProps<"/painel">[
         </div>
       </section>
 
-      <section aria-labelledby="follow-title" className="mt-10">
-        <h2 id="follow-title" className="text-[13px] font-medium text-fg-2">
+      <section
+        aria-labelledby="follow-title"
+        className="rise mt-12"
+        style={{ "--i": 4 } as React.CSSProperties}
+      >
+        <h2 id="follow-title" className="font-display text-[19px] font-semibold text-fg">
           Acompanhamento
         </h2>
-        <div className="mt-3 grid items-start gap-4 lg:grid-cols-[minmax(0,1.55fr)_minmax(0,1fr)]">
+        <div className="mt-4 grid items-start gap-4 lg:grid-cols-[minmax(0,1.5fr)_minmax(0,1fr)]">
           <div className="flex min-w-0 flex-col gap-4">
             <Card aria-labelledby="reviews-title">
               <CardHeader
@@ -522,14 +539,12 @@ function Stat({
   children?: React.ReactNode;
 }) {
   return (
-    <div className="min-w-0 bg-surface-1 p-4 sm:px-5">
+    <div className="min-w-0 bg-surface-1 p-4 sm:px-6 sm:py-5">
       <dt className="flex items-center gap-2 text-[12.5px] text-fg-2">
         <Icon className={cn("size-4 shrink-0 text-fg-3", iconClassName)} strokeWidth={1.9} aria-hidden />
         {label}
       </dt>
-      <dd className="mt-2 text-[22px] leading-tight font-semibold tracking-[-0.02em] text-fg tabular-nums sm:text-[24px]">
-        {value}
-      </dd>
+      <dd className="num mt-2.5 text-[26px] leading-none font-semibold text-fg sm:text-[32px]">{value}</dd>
       {children}
     </div>
   );

@@ -474,7 +474,7 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
             {chapter.number ? `Capítulo ${chapter.number} · ` : ""}
             {chapter.title}
           </p>
-          <h1 className="mt-1.5 text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+          <h1 className="mt-1.5 font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
             {topic.number && <span className="mr-2 text-fg-3 tabular-nums">{topic.number}</span>}
             {topic.title}
           </h1>

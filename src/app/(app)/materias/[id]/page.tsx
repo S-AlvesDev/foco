@@ -58,7 +58,7 @@ async function SubjectDetail({ params }: { params: PageProps<"/materias/[id]">["
         <div className="min-w-0">
           <div className="flex items-center gap-3">
             <ColorDot color={subject.color} className="size-3" />
-            <h1 className="truncate text-[26px] leading-tight font-bold tracking-[-0.025em] text-fg sm:text-[30px]">
+            <h1 className="truncate font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
               {subject.name}
             </h1>
             {archived && (

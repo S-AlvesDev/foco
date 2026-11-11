@@ -192,7 +192,7 @@ export function PlanSummary({ page }: { page: PlanPage }) {
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <p className="text-[12.5px] font-medium text-fg-3">Metas concluídas</p>
-          <p className="text-[28px] leading-none font-bold tracking-[-0.02em] text-fg tabular-nums">
+          <p className="num text-[34px] leading-none font-semibold text-fg">
             {page.done}
             <span className="text-[17px] font-semibold text-fg-3"> de {page.total}</span>
           </p>
@@ -305,7 +305,7 @@ export function CurrentMeta({ page }: { page: PlanPage }) {
       </Card>
     );
   return (
-    <Card aria-labelledby="current-meta" className="border-accent/40">
+    <Card aria-labelledby="current-meta" className="mission-frame">
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
           <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-accent/15 text-accent">
@@ -317,7 +317,7 @@ export function CurrentMeta({ page }: { page: PlanPage }) {
           </span>
           <div>
             <p className="text-[12.5px] text-fg-3">Meta atual</p>
-            <h2 id="current-meta" className="text-[17px] font-semibold tracking-[-0.01em] text-fg">
+            <h2 id="current-meta" className="font-display text-[20px] font-semibold text-fg">
               {m.label}
               {m.kind === "review" && " · revisão geral"}
             </h2>

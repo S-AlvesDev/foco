@@ -42,7 +42,7 @@ export function BrandWordmark({ size = "sm", className }: { size?: "sm" | "lg"; 
     <span className={cn("inline-flex items-center", lg ? "gap-4 sm:gap-5" : "gap-2.5", className)}>
       <BrandMark className={lg ? "size-16 sm:size-[88px]" : "size-9"} />
       <span aria-hidden className={cn("w-px self-stretch bg-current opacity-20", lg ? "my-2" : "my-1.5")} />
-      <span className="flex flex-col whitespace-nowrap uppercase">
+      <span className="font-display flex flex-col whitespace-nowrap uppercase">
         <span
           className={cn(
             "leading-none font-semibold text-fg-2",

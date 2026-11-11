@@ -26,14 +26,13 @@ export default function AuthLayout({ children }: LayoutProps<"/">) {
             <BrandWordmark size="lg" />
           </Link>
 
-          <p className="mt-8 text-[30px] leading-[1.08] font-bold tracking-[-0.03em] text-balance text-white sm:text-[40px] lg:mt-[7vh] lg:text-[clamp(42px,4vw,62px)]">
-            Sua próxima{" "}
-            <span className="bg-[linear-gradient(90deg,#9a7bff,#7350f5)] bg-clip-text text-transparent">
-              conquista
-            </span>{" "}
-            começa com disciplina.
+          <p className="font-display mt-8 text-[32px] leading-[1.04] font-semibold tracking-[-0.02em] text-balance text-white sm:text-[40px] lg:mt-[7vh] lg:text-[clamp(42px,4vw,62px)]">
+            Sua próxima conquista começa com disciplina.
           </p>
-          <span aria-hidden className="mt-5 block h-1 w-16 rounded-full bg-[#7350f5] lg:mt-7 lg:w-[88px]" />
+          <span
+            aria-hidden
+            className="mt-5 block h-[3px] w-16 rounded-full bg-[linear-gradient(90deg,#7b6cf6,#e9b949)] lg:mt-7 lg:w-[88px]"
+          />
           <p className="mt-4 hidden max-w-[440px] text-[15px] leading-relaxed text-fg-2 sm:block lg:mt-6 lg:text-[18px]">
             Estude com estratégia. Evolua com consistência. Chegue mais preparado.
           </p>
