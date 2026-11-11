@@ -46,13 +46,15 @@ export function PageHeader({
   );
 }
 
-/** Seção com título à esquerda e conteúdo à direita no desktop; empilha no celular. */
+/** Seção de ajustes: um painel com título, descrição e o conteúdo embaixo. */
 export function Section({
+  id,
   title,
   description,
   children,
   className,
 }: {
+  id?: string;
   title: string;
   description?: React.ReactNode;
   children: React.ReactNode;
@@ -60,16 +62,18 @@ export function Section({
 }) {
   return (
     <section
+      id={id}
+      data-settings-section={id ? "" : undefined}
       className={cn(
-        "grid gap-5 border-t border-border py-8 first:border-t-0 first:pt-0 md:grid-cols-[240px_1fr] md:gap-10",
+        "scroll-mt-24 overflow-hidden rounded-2xl border border-border bg-surface-1 shadow-card",
         className,
       )}
     >
-      <div>
-        <h2 className="font-display text-[15.5px] font-semibold text-fg">{title}</h2>
+      <div className="border-b border-border px-5 py-4 sm:px-7 sm:py-5">
+        <h2 className="font-display text-[18px] leading-tight font-semibold text-fg">{title}</h2>
         {description && <p className="mt-1 text-[13px] leading-relaxed text-fg-3">{description}</p>}
       </div>
-      <div className="min-w-0">{children}</div>
+      <div className="min-w-0 px-5 py-5 sm:px-7 sm:py-7">{children}</div>
     </section>
   );
 }

@@ -350,9 +350,9 @@
   --hl-green: rgb(74 222 128 / 0.3);
   --hl-blue: rgb(96 165 250 / 0.32);
   --hl-pink: rgb(244 114 182 / 0.32);
-  font-size: 16.5px;
-  line-height: 1.75;
-  color: var(--text-1);
+  font-size: 17px;
+  line-height: 1.8;
+  color: color-mix(in oklab, var(--text-1) 90%, var(--text-2));
   overflow-wrap: break-word;
 }
 .dark .apostila {
@@ -430,7 +430,34 @@
   margin-top: 0.3em;
 }
 .apostila li::marker {
-  color: var(--text-3);
+  color: var(--accent);
+}
+.apostila strong {
+  color: var(--text-1);
+}
+@media (min-width: 640px) {
+  .apostila {
+    font-size: 17.5px;
+  }
+}
+/* Progresso de leitura na barra do leitor: acompanha a rolagem, sem JavaScript. */
+.read-progress {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .read-progress {
+    display: block;
+    position: absolute;
+    inset-inline: 0;
+    bottom: -1px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--accent), var(--gold));
+    transform-origin: left;
+    animation: grow-x linear both;
+    animation-timeline: scroll(root block);
+    animation-duration: auto !important;
+    animation-delay: 0s;
+  }
 }
 .hl-swatch[data-color="yellow"] {
   background: rgb(250 204 21);

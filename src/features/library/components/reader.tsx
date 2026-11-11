@@ -406,7 +406,7 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
   const activeMarks = active ? marks.filter((m) => active.ids.includes(m.id)) : [];
 
   return (
-    <div className="mx-auto w-full max-w-[1180px] px-4 pt-4 pb-16 sm:px-8 sm:pt-6 lg:grid lg:grid-cols-[272px_minmax(0,1fr)] lg:gap-10">
+    <div className="mx-auto w-full max-w-[1180px] px-4 pt-4 pb-16 sm:px-8 sm:pt-6 lg:grid lg:grid-cols-[264px_minmax(0,1fr)] lg:gap-12">
       {/* Sumário (desktop) */}
       <aside className="hidden lg:block">
         <div className="sticky top-6 max-h-[calc(100dvh-48px)] overflow-y-auto pr-1 pb-6">
@@ -421,9 +421,10 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
         </div>
       </aside>
 
-      <article className="mx-auto w-full max-w-[720px] min-w-0">
+      <article className="mx-auto w-full max-w-[700px] min-w-0">
         {/* Barra do leitor */}
-        <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 -mx-4 mb-5 flex items-center gap-1 border-b border-border/70 bg-bg/85 px-2 py-1.5 backdrop-blur-xl sm:-mx-8 sm:px-6 md:top-0 lg:mx-0 lg:rounded-b-xl lg:border-x lg:px-2">
+        <div className="sticky top-[calc(56px+env(safe-area-inset-top))] z-20 -mx-4 mb-8 flex items-center gap-1 border-b border-border/70 bg-bg/85 px-2 py-1.5 backdrop-blur-xl sm:-mx-8 sm:px-6 md:top-0 lg:mx-0 lg:px-0">
+          <span aria-hidden className="read-progress" />
           <Button
             variant="ghost"
             size="sm"
@@ -469,16 +470,27 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
           </Button>
         </div>
 
-        <header className="mb-7">
-          <p className="text-[13px] font-medium text-fg-3">
-            {chapter.number ? `Capítulo ${chapter.number} · ` : ""}
+        <header className="mb-10">
+          <p className="text-[13px] text-fg-3">
+            {chapter.number && (
+              <span className="num mr-2 font-semibold text-accent">Capítulo {chapter.number}</span>
+            )}
             {chapter.title}
           </p>
-          <h1 className="mt-1.5 font-display text-[28px] leading-[1.1] font-semibold tracking-[-0.015em] text-fg sm:text-[34px]">
-            {topic.number && <span className="mr-2 text-fg-3 tabular-nums">{topic.number}</span>}
+          {topic.number && (
+            <p aria-hidden className="outline-num mt-6 text-[64px] select-none sm:text-[84px]">
+              {topic.number}
+            </p>
+          )}
+          <h1 className="font-display mt-4 text-[32px] leading-[1.08] font-semibold tracking-[-0.015em] text-balance text-fg sm:text-[44px]">
+            {topic.number && <span className="sr-only">{topic.number} </span>}
             {topic.title}
           </h1>
-          <div className="mt-4 flex flex-wrap items-center gap-3">
+          <span
+            aria-hidden
+            className="mt-6 block h-[3px] w-16 rounded-full bg-[linear-gradient(90deg,var(--accent),var(--gold))]"
+          />
+          <div className="mt-6 flex flex-wrap items-center gap-3">
             <Segmented
               label="Situação da leitura"
               value={status}
@@ -571,47 +583,68 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
         />
 
         {/* Fim do tópico */}
-        <div className="mt-10 rounded-2xl border border-border bg-surface-1 p-4 sm:p-5">
+        <div className="mt-14">
           {status !== "done" ? (
-            <div className="flex flex-wrap items-center justify-between gap-3">
-              <p className="text-[13.5px] text-fg-2">Terminou de ler este tópico?</p>
-              <Button variant="secondary" onClick={() => changeStatus("done")}>
+            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl border border-border bg-surface-1 p-5 shadow-card sm:p-6">
+              <div>
+                <p className="font-display text-[18px] font-semibold text-fg">Terminou de ler este tópico?</p>
+                <p className="mt-0.5 text-[13px] text-fg-3">
+                  Ao concluir, ele entra nas suas revisões, com a primeira amanhã.
+                </p>
+              </div>
+              <Button
+                variant="primary"
+                size="lg"
+                className="h-11 rounded-xl px-5 max-sm:w-full"
+                onClick={() => changeStatus("done")}
+              >
                 <BookOpenCheck />
-                Marcar leitura como concluída
+                Concluir leitura
               </Button>
             </div>
           ) : (
-            <p className="flex items-center gap-2 text-[13.5px] text-fg-2">
-              <StatusDot status="done" percent={100} />
-              Leitura concluída. Isso registra que você terminou o material, não que dominou o assunto: o
-              tópico entra nas suas revisões, com a primeira amanhã.
+            <p className="flex items-start gap-3 rounded-2xl border border-success/30 bg-success/[0.06] p-5 text-[13.5px] leading-relaxed text-fg-2">
+              <span className="mt-0.5 flex">
+                <StatusDot status="done" percent={100} />
+              </span>
+              <span>
+                <strong className="font-display block text-[16px] font-semibold text-fg">
+                  Leitura concluída
+                </strong>
+                Isso registra que você terminou o material, não que dominou o assunto: o tópico entra nas suas
+                revisões, com a primeira amanhã.
+              </span>
             </p>
           )}
-          <div className="mt-4 grid gap-2 border-t border-border pt-4 sm:grid-cols-2">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
             {prev ? (
               <Link
                 href={topicHref(discipline.id, prev.id)}
-                className="flex items-center gap-2 rounded-xl border border-border px-3 py-2.5 text-[13.5px] transition-colors hover:border-border-strong hover:bg-surface-2"
+                className="group flex items-center gap-3 rounded-2xl border border-border px-4 py-4 transition-colors hover:border-border-strong hover:bg-surface-1"
               >
-                <ArrowLeft className="size-4 shrink-0 text-fg-3" />
+                <ArrowLeft className="size-4 shrink-0 text-fg-3 transition-transform group-hover:-translate-x-0.5" />
                 <span className="min-w-0">
-                  <span className="block text-[11.5px] text-fg-3">Anterior</span>
-                  <span className="block truncate text-fg">{topicLabel(prev)}</span>
+                  <span className="block text-[12px] text-fg-3">Anterior</span>
+                  <span className="block truncate text-[14px] text-fg-2 group-hover:text-fg">
+                    {topicLabel(prev)}
+                  </span>
                 </span>
               </Link>
             ) : (
-              <span />
+              <span className="max-sm:hidden" />
             )}
             {next && (
               <Link
                 href={topicHref(discipline.id, next.id)}
-                className="flex items-center justify-end gap-2 rounded-xl border border-border px-3 py-2.5 text-right text-[13.5px] transition-colors hover:border-border-strong hover:bg-surface-2"
+                className="mission-frame group flex items-center justify-end gap-3 rounded-2xl px-4 py-4 text-right"
               >
                 <span className="min-w-0">
-                  <span className="block text-[11.5px] text-fg-3">Próximo</span>
-                  <span className="block truncate text-fg">{topicLabel(next)}</span>
+                  <span className="block text-[12px] text-fg-3">Próximo tópico</span>
+                  <span className="font-display block truncate text-[16px] font-semibold text-fg">
+                    {topicLabel(next)}
+                  </span>
                 </span>
-                <ArrowRight className="size-4 shrink-0 text-fg-3" />
+                <ArrowRight className="size-4 shrink-0 text-accent transition-transform group-hover:translate-x-0.5" />
               </Link>
             )}
           </div>
@@ -977,9 +1010,9 @@ function TopicNotes({
     setTimeout(() => el.removeAttribute("data-flash"), 2300);
   };
   return (
-    <section aria-labelledby="topic-notes" className="mt-12 border-t border-border pt-8">
-      <h2 id="topic-notes" className="flex items-center gap-2 text-[16px] font-semibold text-fg">
-        <NotebookPen className="size-[18px] text-steel" />
+    <section aria-labelledby="topic-notes" className="mt-14 border-t border-border pt-9">
+      <h2 id="topic-notes" className="flex items-center gap-2 text-[19px] font-semibold text-fg">
+        <NotebookPen className="size-[18px] text-fg-3" />
         Suas anotações neste tópico
       </h2>
       <p className="mt-1 text-[13px] text-fg-3">

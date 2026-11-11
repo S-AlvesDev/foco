@@ -7,6 +7,7 @@ import { signOutAction } from "@/features/auth/actions";
 import { NewPasswordForm } from "@/features/auth/components/new-password-form";
 import { PreferencesForm } from "@/features/profile/components/preferences-form";
 import { ProfileForm } from "@/features/profile/components/profile-form";
+import { SettingsNav } from "@/features/profile/components/settings-nav";
 import { getProfile } from "@/lib/auth";
 import { avatarUrl } from "@/features/avatar/server";
 import { FocusChip } from "@/features/focus/components/focus-chip";
@@ -36,90 +37,99 @@ async function Settings() {
   const banner = readBanner(profile);
   const bannerSrc = await bannerUrl(banner.path);
   return (
-    <>
-      <Section title="Perfil" description="Como você aparece no app.">
-        <ProfileForm
-          name={profile.display_name}
-          email={profile.email}
-          userId={profile.id}
-          avatarUrl={await avatarUrl(profile.avatar_path)}
-        />
-      </Section>
-
-      <Section title="Objetivo atual" description="Aparece no topo do painel. Só você vê.">
-        <FocusChip title={focus.title} />
-      </Section>
-
-      <Section title="Aparência" description="Como o painel aparece para você, em todos os aparelhos.">
-        <div id="banner">
-          <h3 className="text-[13.5px] font-medium text-fg">Banner do painel</h3>
-          <p className="mt-1 mb-4 text-[13px] leading-relaxed text-fg-3">
-            Imagem no topo do painel, atrás da saudação. Só você vê.
-          </p>
-          <BannerEditor
-            key={JSON.stringify(banner)}
+    <div className="lg:grid lg:grid-cols-[196px_minmax(0,1fr)] lg:gap-10">
+      <SettingsNav />
+      <div className="flex min-w-0 flex-col gap-5">
+        <Section id="perfil" title="Perfil" description="Como você aparece no app.">
+          <ProfileForm
+            name={profile.display_name}
+            email={profile.email}
             userId={profile.id}
-            firstName={(profile.display_name || profile.email).split(" ")[0]}
-            initial={banner}
-            initialSrc={bannerSrc}
+            avatarUrl={await avatarUrl(profile.avatar_path)}
           />
-        </div>
-      </Section>
+        </Section>
 
-      <Section title="Notificações" description="Avisos no sino e, se quiser, no celular ou computador.">
-        <div id="notificacoes" className="scroll-mt-24">
-          <NotificationSettings
-            initial={notif.prefs}
-            available={notif.available}
-            vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null}
-            pushReady={pushConfigured()}
+        <Section id="objetivo" title="Objetivo atual" description="Aparece no topo do painel. Só você vê.">
+          <FocusChip title={focus.title} />
+        </Section>
+
+        <Section
+          id="aparencia"
+          title="Aparência"
+          description="Como o painel aparece para você, em todos os aparelhos."
+        >
+          <div id="banner">
+            <h3 className="text-[15px] font-semibold text-fg">Banner do painel</h3>
+            <p className="mt-1 mb-4 text-[13px] leading-relaxed text-fg-3">
+              Imagem no topo do painel, atrás da saudação. Só você vê.
+            </p>
+            <BannerEditor
+              key={JSON.stringify(banner)}
+              userId={profile.id}
+              firstName={(profile.display_name || profile.email).split(" ")[0]}
+              initial={banner}
+              initialSrc={bannerSrc}
+            />
+          </div>
+        </Section>
+
+        <Section
+          id="avisos"
+          title="Notificações"
+          description="Avisos no sino e, se quiser, no celular ou computador."
+        >
+          <div id="notificacoes" className="scroll-mt-24">
+            <NotificationSettings
+              initial={notif.prefs}
+              available={notif.available}
+              vapidKey={process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY ?? null}
+              pushReady={pushConfigured()}
+            />
+          </div>
+        </Section>
+
+        <Section id="preferencias" title="Preferências" description="Valem para todos os seus aparelhos.">
+          <PreferencesForm
+            initial={{
+              theme: profile.theme,
+              timezone: profile.timezone,
+              week_starts_on: profile.week_starts_on === 0 ? 0 : 1,
+            }}
           />
-        </div>
-      </Section>
+        </Section>
 
-      <Section title="Preferências" description="Valem para todos os seus aparelhos.">
-        <PreferencesForm
-          initial={{
-            theme: profile.theme,
-            timezone: profile.timezone,
-            week_starts_on: profile.week_starts_on === 0 ? 0 : 1,
-          }}
-        />
-      </Section>
+        <Section id="senha" title="Senha" description="Troque a senha usada para entrar.">
+          <div className="max-w-[420px]">
+            <NewPasswordForm submitLabel="Alterar senha" />
+          </div>
+        </Section>
 
-      <Section title="Senha" description="Troque a senha usada para entrar.">
-        <div className="max-w-[420px]">
-          <NewPasswordForm submitLabel="Alterar senha" />
-        </div>
-      </Section>
-
-      <Section title="Sessão" description={`Conectado como ${profile.email}.`}>
-        <form action={signOutAction}>
-          <SubmitButton variant="secondary">
-            <LogOut />
-            Sair desta conta
-          </SubmitButton>
-        </form>
-      </Section>
-    </>
+        <Section id="sessao" title="Sessão" description={`Conectado como ${profile.email}.`}>
+          <form action={signOutAction}>
+            <SubmitButton variant="secondary">
+              <LogOut />
+              Sair desta conta
+            </SubmitButton>
+          </form>
+        </Section>
+      </div>
+    </div>
   );
 }
 
 function SettingsSkeleton() {
   return (
-    <div aria-hidden className="animate-pulse">
-      {[0, 1, 2].map((i) => (
-        <div
-          key={i}
-          className="grid gap-5 border-t border-border py-8 first:border-t-0 first:pt-0 md:grid-cols-[240px_1fr] md:gap-10"
-        >
-          <div className="h-3.5 w-24 rounded bg-surface-2" />
-          <div className="flex max-w-[420px] flex-col gap-3">
-            <div className="h-3 w-16 rounded bg-surface-2" />
-            <div className="h-9 rounded-md bg-surface-2" />
-          </div>
-        </div>
-      ))}
+    <div aria-hidden className="animate-pulse lg:grid lg:grid-cols-[196px_minmax(0,1fr)] lg:gap-10">
+      <div className="hidden flex-col gap-2 lg:flex">
+        {[0, 1, 2, 3, 4].map((i) => (
+          <div key={i} className="h-9 rounded-lg bg-surface-2/60" />
+        ))}
+      </div>
+      <div className="flex flex-col gap-5">
+        {[0, 1, 2].map((i) => (
+          <div key={i} className="h-44 rounded-2xl border border-border bg-surface-1" />
+        ))}
+      </div>
     </div>
   );
 }

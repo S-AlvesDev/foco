@@ -176,25 +176,34 @@ export function QuestionSolver({
     <div className="flex flex-col gap-4">
       {/* Barra de posição */}
       <div>
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button asChild variant="ghost" className="-ml-2">
-            <Link href={listHref}>
-              <ListFilter />
-              Filtros
-            </Link>
-          </Button>
-          <p className="text-[13.5px] text-fg-2" aria-live="polite">
-            Questão{" "}
-            <strong className="font-semibold text-fg tabular-nums">{position.toLocaleString("pt-BR")}</strong>{" "}
-            de <span className="tabular-nums">{listTotal.toLocaleString("pt-BR")}</span>
+        <div className="flex items-end justify-between gap-3">
+          <p className="flex items-baseline gap-2" aria-live="polite">
+            <span className="sr-only">Questão</span>
+            <span className="num text-[40px] leading-none font-semibold text-fg sm:text-[48px]">
+              {String(position).padStart(2, "0")}
+            </span>
+            <span className="num text-[15px] text-fg-3">
+              <span aria-hidden>/ </span>
+              <span className="sr-only">de </span>
+              {listTotal.toLocaleString("pt-BR")}
+            </span>
           </p>
-          <div className="flex items-center gap-1">
+          <div className="flex items-center gap-1 pb-0.5">
+            <Button asChild variant="ghost" className="mr-1">
+              <Link href={listHref}>
+                <ListFilter />
+                Filtros
+              </Link>
+            </Button>
             <NavButton href={prevHref} label="Questão anterior" icon={ChevronLeft} />
             <NavButton href={nextHref} label="Próxima questão" icon={ChevronRight} />
           </div>
         </div>
-        <div className="mt-2 h-1 overflow-hidden rounded-full bg-surface-2" aria-hidden>
-          <div className="h-full rounded-full bg-(image:--accent-fill)" style={{ width: `${progress}%` }} />
+        <div className="mt-3 h-[3px] overflow-hidden rounded-full bg-surface-2" aria-hidden>
+          <div
+            className="h-full rounded-full bg-[linear-gradient(90deg,var(--accent),var(--gold))] transition-[width] duration-500 ease-out-soft"
+            style={{ width: `${progress}%` }}
+          />
         </div>
       </div>
 
@@ -204,18 +213,31 @@ export function QuestionSolver({
         aria-labelledby={`q-${q.id}`}
         className="overflow-hidden rounded-2xl border border-border bg-surface-1 shadow-card"
       >
-        <header className="border-b border-border px-4 pt-4 pb-3.5 sm:px-6 sm:pt-5">
+        <header className="px-5 pt-5 sm:px-8 sm:pt-7">
           <div className="flex items-start justify-between gap-3">
-            <div className="flex min-w-0 flex-wrap items-center gap-x-2 gap-y-1.5 text-[12.5px] text-fg-2">
-              <span
-                id={`q-${q.id}`}
-                className="rounded-md bg-surface-2 px-2 py-0.5 font-mono text-[12px] font-semibold text-fg"
-              >
-                {q.id}
-              </span>
-              {q.banca && <Meta label="Banca" value={q.banca} />}
-              <Meta label="Concurso" value={q.concurso} />
-              {q.cargo && <Meta label="Cargo" value={q.cargo} />}
+            <div className="min-w-0">
+              <p className="flex flex-wrap items-center gap-x-1.5 gap-y-1 text-[13px]">
+                <span className="font-semibold text-accent">{q.disciplina}</span>
+                <ChevronRight className="size-3.5 text-fg-3" aria-hidden />
+                <span className="text-fg-2">{q.assunto}</span>
+                {q.subassunto && (
+                  <>
+                    <ChevronRight className="size-3.5 text-fg-3" aria-hidden />
+                    <span className="text-fg-2">{q.subassunto}</span>
+                  </>
+                )}
+              </p>
+              <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] text-fg-3">
+                <span id={`q-${q.id}`} className="font-mono text-[12px] text-fg-2">
+                  {q.id}
+                </span>
+                {q.banca && <Meta label="Banca" value={q.banca} />}
+                <Meta label="Concurso" value={q.concurso} />
+                {q.cargo && <Meta label="Cargo" value={q.cargo} />}
+                <Difficulty value={q.dificuldade} />
+                <span>{TIPO_LABELS[q.tipo]}</span>
+                <span>{areaLabel(q.area)}</span>
+              </div>
             </div>
             <button
               type="button"
@@ -223,27 +245,17 @@ export function QuestionSolver({
               aria-pressed={favorite}
               aria-label={favorite ? "Remover das favoritas" : "Favoritar questão"}
               className={cn(
-                "-mt-1 -mr-1.5 flex size-9 shrink-0 cursor-pointer items-center justify-center rounded-lg transition-colors hover:bg-surface-2",
+                "-mt-1.5 -mr-2 flex size-10 shrink-0 cursor-pointer items-center justify-center rounded-xl transition-colors hover:bg-surface-2",
                 favorite ? "text-gold" : "text-fg-3 hover:text-fg",
               )}
             >
-              <Star className="size-[18px]" fill={favorite ? "currentColor" : "none"} />
+              <Star className="size-[19px]" fill={favorite ? "currentColor" : "none"} />
             </button>
-          </div>
-          <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-            <Chip strong>{q.disciplina}</Chip>
-            <ChevronRight className="size-3.5 text-fg-3" aria-hidden />
-            <Chip>{q.assunto}</Chip>
-            {q.subassunto && <Chip>{q.subassunto}</Chip>}
-            <span className="mx-1 h-4 w-px bg-border" aria-hidden />
-            <Difficulty value={q.dificuldade} />
-            <span className="text-[12px] text-fg-3">{TIPO_LABELS[q.tipo]}</span>
-            <span className="text-[12px] text-fg-3">· {areaLabel(q.area)}</span>
           </div>
         </header>
 
-        <div className="px-4 py-5 sm:px-6 sm:py-6">
-          <p className="text-[16.5px] leading-[1.7] whitespace-pre-wrap break-words text-fg sm:text-[17px]">
+        <div className="px-5 pt-5 pb-6 sm:px-8 sm:pt-6 sm:pb-8">
+          <p className="max-w-[68ch] text-[17px] leading-[1.7] whitespace-pre-wrap break-words text-fg sm:text-[18.5px]">
             {q.enunciado}
           </p>
 
@@ -279,8 +291,8 @@ export function QuestionSolver({
                 role="radiogroup"
                 aria-label="Resposta"
                 className={cn(
-                  "mt-6",
-                  q.tipo === "certo_errado" ? "grid grid-cols-2 gap-3" : "flex flex-col gap-2",
+                  "mt-7",
+                  q.tipo === "certo_errado" ? "grid grid-cols-2 gap-3" : "flex flex-col gap-2.5",
                 )}
               >
                 {q.tipo === "certo_errado"
@@ -325,7 +337,7 @@ export function QuestionSolver({
                   <Button
                     variant="primary"
                     size="lg"
-                    className="min-w-[160px] max-md:w-full"
+                    className="h-12 min-w-[190px] rounded-xl text-[15px] max-md:w-full"
                     disabled={!selected}
                     loading={sending}
                     onClick={submit}
@@ -433,20 +445,7 @@ function NavButton({
 function Meta({ label, value }: { label: string; value: string }) {
   return (
     <span className="truncate">
-      <span className="text-fg-3">{label}:</span> <span className="font-medium text-fg-2">{value}</span>
-    </span>
-  );
-}
-
-function Chip({ children, strong }: { children: React.ReactNode; strong?: boolean }) {
-  return (
-    <span
-      className={cn(
-        "rounded-md px-2 py-0.5 text-[12.5px]",
-        strong ? "bg-accent-subtle font-semibold text-accent" : "bg-surface-2 text-fg-2",
-      )}
-    >
-      {children}
+      <span className="text-fg-3">{label}</span> <span className="text-fg-2">{value}</span>
     </span>
   );
 }
@@ -512,12 +511,12 @@ function CeOption({
       disabled={disabled}
       onClick={onSelect}
       className={cn(
-        "relative flex h-[60px] cursor-pointer items-center justify-center gap-2.5 overflow-hidden rounded-xl border-2 text-[16px] font-semibold transition-[border-color,background-color,transform] duration-150",
+        "font-display relative flex h-[72px] cursor-pointer items-center justify-center gap-3 overflow-hidden rounded-2xl border text-[19px] font-semibold transition-[border-color,background-color,box-shadow,transform] duration-150 enabled:active:scale-[0.99]",
         "disabled:cursor-default",
         state === "idle" &&
           (selected
-            ? "border-accent bg-accent-subtle text-fg"
-            : "border-border bg-surface-2 text-fg-2 enabled:hover:border-border-strong enabled:hover:text-fg"),
+            ? "border-accent bg-accent-subtle text-fg shadow-[0_0_0_3px_var(--accent-subtle)]"
+            : "border-border-strong/70 bg-surface-2/60 text-fg-2 enabled:hover:border-border-strong enabled:hover:bg-surface-2 enabled:hover:text-fg"),
         state !== "idle" && stateRing[state],
         state === "idle" && disabled && !selected && "opacity-60",
       )}
@@ -530,7 +529,18 @@ function CeOption({
         <Icon className={cn("size-5", selected ? "text-accent" : "text-fg-3")} aria-hidden />
       )}
       {label}
-      {share !== null && <span className="text-[12.5px] font-medium text-fg-3 tabular-nums">{share}%</span>}
+      {share !== null ? (
+        <span className="num text-[13px] font-medium text-fg-3">{share}%</span>
+      ) : (
+        !disabled && (
+          <kbd
+            aria-hidden
+            className="absolute top-2.5 right-2.5 hidden h-5 min-w-5 items-center justify-center rounded-[5px] border border-border-strong px-1 font-mono text-[10.5px] font-medium text-fg-3 md:flex"
+          >
+            {label[0]}
+          </kbd>
+        )
+      )}
     </button>
   );
 }
@@ -559,11 +569,11 @@ function McOption({
   return (
     <div
       className={cn(
-        "group relative flex items-stretch overflow-hidden rounded-xl border-2 transition-[border-color,background-color] duration-150",
+        "group relative flex items-stretch overflow-hidden rounded-2xl border transition-[border-color,background-color,box-shadow] duration-150",
         state === "idle" &&
           (selected
-            ? "border-accent bg-accent-subtle"
-            : "border-border bg-surface-1 hover:border-border-strong"),
+            ? "border-accent bg-accent-subtle shadow-[0_0_0_3px_var(--accent-subtle)]"
+            : "border-border-strong/70 bg-surface-2/40 hover:border-border-strong hover:bg-surface-2/70"),
         state !== "idle" && stateRing[state],
       )}
     >
@@ -585,11 +595,11 @@ function McOption({
           e.preventDefault();
           onCross();
         }}
-        className="relative flex min-w-0 flex-1 cursor-pointer items-start gap-3 px-3.5 py-3 text-left disabled:cursor-default"
+        className="relative flex min-w-0 flex-1 cursor-pointer items-start gap-3.5 px-4 py-3.5 text-left disabled:cursor-default"
       >
         <span
           className={cn(
-            "mt-px flex size-7 shrink-0 items-center justify-center rounded-full border text-[13px] font-bold transition-colors",
+            "font-display mt-px flex size-7 shrink-0 items-center justify-center rounded-lg border text-[14px] font-semibold transition-colors",
             state === "right" || state === "missed"
               ? "border-success bg-success text-white"
               : state === "wrong"
@@ -657,13 +667,13 @@ function ResultBanner({
     <div
       role="status"
       className={cn(
-        "mt-6 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-xl border px-4 py-3.5",
+        "rise mt-7 flex flex-wrap items-center gap-x-4 gap-y-3 rounded-2xl border px-5 py-4",
         result.correct ? "border-success/35 bg-success/10" : "border-danger/35 bg-danger/10",
       )}
     >
       <span
         className={cn(
-          "flex size-10 shrink-0 items-center justify-center rounded-full text-white",
+          "flex size-11 shrink-0 items-center justify-center rounded-full text-white",
           result.correct ? "bg-success" : "bg-danger",
         )}
       >
@@ -674,14 +684,14 @@ function ResultBanner({
         )}
       </span>
       <div className="min-w-0 flex-1">
-        <p className="text-[15.5px] font-semibold text-fg">
+        <p className="font-display text-[19px] leading-tight font-semibold text-fg">
           {tipo === "discursiva"
             ? result.correct
               ? "Você marcou que acertou."
               : "Você marcou que errou. Revise a resposta esperada."
             : `${result.correct ? "Você acertou!" : "Você errou."} Gabarito: ${gabLabel}`}
         </p>
-        <p className="text-[12.5px] text-fg-2">
+        <p className="mt-0.5 text-[12.5px] text-fg-2">
           {c.total > 1
             ? `${Math.round((c.correct / c.total) * 100)}% ${tipo === "discursiva" ? "marcaram acerto" : "de acerto"} entre ${c.total} respostas no app`
             : "Primeira resposta registrada no app para esta questão"}
@@ -742,7 +752,7 @@ function Panels({
       <div
         role="tablist"
         aria-label="Detalhes da questão"
-        className="flex gap-1 overflow-x-auto px-2 pt-2 sm:px-4"
+        className="flex gap-1 overflow-x-auto px-2 pt-2 sm:px-5"
       >
         {tabs.map((t) => {
           const on = tab === t.value;
@@ -772,7 +782,7 @@ function Panels({
           role="tabpanel"
           id={`${id}-panel`}
           aria-labelledby={`${id}-${tab}`}
-          className="bg-surface-1 px-4 py-5 sm:px-6"
+          className="bg-surface-1 px-5 py-6 sm:px-8"
         >
           {tab === "solution" && result && <SolutionPanel result={result} tipo={q.tipo} />}
           {tab === "alternatives" && result && <AlternativesPanel q={q} result={result} />}

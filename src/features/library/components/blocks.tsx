@@ -102,12 +102,12 @@ function Text({ field, ranges }: { field: Field; ranges: Range[] }) {
 /* ------------------------------------------------------------------ */
 
 const CALLOUT_STYLE: Record<CalloutVariant, { icon: typeof Info; box: string; title: string }> = {
-  atencao: { icon: AlertTriangle, box: "border-warning/40 bg-warning/[0.07]", title: "text-warning" },
-  importante: { icon: Star, box: "border-danger/35 bg-danger/[0.06]", title: "text-danger" },
-  observacao: { icon: Info, box: "border-steel/35 bg-steel/[0.07]", title: "text-steel" },
-  dica: { icon: Lightbulb, box: "border-success/35 bg-success/[0.07]", title: "text-success" },
-  exemplo: { icon: Sparkles, box: "border-accent/35 bg-accent/[0.07]", title: "text-accent" },
-  lembre: { icon: BookMarked, box: "border-gold/35 bg-gold/[0.07]", title: "text-gold" },
+  atencao: { icon: AlertTriangle, box: "border-warning/70 bg-warning/[0.06]", title: "text-warning" },
+  importante: { icon: Star, box: "border-danger/70 bg-danger/[0.06]", title: "text-danger" },
+  observacao: { icon: Info, box: "border-steel/70 bg-steel/[0.06]", title: "text-steel" },
+  dica: { icon: Lightbulb, box: "border-success/70 bg-success/[0.06]", title: "text-success" },
+  exemplo: { icon: Sparkles, box: "border-accent/70 bg-accent/[0.06]", title: "text-accent" },
+  lembre: { icon: BookMarked, box: "border-gold/70 bg-gold/[0.06]", title: "text-gold" },
 };
 
 function Items({ items, ordered, ranges }: { items: LaidItem[]; ordered: boolean; ranges: Range[] }) {
@@ -137,10 +137,10 @@ export const BlockBody = memo(function BlockBody({
     case "titulo": {
       const cls =
         layout.level === 2
-          ? "mt-3 text-[21px] leading-snug font-semibold tracking-[-0.015em] sm:text-[22px]"
+          ? "font-display mt-7 border-t border-border pt-8 text-[24px] leading-[1.2] font-semibold text-balance sm:text-[27px] [div:first-child>&]:mt-0 [div:first-child>&]:border-t-0 [div:first-child>&]:pt-0"
           : layout.level === 3
-            ? "mt-2 text-[18px] leading-snug font-semibold"
-            : "mt-1 text-[16.5px] leading-snug font-semibold text-fg-2";
+            ? "font-display mt-4 text-[19.5px] leading-snug font-semibold"
+            : "font-display mt-2 text-[17px] leading-snug font-semibold text-fg-2";
       const H = `h${layout.level + 1}` as "h3" | "h4" | "h5";
       return (
         <H className={cls}>
@@ -160,14 +160,14 @@ export const BlockBody = memo(function BlockBody({
       return (
         <figure>
           {layout.title && (
-            <figcaption className="mb-2 text-[14px] font-semibold text-fg">
+            <figcaption className="font-display mb-2.5 text-[16px] font-semibold text-fg">
               <Text field={layout.title} ranges={ranges} />
             </figcaption>
           )}
-          <div className="overflow-x-auto rounded-xl border border-border">
+          <div className="overflow-x-auto rounded-2xl border border-border bg-surface-1">
             <table className="w-full min-w-[420px] border-collapse text-left text-[14.5px] leading-relaxed">
               {layout.head && (
-                <thead className="bg-surface-2 text-[13px] font-semibold text-fg">
+                <thead className="font-display bg-surface-2 text-[13.5px] font-semibold text-fg">
                   <tr>
                     {layout.head.map((c, i) => (
                       <th key={i} className="border-b border-border px-3.5 py-2.5 align-bottom">
@@ -204,17 +204,17 @@ export const BlockBody = memo(function BlockBody({
       return (
         <figure>
           {layout.title && (
-            <figcaption className="mb-2 text-[14px] font-semibold text-fg">
+            <figcaption className="font-display mb-2.5 text-[16px] font-semibold text-fg">
               <Text field={layout.title} ranges={ranges} />
             </figcaption>
           )}
           <div
-            className="grid gap-px overflow-hidden rounded-xl border border-border bg-border sm:grid-cols-[repeat(var(--cols),minmax(0,1fr))]"
+            className="grid gap-px overflow-hidden rounded-2xl border border-border bg-border sm:grid-cols-[repeat(var(--cols),minmax(0,1fr))]"
             style={{ "--cols": layout.columns.length } as React.CSSProperties}
           >
             {layout.columns.map((col, i) => (
               <div key={i} className="bg-surface-1">
-                <p className="border-b border-border bg-surface-2 px-4 py-2.5 text-[14px] font-semibold text-fg">
+                <p className="font-display border-b border-border bg-surface-2 px-4 py-2.5 text-[15px] font-semibold text-fg">
                   <Text field={col.title} ranges={ranges} />
                 </p>
                 <ul className="!list-none space-y-2 !pl-0 px-4 py-3 text-[14.5px] leading-relaxed">
@@ -236,8 +236,10 @@ export const BlockBody = memo(function BlockBody({
       const s = CALLOUT_STYLE[layout.variant];
       const Icon = s.icon;
       return (
-        <aside className={cn("rounded-xl border px-4 py-3.5 sm:px-5", s.box)}>
-          <p className={cn("flex items-center gap-2 text-[13px] font-semibold tracking-[0.01em]", s.title)}>
+        <aside
+          className={cn("rounded-l-[3px] rounded-r-2xl border-l-[3px] px-5 py-4 sm:px-6 sm:py-5", s.box)}
+        >
+          <p className={cn("font-display flex items-center gap-2 text-[14.5px] font-semibold", s.title)}>
             <Icon className="size-4 shrink-0" aria-hidden />
             <span data-no-anchor="">{CALLOUT_LABELS[layout.variant]}</span>
             {layout.title && (
@@ -251,7 +253,7 @@ export const BlockBody = memo(function BlockBody({
               </>
             )}
           </p>
-          <div className="mt-1.5 space-y-2 text-[15.5px] leading-relaxed">
+          <div className="mt-2 space-y-2.5 text-[16px] leading-[1.7]">
             {layout.paragraphs.map((p, i) => (
               <p key={i}>
                 <Text field={p} ranges={ranges} />
@@ -263,7 +265,7 @@ export const BlockBody = memo(function BlockBody({
     }
     case "citacao":
       return (
-        <blockquote className="relative rounded-r-xl border-l-[3px] border-accent/60 bg-surface-2/50 py-3 pr-4 pl-5">
+        <blockquote className="relative rounded-l-[3px] rounded-r-2xl border-l-[3px] border-accent/70 bg-surface-2/50 py-4 pr-5 pl-6">
           <Quote className="absolute top-3 right-3 size-4 text-fg-3/60" aria-hidden />
           <div className="space-y-2 font-serif text-[16px] leading-relaxed text-fg">
             {layout.paragraphs.map((p, i) => (
