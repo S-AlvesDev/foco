@@ -59,6 +59,7 @@ export const PRF_PLAN: Plan = {
   id: "prf-ctcon",
   name: "Plano de metas PRF",
   source: "Plano de metas do curso (60 metas), só com as matérias da Biblioteca",
+  note: "Português, Matemática, Informática e Redação ficam com as videoaulas do curso, por isso não aparecem aqui.",
   metas: [
     { id: "01", items: [read("const", "Direitos individuais e coletivos (parte 1)", t("const", "c02:1-8"))] },
     { id: "02", items: [read("penal", "Aplicação da lei penal no tempo", t("penal", "c01:1-3"))] },

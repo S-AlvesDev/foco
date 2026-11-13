@@ -9,6 +9,8 @@ export type PlanItem = {
   discipline: string;
   title: string;
   topics: string[];
+  /** Aviso mostrado no item (por exemplo, quando o assunto ainda não tem apostila). */
+  note?: string;
 };
 
 /** Meta de estudo (`items`) ou revisão geral de um intervalo de metas (`review: [de, até]`). */
@@ -19,7 +21,14 @@ export type PlanMeta = {
   review?: [string, string];
 };
 
-export type Plan = { id: string; name: string; source: string; metas: PlanMeta[] };
+export type Plan = {
+  id: string;
+  name: string;
+  source: string;
+  /** Explicação curta do plano, mostrada na página do plano. */
+  note?: string;
+  metas: PlanMeta[];
+};
 
 export type TopicInfo = { id: string; number: string | null; title: string; disciplineId: string };
 export type TopicProgress = { status: string; percent: number; completedAt: string | null };
@@ -31,6 +40,7 @@ export type ItemState = {
   discipline: string;
   disciplineId: string;
   title: string;
+  note: string | null;
   /** Tópicos que existem na Biblioteca, na ordem do plano. */
   topics: (TopicInfo & { status: string; percent: number; memory: TopicMemory | null })[];
   missing: number;
@@ -131,6 +141,7 @@ export function planState(opts: {
       discipline: it.discipline,
       disciplineId: it.disciplineId,
       title: it.title,
+      note: it.note ?? null,
       topics: list,
       missing,
       done,

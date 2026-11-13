@@ -1,12 +1,13 @@
 "use server";
 
 import { refresh } from "next/cache";
+import { cookies } from "next/headers";
 import { z } from "zod";
 import { requireUser } from "@/lib/auth";
 import { dbErrorMessage } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import { isMissingSchema } from "@/features/questions/queries";
-import { getPlan } from "./queries";
+import { getPlan, PLAN_COOKIE } from "./plans";
 
 const schema = z.object({
   planId: z.string().max(60),
@@ -42,6 +43,23 @@ export async function setPlanMarkAction(
       return { ok: false, message: "Falta criar a tabela do plano no Supabase (migração 0013)." };
     return { ok: false, message: dbErrorMessage(error) };
   }
+  refresh();
+  return { ok: true };
+}
+
+/** Escolhe qual plano aparece como "Missão do dia" e na página do plano (vale para este aparelho). */
+export async function setActivePlanAction(
+  planId: string,
+): Promise<{ ok: true } | { ok: false; message: string }> {
+  await requireUser();
+  if (typeof planId !== "string" || !getPlan(planId)) return { ok: false, message: "Plano inválido." };
+  (await cookies()).set(PLAN_COOKIE, planId, {
+    path: "/",
+    maxAge: 60 * 60 * 24 * 400,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    httpOnly: true,
+  });
   refresh();
   return { ok: true };
 }

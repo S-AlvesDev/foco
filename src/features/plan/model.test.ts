@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { planState, reviewTopics, type Plan, type TopicInfo, type TopicProgress } from "./model";
 import { PRF_PLAN } from "./plan-prf";
+import { PMPE_PLAN } from "./plan-pmpe";
+import { PLANS } from "./plans";
 
 const plan: Plan = {
   id: "t",
@@ -105,5 +107,35 @@ describe("plano da PRF", () => {
     for (const m of PRF_PLAN.metas)
       for (const i of m.items ?? [])
         for (const t of i.topics) expect(t).toMatch(/^prf-[a-z]+\.c\d\d\.t\d\d$/);
+  });
+});
+
+describe("plano da PMPE", () => {
+  it("tem ids únicos, revisões válidas e no máximo 20 itens por meta", () => {
+    const ids = PMPE_PLAN.metas.map((m) => m.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const m of PMPE_PLAN.metas) {
+      if (m.review) {
+        expect(ids).toContain(m.review[0]);
+        expect(ids).toContain(m.review[1]);
+      }
+      expect((m.items ?? []).length).toBeLessThanOrEqual(20);
+    }
+  });
+
+  it("usa ids de tópico bem formados e só deixa sem tópico os itens com aviso", () => {
+    for (const m of PMPE_PLAN.metas)
+      for (const i of m.items ?? []) {
+        for (const t of i.topics) expect(t).toMatch(/^(prf|pcrn)-[a-z]+\.c\d\d\.t\d\d$/);
+        if (!i.topics.length) expect(i.note).toBeTruthy();
+      }
+  });
+});
+
+describe("lista de planos", () => {
+  it("tem ids únicos e aceitos pela tabela de marcações", () => {
+    const ids = PLANS.map((p) => p.id);
+    expect(new Set(ids).size).toBe(ids.length);
+    for (const id of ids) expect(id).toMatch(/^[a-z0-9][a-z0-9_-]{0,59}$/);
   });
 });

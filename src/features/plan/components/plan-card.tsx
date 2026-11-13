@@ -86,7 +86,9 @@ export async function PlanCard() {
           ? `${plural(focus.topics.length, "tópico", "tópicos")} para repassar, do mais fraco para o mais forte`
           : focus.kind === "practice"
             ? `${focus.discipline} · questões e revisão dos erros`
-            : `${focus.discipline} · ${focus.readDone} de ${plural(focus.topics.length, "tópico lido", "tópicos lidos")}`}
+            : !focus.topics.length
+              ? `${focus.discipline} · ${focus.note ? "estudo pelo seu material" : "apostila não importada"}`
+              : `${focus.discipline} · ${focus.readDone} de ${plural(focus.topics.length, "tópico lido", "tópicos lidos")}`}
       </p>
 
       {topics.length > 0 && (
@@ -143,10 +145,10 @@ export async function PlanCard() {
           <Link
             href="/metas/plano"
             className="group flex min-w-0 flex-col gap-1.5 sm:w-[210px]"
-            aria-label={`Plano de metas: ${page.done} de ${page.total} concluídas`}
+            aria-label={`${page.plan.name}: ${page.done} de ${page.total} concluídas`}
           >
             <span className="flex items-baseline justify-between text-[12.5px] text-fg-3 group-hover:text-fg-2">
-              <span>Plano de metas</span>
+              <span>{page.plan.name}</span>
               <span className="num text-fg-2">
                 {page.done}/{page.total}
               </span>

@@ -5,7 +5,8 @@ import { Target } from "lucide-react";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
-import { getPlanPage } from "@/features/plan/queries";
+import { getPlanPage, PLANS } from "@/features/plan/queries";
+import { PlanSwitcher } from "@/features/plan/components/plan-switcher";
 import { CurrentMeta, PlanList, PlanSummary } from "@/features/plan/components/plan-view";
 
 export const metadata: Metadata = { title: "Plano de metas" };
@@ -25,7 +26,7 @@ async function PlanContent() {
   const header = (
     <PageHeader
       title="Plano de metas"
-      description="As metas do seu curso, ligadas às apostilas da Biblioteca."
+      description="As metas do concurso, ligadas às apostilas da Biblioteca."
       actions={
         <Button asChild variant="ghost" size="sm">
           <Link href="/metas">
@@ -49,6 +50,16 @@ async function PlanContent() {
     <>
       {header}
       <div className="flex flex-col gap-5">
+        {PLANS.length > 1 && (
+          <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
+            <span className="text-[13px] font-medium text-fg-2">Plano ativo</span>
+            <PlanSwitcher
+              plans={PLANS.map((p) => ({ id: p.id, label: p.name.replace(/^Plano de metas /, "") }))}
+              active={page.plan.id}
+            />
+            <span className="text-[12px] text-fg-3">Vale para este aparelho e muda a Missão do dia.</span>
+          </div>
+        )}
         {page.marksMissing && (
           <Notice tone="warning">
             Para marcar revisões e questões como feitas, rode a migração <strong>0013_study_plan.sql</strong>{" "}
@@ -60,8 +71,7 @@ async function PlanContent() {
         <p className="text-[12.5px] leading-relaxed text-fg-3">
           O plano anda quando você conclui: uma meta de leitura fica pronta quando todos os tópicos dela estão
           marcados como lidos na Biblioteca. Revisões gerais e metas de questões você conclui no botão.
-          Português, Matemática, Informática e Redação ficam com as videoaulas do curso, por isso não aparecem
-          aqui.
+          {page.plan.note && ` ${page.plan.note}`}
         </p>
         <PlanList page={page} />
       </div>

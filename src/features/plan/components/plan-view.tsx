@@ -1,6 +1,15 @@
 import Link from "next/link";
 import type { Route } from "next";
-import { ArrowRight, BookOpen, Check, CircleDashed, RefreshCcw, ScrollText, Target } from "lucide-react";
+import {
+  ArrowRight,
+  BookOpen,
+  Check,
+  CircleDashed,
+  Info,
+  RefreshCcw,
+  ScrollText,
+  Target,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
@@ -103,7 +112,9 @@ function ItemBlock({ meta, item, page }: { meta: MetaState; item: ItemState; pag
             {item.kind === "read"
               ? item.topics.length
                 ? `${item.readDone} de ${plural(item.topics.length, "tópico lido", "tópicos lidos")}`
-                : "Apostila não importada"
+                : item.note
+                  ? "Estudo pelo seu material"
+                  : "Apostila não importada"
               : isReview
                 ? item.topics.length
                   ? `${plural(item.topics.length, "tópico", "tópicos")}${dueCount ? ` · ${dueCount} para revisar hoje` : ""}${
@@ -150,6 +161,12 @@ function ItemBlock({ meta, item, page }: { meta: MetaState; item: ItemState; pag
         </div>
       </div>
 
+      {item.note && (
+        <p className="mt-2 flex items-start gap-2 text-[12.5px] leading-relaxed text-fg-3">
+          <Info className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+          {item.note}
+        </p>
+      )}
       {topics.length > 0 && (
         <ul className="mt-3 flex flex-col divide-y divide-border/60">
           {topics.map((t) => (
@@ -197,10 +214,12 @@ export function PlanSummary({ page }: { page: PlanPage }) {
             <span className="text-[17px] font-semibold text-fg-3"> de {page.total}</span>
           </p>
         </div>
-        <p className="text-[13px] text-fg-2 tabular-nums">
-          {page.coreDone} de {page.coreTotal} do plano do curso · {page.done - page.coreDone} de{" "}
-          {page.total - page.coreTotal} extras
-        </p>
+        {page.total > page.coreTotal && (
+          <p className="text-[13px] text-fg-2 tabular-nums">
+            {page.coreDone} de {page.coreTotal} do plano do curso · {page.done - page.coreDone} de{" "}
+            {page.total - page.coreTotal} extras
+          </p>
+        )}
       </div>
       <Bar value={pct} className="h-2" />
       <dl className="grid grid-cols-2 gap-3 text-[13px] sm:grid-cols-2">

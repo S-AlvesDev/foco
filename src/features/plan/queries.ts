@@ -1,5 +1,6 @@
 import "server-only";
 import { cache } from "react";
+import { cookies } from "next/headers";
 import { createClient } from "@/lib/supabase/server";
 import { getProfile } from "@/lib/auth";
 import { localDateISO } from "@/lib/format";
@@ -14,10 +15,15 @@ import {
   type TopicMemory,
   type TopicProgress,
 } from "./model";
-import { PRF_PLAN } from "./plan-prf";
+import { PLANS, PLAN_COOKIE, getPlan } from "./plans";
 
-export const PLANS: Plan[] = [PRF_PLAN];
-export const getPlan = (id: string) => PLANS.find((p) => p.id === id) ?? null;
+export { PLANS, getPlan };
+
+/** Plano escolhido neste aparelho (cookie); sem escolha, o primeiro da lista. */
+export const getActivePlanId = cache(async (): Promise<string> => {
+  const id = (await cookies()).get(PLAN_COOKIE)?.value;
+  return id && getPlan(id) ? id : PLANS[0].id;
+});
 
 export type PlanPage = PlanState & {
   plan: Plan;
@@ -27,8 +33,8 @@ export type PlanPage = PlanState & {
 };
 
 /** Estado do plano para a pessoa logada. `null` quando a Biblioteca não está disponível para ela. */
-export const getPlanPage = cache(async (planId = PRF_PLAN.id): Promise<PlanPage | null> => {
-  const plan = getPlan(planId);
+export const getPlanPage = cache(async (planId?: string): Promise<PlanPage | null> => {
+  const plan = getPlan(planId ?? (await getActivePlanId()));
   if (!plan || !(await canReadLibrary())) return null;
   const profile = await getProfile();
   const tz = profile.timezone;
