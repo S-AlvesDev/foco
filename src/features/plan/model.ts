@@ -11,6 +11,8 @@ export type PlanItem = {
   topics: string[];
   /** Aviso mostrado no item (por exemplo, quando o assunto ainda não tem apostila). */
   note?: string;
+  /** Conclui pelo botão mesmo tendo tópicos (a meta cobre só uma parte deles). */
+  manual?: boolean;
 };
 
 /** Meta de estudo (`items`) ou revisão geral de um intervalo de metas (`review: [de, até]`). */
@@ -126,7 +128,7 @@ export function planState(opts: {
       });
     const missing = it.topics.length - list.length;
     const readDone = list.filter((x) => x.status === "done").length;
-    const manual = it.kind !== "read" || list.length === 0;
+    const manual = !!it.manual || it.kind !== "read" || list.length === 0;
     const mark = marks.get(`${metaId}:${index}`) ?? null;
     const readOk = list.length > 0 && readDone === list.length;
     const done = manual ? !!mark : readOk;

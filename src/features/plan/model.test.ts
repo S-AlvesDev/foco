@@ -3,6 +3,7 @@ import { planState, reviewTopics, type Plan, type TopicInfo, type TopicProgress 
 import { PRF_PLAN } from "./plan-prf";
 import { PMPE_PLAN } from "./plan-pmpe";
 import { PLANS } from "./plans";
+import { PCRN_PLAN } from "./plan-pcrn";
 
 const plan: Plan = {
   id: "t",
@@ -129,6 +130,38 @@ describe("plano da PMPE", () => {
         for (const t of i.topics) expect(t).toMatch(/^(prf|pcrn)-[a-z]+\.c\d\d\.t\d\d$/);
         if (!i.topics.length) expect(i.note).toBeTruthy();
       }
+  });
+});
+
+describe("plano da PC-RN", () => {
+  it("tem as 52 metas do curso, com ids de tópico da PC-RN", () => {
+    expect(PCRN_PLAN.metas).toHaveLength(52);
+    for (const m of PCRN_PLAN.metas) {
+      expect(m.items).toHaveLength(2);
+      for (const i of m.items ?? []) {
+        for (const t of i.topics) expect(t).toMatch(/^pcrn-[a-z]+\.c\d\d\.t\d\d$/);
+        if (!i.topics.length) expect(i.note).toBeTruthy();
+      }
+    }
+  });
+
+  it("conclui meta parcial só pelo botão, mesmo com o tópico lido", () => {
+    const plan = { ...PCRN_PLAN, metas: PCRN_PLAN.metas.slice(0, 2) };
+    const id = "pcrn-port.c01.t01";
+    const s = planState({
+      plan: {
+        ...plan,
+        metas: [{ id: "01", items: [{ ...plan.metas[0].items![0], topics: [id], manual: true }] }],
+      },
+      topics: new Map([[id, { id, number: "1.1", title: "x", disciplineId: "pcrn-portugues" }]]),
+      progress: new Map([[id, { status: "done", percent: 100, completedAt: "2026-11-10T12:00:00Z" }]]),
+      memory: new Map(),
+      marks: new Map(),
+      today: "2026-11-12",
+      toLocal: (ts) => ts.slice(0, 10),
+    });
+    expect(s.metas[0].items[0].manual).toBe(true);
+    expect(s.metas[0].done).toBe(false);
   });
 });
 
