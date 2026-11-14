@@ -127,7 +127,7 @@ describe("plano da PMPE", () => {
   it("usa ids de tópico bem formados e só deixa sem tópico os itens com aviso", () => {
     for (const m of PMPE_PLAN.metas)
       for (const i of m.items ?? []) {
-        for (const t of i.topics) expect(t).toMatch(/^(prf|pcrn)-[a-z]+\.c\d\d\.t\d\d$/);
+        for (const t of i.topics) expect(t).toMatch(/^(prf|pcrn|pmpe)-[a-z]+\.c\d\d\.t\d\d$/);
         if (!i.topics.length) expect(i.note).toBeTruthy();
       }
   });
