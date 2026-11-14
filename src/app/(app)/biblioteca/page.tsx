@@ -11,6 +11,8 @@ import { EmptyState, ProgressBar, SearchBox, SearchResults } from "@/features/li
 import { topicHref } from "@/features/library/components/toc";
 import { topicLabel } from "@/features/library/model";
 import { getContinue, getOverview, searchLibrary, type DisciplineSummary } from "@/features/library/queries";
+import { getActivePlanScope } from "@/features/plan/queries";
+import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Biblioteca" };
 
@@ -69,10 +71,11 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
       </>
     );
 
-  const [overview, cont, hits] = await Promise.all([
+  const [overview, cont, hits, scope] = await Promise.all([
     getOverview(),
     getContinue(),
     q ? searchLibrary(q) : Promise.resolve(null),
+    getActivePlanScope().catch(() => null),
   ]);
 
   if (!overview.length)
@@ -105,6 +108,20 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
     c.items.push(d);
     contests.set(d.contestId, c);
   }
+  // O concurso do plano ativo vem primeiro e é o filtro padrão.
+  const planContest =
+    scope?.plan.contestId && contests.has(scope.plan.contestId) ? scope.plan.contestId : null;
+  const ordered = [...contests.entries()].sort(
+    ([a], [b]) => Number(b === planContest) - Number(a === planContest),
+  );
+  const cParam = typeof sp.c === "string" ? sp.c : null;
+  const selected = cParam && (cParam === "todos" || contests.has(cParam)) ? cParam : (planContest ?? "todos");
+  const shown = selected === "todos" ? ordered : ordered.filter(([id]) => id === selected);
+  const alsoInPlan =
+    scope && selected !== "todos" && selected === planContest
+      ? overview.filter((d) => d.contestId !== selected && scope.disciplineIds.has(d.id))
+      : [];
+  const contestOf = new Map(overview.map((d) => [d.id, d.contestName]));
 
   return (
     <>
@@ -115,7 +132,7 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
           <p className="mb-3 text-[13px] text-fg-3">
             {hits.length ? `${plural(hits.length, "resultado", "resultados")} para “${q}”` : ""}
           </p>
-          <SearchResults q={q} hits={hits} />
+          <SearchResults q={q} hits={hits} contestOf={contests.size > 1 ? contestOf : undefined} />
         </section>
       ) : (
         <>
@@ -146,10 +163,42 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
               </div>
             </section>
           )}
-          {[...contests.entries()].map(([id, c]) => (
+          {contests.size > 1 && (
+            <nav aria-label="Concursos" className="mt-8 -mb-2 flex flex-wrap items-center gap-2">
+              {[["todos", "Todos"] as const, ...ordered.map(([id, c]) => [id, c.name] as const)].map(
+                ([id, name]) => (
+                  <Link
+                    key={id}
+                    href={`/biblioteca?c=${encodeURIComponent(id)}`}
+                    scroll={false}
+                    aria-current={selected === id ? "page" : undefined}
+                    className={cn(
+                      "inline-flex h-8 items-center gap-1.5 rounded-full border px-3.5 text-[13px] font-medium transition-colors",
+                      selected === id
+                        ? "border-accent/60 bg-accent-subtle text-fg"
+                        : "border-border bg-surface-1 text-fg-2 hover:border-border-strong hover:text-fg",
+                    )}
+                  >
+                    {name}
+                    {id === planContest && (
+                      <span
+                        className="size-1.5 rounded-full bg-accent"
+                        aria-label="(plano ativo)"
+                        title="Plano ativo"
+                      />
+                    )}
+                  </Link>
+                ),
+              )}
+            </nav>
+          )}
+          {shown.map(([id, c]) => (
             <section key={id} aria-labelledby={`c-${id}`} className="mt-9">
               <h2 id={`c-${id}`} className="mb-3 text-[13px] font-semibold tracking-[0.02em] text-fg-3">
                 {c.name}
+                {id === planContest && (
+                  <span className="ml-2 font-normal text-fg-3">· concurso do plano ativo</span>
+                )}
               </h2>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
                 {c.items.map((d) => (
@@ -158,13 +207,28 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
               </div>
             </section>
           ))}
+          {alsoInPlan.length > 0 && scope && (
+            <section aria-labelledby="also-plan" className="mt-9">
+              <h2 id="also-plan" className="text-[13px] font-semibold tracking-[0.02em] text-fg-3">
+                Também usadas no {scope.plan.name}
+              </h2>
+              <p className="mt-1 mb-3 text-[12.5px] text-fg-3">
+                Apostilas de outros concursos que cobrem assuntos do seu edital.
+              </p>
+              <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+                {alsoInPlan.map((d) => (
+                  <DisciplineCard key={d.id} d={d} badge={d.contestName} />
+                ))}
+              </div>
+            </section>
+          )}
         </>
       )}
     </>
   );
 }
 
-function DisciplineCard({ d }: { d: DisciplineSummary }) {
+function DisciplineCard({ d, badge }: { d: DisciplineSummary; badge?: string }) {
   return (
     <Link
       href={`/biblioteca/${encodeURIComponent(d.id)}`}
@@ -172,6 +236,11 @@ function DisciplineCard({ d }: { d: DisciplineSummary }) {
     >
       <span className="flex items-start justify-between gap-3">
         <span className="min-w-0">
+          {badge && (
+            <span className="mb-1.5 inline-block rounded bg-surface-2 px-1.5 py-px text-[11px] font-semibold text-fg-2">
+              {badge}
+            </span>
+          )}
           <span className="block text-[15px] leading-snug font-semibold text-fg">{d.name}</span>
           <span className="mt-1 block text-[12.5px] text-fg-3">
             {plural(d.chapters, "capítulo", "capítulos")} · {plural(d.topics, "tópico", "tópicos")}

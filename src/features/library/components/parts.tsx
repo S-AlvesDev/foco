@@ -52,7 +52,16 @@ export function SearchBox({
   );
 }
 
-export function SearchResults({ q, hits }: { q: string; hits: SearchHit[] }) {
+export function SearchResults({
+  q,
+  hits,
+  contestOf,
+}: {
+  q: string;
+  hits: SearchHit[];
+  /** Nome do concurso de cada disciplina, para diferenciar disciplinas de mesmo nome. */
+  contestOf?: Map<string, string>;
+}) {
   if (!hits.length)
     return (
       <div className="rounded-2xl border border-dashed border-border-strong px-6 py-12 text-center">
@@ -71,6 +80,11 @@ export function SearchResults({ q, hits }: { q: string; hits: SearchHit[] }) {
               className="block rounded-xl border border-border bg-surface-1 px-4 py-3 transition-colors hover:border-border-strong hover:bg-surface-2/40"
             >
               <p className="truncate text-[12px] text-fg-3">
+                {contestOf?.get(h.disciplineId) && (
+                  <span className="mr-1.5 rounded bg-surface-2 px-1.5 py-px text-[11px] font-semibold text-fg-2">
+                    {contestOf.get(h.disciplineId)}
+                  </span>
+                )}
                 {h.disciplineName} › {h.chapterTitle}
               </p>
               <p className="mt-0.5 text-[14.5px] font-medium text-fg">{h.topicTitle}</p>

@@ -42,16 +42,22 @@ export const getPlanPage = cache(async (planId?: string): Promise<PlanPage | nul
   const ids = [...new Set(plan.metas.flatMap((m) => (m.items ?? []).flatMap((i) => i.topics)))];
 
   const supabase = await createClient();
-  const [topicsRes, progRes, marksRes] = await Promise.all([
+  // Tópicos do plano e os subtópicos deles (tópicos longos são divididos em subtópicos na Biblioteca).
+  const quoted = ids.map((id) => `"${id.replace(/"/g, "")}"`).join(",");
+  const topicsRes = await supabase
+    .from("library_topics")
+    .select("id, number, title, discipline_id, parent_id, position")
+    .or(`id.in.(${quoted}),parent_id.in.(${quoted})`)
+    .is("archived_at", null);
+  if (topicsRes.error) throw topicsRes.error;
+  const allIds = [...new Set([...ids, ...(topicsRes.data ?? []).map((t) => t.id)])];
+  const [progRes, marksRes] = await Promise.all([
     supabase
-      .from("library_topics")
-      .select("id, number, title, discipline_id")
-      .in("id", ids)
-      .is("archived_at", null),
-    supabase.from("library_progress").select("topic_id, status, percent, completed_at").in("topic_id", ids),
+      .from("library_progress")
+      .select("topic_id, status, percent, completed_at")
+      .in("topic_id", allIds),
     supabase.from("study_plan_marks").select("meta, item, done_at").eq("plan_id", plan.id),
   ]);
-  if (topicsRes.error) throw topicsRes.error;
   if (progRes.error) throw progRes.error;
   const marksMissing = isMissingSchema(marksRes.error);
   if (marksRes.error && !marksMissing) throw marksRes.error;
@@ -60,7 +66,14 @@ export const getPlanPage = cache(async (planId?: string): Promise<PlanPage | nul
   const topics = new Map<string, TopicInfo>(
     (topicsRes.data ?? []).map((t) => [
       t.id,
-      { id: t.id, number: t.number, title: t.title, disciplineId: t.discipline_id },
+      {
+        id: t.id,
+        number: t.number,
+        title: t.title,
+        disciplineId: t.discipline_id,
+        parentId: t.parent_id,
+        position: t.position,
+      },
     ]),
   );
   const progress = new Map<string, TopicProgress>(
@@ -89,3 +102,17 @@ export const getPlanPage = cache(async (planId?: string): Promise<PlanPage | nul
     marksMissing,
   };
 });
+
+/** Plano ativo e as disciplinas da Biblioteca que ele usa (para a Biblioteca mostrar primeiro o que importa). */
+export const getActivePlanScope = cache(
+  async (): Promise<{ plan: Plan; disciplineIds: Set<string> } | null> => {
+    const plan = getPlan(await getActivePlanId());
+    if (!plan) return null;
+    const ids = [...new Set(plan.metas.flatMap((m) => (m.items ?? []).flatMap((i) => i.topics)))];
+    if (!ids.length) return { plan, disciplineIds: new Set() };
+    const supabase = await createClient();
+    const { data, error } = await supabase.from("library_topics").select("discipline_id").in("id", ids);
+    if (error) return { plan, disciplineIds: new Set() };
+    return { plan, disciplineIds: new Set((data ?? []).map((t) => t.discipline_id)) };
+  },
+);

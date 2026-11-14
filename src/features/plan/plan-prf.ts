@@ -58,6 +58,7 @@ const revise = (key: Key, title: string, topics: string[]): PlanItem => ({
 export const PRF_PLAN: Plan = {
   id: "prf-ctcon",
   name: "Plano de metas PRF",
+  contestId: "prf",
   source: "Plano de metas do curso (60 metas), só com as matérias da Biblioteca",
   note: "Português, Matemática, Informática e Redação ficam com as videoaulas do curso, por isso não aparecem aqui.",
   metas: [

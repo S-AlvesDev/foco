@@ -18,6 +18,7 @@ const item = (
 export const PMPE_PLAN: Plan = {
   id: "pmpe-soldado",
   name: "Plano de metas PMPE",
+  contestId: "pmpe",
   source: "Edital verticalizado PMPE (Soldado), com as apostilas da Biblioteca",
   note: "Plano montado a partir do edital da PMPE, com as apostilas da PMPE, da PC-RN e da PRF. Onde o curso não tem PDF (alguns assuntos de Português, Pernambuco republicano, Estatuto da Juventude), o item pede para estudar pela videoaula e marcar como feito.",
   metas: [

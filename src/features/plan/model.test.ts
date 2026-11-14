@@ -1,5 +1,12 @@
 import { describe, expect, it } from "vitest";
-import { planState, reviewTopics, type Plan, type TopicInfo, type TopicProgress } from "./model";
+import {
+  expandTopics,
+  planState,
+  reviewTopics,
+  type Plan,
+  type TopicInfo,
+  type TopicProgress,
+} from "./model";
 import { PRF_PLAN } from "./plan-prf";
 import { PMPE_PLAN } from "./plan-pmpe";
 import { PLANS } from "./plans";
@@ -170,5 +177,27 @@ describe("lista de planos", () => {
     const ids = PLANS.map((p) => p.id);
     expect(new Set(ids).size).toBe(ids.length);
     for (const id of ids) expect(id).toMatch(/^[a-z0-9][a-z0-9_-]{0,59}$/);
+  });
+});
+
+describe("subtópicos no plano", () => {
+  it("inclui os subtópicos logo depois do tópico citado, na ordem da apostila", () => {
+    const info = (id: string, parentId: string | null, position: number): TopicInfo => ({
+      id,
+      number: null,
+      title: id,
+      disciplineId: "d",
+      parentId,
+      position,
+    });
+    const topics = new Map(
+      [
+        info("a.t01", null, 1),
+        info("a.t01.s02", "a.t01", 3),
+        info("a.t01.s01", "a.t01", 2),
+        info("a.t02", null, 4),
+      ].map((t) => [t.id, t]),
+    );
+    expect(expandTopics(["a.t01", "a.t02"], topics)).toEqual(["a.t01", "a.t01.s01", "a.t01.s02", "a.t02"]);
   });
 });

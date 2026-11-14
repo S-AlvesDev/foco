@@ -19,6 +19,7 @@ import {
   ChevronLeft,
   FileText,
   ListTree,
+  Navigation,
   MessageSquarePlus,
   NotebookPen,
   Pencil,
@@ -58,6 +59,7 @@ import {
 import { BlockBody } from "./blocks";
 import { selectionAnchors, selectionRect, type Anchor } from "./selection";
 import { StatusDot, Toc, topicHref } from "./toc";
+import { findArticles, InTopicNav } from "./in-topic-nav";
 
 type Laid = { block: ReaderBlock; layout: Layout; anchor: string };
 
@@ -117,6 +119,7 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
   const [favorite, setFavorite] = useState(topic.favorite);
   const showSources = useSyncExternalStore(subscribeSources, readSources, () => false);
   const [tocOpen, setTocOpen] = useState(false);
+  const [navOpen, setNavOpen] = useState(false);
   const [pending, setPending] = useState<{ anchors: Anchor[]; rect: DOMRect | null } | null>(null);
   const [active, setActive] = useState<{ ids: string[]; rect: DOMRect } | null>(null);
   const [noteEdit, setNoteEdit] = useState<{ anchor?: Anchor; mark?: Mark } | null>(null);
@@ -415,6 +418,8 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
         ]
       : [],
   );
+  const articles = useMemo(() => findArticles(laid.map((l) => ({ id: l.block.id, text: l.anchor }))), [laid]);
+  const hasNav = outline.length > 1 || articles.length > 2;
 
   return (
     <div className="mx-auto w-full max-w-[1180px] px-4 pt-4 pb-16 sm:px-8 sm:pt-6 xl:grid xl:grid-cols-[256px_minmax(0,1fr)] xl:gap-12 2xl:max-w-[1440px] 2xl:grid-cols-[272px_minmax(0,1fr)_216px]">
@@ -456,6 +461,18 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
           <span className="ml-1 flex-1 text-[12.5px] whitespace-nowrap text-fg-3 tabular-nums">
             Tópico {index + 1} de {total}
           </span>
+          {hasNav && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="2xl:hidden"
+              onClick={() => setNavOpen(true)}
+              aria-label="Navegar neste tópico"
+            >
+              <Navigation />
+              <span className="hidden sm:inline">Neste tópico</span>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"
@@ -662,30 +679,25 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
 
       {/* Neste tópico (telas grandes): as seções do texto, para pular direto. */}
       <aside className="hidden 2xl:block">
-        {outline.length > 1 && (
+        {hasNav && (
           <nav
             aria-label="Neste tópico"
             className="sticky top-8 max-h-[calc(100dvh-64px)] overflow-y-auto pb-6"
           >
-            <p className="font-display px-2 text-[13.5px] font-semibold text-fg">Neste tópico</p>
-            <ul className="mt-2 flex flex-col border-l border-border">
-              {outline.map((o) => (
-                <li key={o.id}>
-                  <a
-                    href={`#${o.id}`}
-                    className={cn(
-                      "-ml-px block border-l border-transparent py-1 pr-2 text-[12.5px] leading-snug text-fg-3 transition-colors hover:border-accent hover:text-fg",
-                      o.level > 2 ? "pl-6" : "pl-3",
-                    )}
-                  >
-                    {o.text}
-                  </a>
-                </li>
-              ))}
-            </ul>
+            <p className="font-display mb-3 px-2 text-[13.5px] font-semibold text-fg">Neste tópico</p>
+            <InTopicNav outline={outline} articles={articles} className="px-2" />
           </nav>
         )}
       </aside>
+
+      {/* Neste tópico (abaixo das telas muito largas) */}
+      <Dialog open={navOpen} onOpenChange={setNavOpen}>
+        <DialogContent title="Neste tópico" description={topicLabel(topic)}>
+          <DialogBody>
+            <InTopicNav outline={outline} articles={articles} onNavigate={() => setNavOpen(false)} />
+          </DialogBody>
+        </DialogContent>
+      </Dialog>
 
       {/* Sumário (celular/tablet) */}
       <Dialog open={tocOpen} onOpenChange={setTocOpen}>

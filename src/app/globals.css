@@ -578,3 +578,25 @@
     box-shadow: var(--card-shadow);
   }
 }
+
+/* Destaque breve do trecho para onde o leitor pulou (Neste tópico / Ir para o artigo). */
+@keyframes flash-target {
+  0% {
+    background-color: color-mix(in oklab, var(--accent) 22%, transparent);
+  }
+  100% {
+    background-color: transparent;
+  }
+}
+.flash-target {
+  border-radius: 8px;
+  animation: flash-target 1.6s ease-out;
+  scroll-margin-top: 120px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .flash-target {
+    animation: none;
+    outline: 2px solid var(--accent);
+    outline-offset: 4px;
+  }
+}

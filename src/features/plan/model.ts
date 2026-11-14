@@ -26,13 +26,40 @@ export type PlanMeta = {
 export type Plan = {
   id: string;
   name: string;
+  /** Concurso do plano (id do concurso na Biblioteca). */
+  contestId?: string;
   source: string;
   /** Explicação curta do plano, mostrada na página do plano. */
   note?: string;
   metas: PlanMeta[];
 };
 
-export type TopicInfo = { id: string; number: string | null; title: string; disciplineId: string };
+export type TopicInfo = {
+  id: string;
+  number: string | null;
+  title: string;
+  disciplineId: string;
+  /** Tópico pai, quando é subtópico (o plano inclui os subtópicos do tópico que cita). */
+  parentId?: string | null;
+  position?: number;
+};
+
+/** Ids do plano com os subtópicos de cada tópico logo depois dele, na ordem da apostila. */
+export function expandTopics(ids: string[], topics: Map<string, TopicInfo>): string[] {
+  const kids = new Map<string, TopicInfo[]>();
+  for (const t of topics.values()) if (t.parentId) kids.set(t.parentId, [...(kids.get(t.parentId) ?? []), t]);
+  for (const list of kids.values()) list.sort((a, b) => (a.position ?? 0) - (b.position ?? 0));
+  const out: string[] = [];
+  const seen = new Set<string>();
+  const add = (id: string) => {
+    if (seen.has(id)) return;
+    seen.add(id);
+    out.push(id);
+    for (const k of kids.get(id) ?? []) add(k.id);
+  };
+  ids.forEach(add);
+  return out;
+}
 export type TopicProgress = { status: string; percent: number; completedAt: string | null };
 export type TopicMemory = { level: string; dueOn: string; state: string };
 
@@ -114,7 +141,7 @@ export function planState(opts: {
   const { plan, topics, progress, memory, marks, today, toLocal } = opts;
 
   const buildItem = (it: PlanItem, index: number, metaId: string): ItemState => {
-    const list = it.topics
+    const list = expandTopics(it.topics, topics)
       .map((id) => topics.get(id))
       .filter((x): x is TopicInfo => !!x)
       .map((x) => {
@@ -126,7 +153,7 @@ export function planState(opts: {
           memory: memory.get(x.id) ?? null,
         };
       });
-    const missing = it.topics.length - list.length;
+    const missing = it.topics.filter((id) => !topics.has(id)).length;
     const readDone = list.filter((x) => x.status === "done").length;
     const manual = !!it.manual || it.kind !== "read" || list.length === 0;
     const mark = marks.get(`${metaId}:${index}`) ?? null;

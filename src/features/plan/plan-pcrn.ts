@@ -18,6 +18,7 @@ const item = (
 export const PCRN_PLAN: Plan = {
   id: "pcrn-ctcon",
   name: "Plano de metas PC-RN",
+  contestId: "pc-rn",
   source: "Metas de aulas do curso (52 dias), ligadas às apostilas da PC-RN",
   note: "Segue as metas de aulas do curso. Quando a meta cobre só um pedaço de um tópico da apostila, leia a parte indicada e marque como feito; a última meta daquele tópico conclui sozinha quando você termina a leitura.",
   metas: [
