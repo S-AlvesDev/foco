@@ -355,9 +355,9 @@ check("categoria desligada não gera aviso", one(a, "select count(*) from notifi
 a.execute("update notification_prefs set cat_reviews=true")
 gen()
 nid = one(a, "select id from notifications limit 1")[0]
-check("B não vê notificações de A", one(b, "select count(*) from notifications")[0] == 0)
-check("B não marca nem apaga as de A", b.execute("update notifications set read_at=now()").rowcount == 0
-      and b.execute("delete from notifications").rowcount == 0)
+check("B não vê notificações de A", one(b, "select count(*) from notifications where user_id=%s", (A,))[0] == 0)
+check("B não marca nem apaga as de A", b.execute("update notifications set read_at=now() where user_id=%s", (A,)).rowcount == 0
+      and b.execute("delete from notifications where user_id=%s", (A,)).rowcount == 0)
 check("A marca como lida", a.execute("update notifications set read_at=now() where id=%s", (nid,)).rowcount == 1)
 check("A não altera o texto", fails(a, "update notifications set title='x' where id=%s", (nid,)))
 check("ninguém cria notificação direto", fails(a, "insert into notifications (user_id, kind, title, dedupe_key) values (%s,'system','x','k')", (A,)))
@@ -558,6 +558,60 @@ res = b.execute("select kind, topic_title, block_text from library_search('licit
 check("biblioteca: busca sem acento acha capítulo e conteúdo",
       any(k == "topic" and t == "Modalidades" for k, t, _ in res) and any(k == "block" and "licitação" in (s or "") for k, _, s in res))
 check("biblioteca: busca por título de tópico", any(t == "Fontes do Direito Administrativo" for _, t, _ in b.execute("select kind, topic_title, block_text from library_search('fontes')").fetchall()))
+
+# solicitações de acesso por concurso
+STRUCT2 = {"concurso": {"id": "pmpe", "nome": "PMPE"},
+           "disciplina": {"id": "pmpe-hist", "nome": "História de PE", "ordem": 1},
+           "capitulos": [{"id": "pmpe-hist.c1", "titulo": "Colônia", "topicos": [{"id": "pmpe-hist.c1.t1", "titulo": "Capitanias"}]}]}
+a.execute("select library_import_structure(%s::jsonb)", (_json.dumps(STRUCT2),))
+check("acesso: sem pedido, vê só o nome dos concursos",
+      one(c3, "select count(*) from library_contests")[0] == 2 and one(c3, "select count(*) from library_disciplines")[0] == 0
+      and not one(c3, "select library_can_read()")[0])
+check("acesso: quem já tem acesso total não pede", fails(b, "select library_request_access('prf')", contains="toda a Biblioteca"))
+check("acesso: concurso inexistente recusado", fails(c3, "select library_request_access('xyz')", contains="não encontrado"))
+check("acesso: pedido fica aguardando", one(c3, "select library_request_access('prf', 'Estudo para a PRF')")[0] == "pending")
+check("acesso: pedido avisa a conta administradora",
+      one(root, "select count(*) from notifications where user_id=%s and url='/biblioteca/solicitacoes'", (A,))[0] == 1)
+check("acesso: aguardando não libera nada", one(c3, "select count(*) from library_blocks")[0] == 0
+      and not one(c3, "select library_can_read()")[0])
+check("acesso: ninguém escreve direto nos pedidos",
+      fails(c3, "update library_access set status='approved'") or one(root, "select status from library_access where user_id=%s", (C,))[0] == "pending")
+check("acesso: ninguém cria pedido aprovado direto",
+      fails(c3, "insert into library_access (contest_id, status) values ('pmpe','approved')"))
+check("acesso: quem pediu não decide", fails(c3, "select library_decide_access(%s, 'prf', 'approved')", (C,), contains="administradora")
+      and fails(b, "select library_decide_access(%s, 'prf', 'approved')", (C,), contains="administradora"))
+check("acesso: só a administradora lista os pedidos", fails(c3, "select * from library_access_requests()", contains="administradora"))
+lst = a.execute("select email, contest_name, status, message from library_access_requests()").fetchall()
+check("acesso: lista com e-mail, concurso e mensagem", lst == [("c@x.com", "PRF", "pending", "Estudo para a PRF")])
+check("acesso: cada um vê só o próprio pedido", one(b, "select count(*) from library_access")[0] == 0
+      and one(c3, "select count(*) from library_access")[0] == 1)
+a.execute("select library_decide_access(%s, 'prf', 'approved', array['pmpe-hist','nao-existe'])", (C,))
+check("acesso: permitido lê o concurso", one(c3, "select library_can_read()")[0]
+      and one(c3, "select count(*) from library_blocks")[0] == 2 and one(c3, "select count(*) from library_topics where discipline_id='prf-adm'")[0] == 4)
+check("acesso: disciplina extra do plano liberada, só as que existem",
+      one(root, "select extra_disciplines from library_access where user_id=%s", (C,))[0] == ["pmpe-hist"]
+      and one(c3, "select count(*) from library_topics where discipline_id='pmpe-hist'")[0] == 1)
+check("acesso: avisa quem pediu", one(root, "select count(*) from notifications where user_id=%s and title='Acesso liberado'", (C,))[0] == 1)
+check("acesso: busca e visão geral funcionam para o permitido",
+      len(c3.execute("select * from library_search('licitacao')").fetchall()) > 0
+      and len(c3.execute("select * from library_overview()").fetchall()) == 2)
+c3.execute("select library_touch('prf-adm.c1.t1', 30)")
+check("acesso: permitido registra leitura", one(c3, "select percent from library_progress")[0] == 30)
+c3.execute("insert into library_marks (kind, topic_id) values ('favorite','prf-adm.c1.t1')")
+check("acesso: permitido marca favorito", one(c3, "select count(*) from library_marks")[0] == 1)
+a.execute("select library_decide_access(%s, 'prf', 'approved', '{}')", (C,))
+check("acesso: tirar a disciplina extra fecha ela", one(c3, "select count(*) from library_topics where discipline_id='pmpe-hist'")[0] == 0)
+check("acesso: outro concurso continua fechado", one(c3, "select count(*) from library_disciplines")[0] == 1)
+a.execute("select library_decide_access(%s, 'prf', 'denied')", (C,))
+check("acesso: remover o acesso fecha tudo", one(c3, "select count(*) from library_blocks")[0] == 0
+      and not one(c3, "select library_can_read()")[0]
+      and one(root, "select count(*) from notifications where user_id=%s and title='Acesso encerrado'", (C,))[0] == 1)
+check("acesso: sem acesso não marca", fails(c3, "insert into library_marks (kind, topic_id, body) values ('note','prf-adm.c1.t1','x')"))
+check("acesso: negado pode pedir de novo", one(c3, "select library_request_access('prf')")[0] == "pending"
+      and one(root, "select status, decided_at from library_access where user_id=%s", (C,))[0] == "pending")
+c3.execute("select library_cancel_request('prf')")
+check("acesso: pedido cancelado some", one(root, "select count(*) from library_access where user_id=%s", (C,))[0] == 0)
+root.execute("delete from library_contests where id='pmpe'")  # não interfere nas contagens abaixo
 check("biblioteca: terceiro não busca", c3.execute("select * from library_search('licitação')").fetchall() == [])
 
 # atualização do material: marcação acompanha o texto; texto ambíguo vai para revisão; nada some

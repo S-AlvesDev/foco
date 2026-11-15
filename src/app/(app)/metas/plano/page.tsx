@@ -1,11 +1,11 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { Target } from "lucide-react";
+import { KeyRound, Target } from "lucide-react";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
-import { getPlanPage, PLANS } from "@/features/plan/queries";
+import { getAllowedPlans, getPlanPage } from "@/features/plan/queries";
 import { PlanSwitcher } from "@/features/plan/components/plan-switcher";
 import { CurrentMeta, PlanList, PlanSummary } from "@/features/plan/components/plan-view";
 
@@ -22,7 +22,7 @@ export default function PlanPageRoute() {
 }
 
 async function PlanContent() {
-  const page = await getPlanPage();
+  const [page, plans] = await Promise.all([getPlanPage(), getAllowedPlans()]);
   const header = (
     <PageHeader
       title="Plano de metas"
@@ -41,20 +41,29 @@ async function PlanContent() {
     return (
       <>
         {header}
-        <p className="text-[14px] text-fg-2">
-          O plano usa as apostilas da Biblioteca, que não está disponível nesta conta.
-        </p>
+        <div className="max-w-[60ch]">
+          <p className="text-[14px] leading-relaxed text-fg-2">
+            O plano usa as apostilas da Biblioteca. Peça acesso ao seu concurso: assim que a administradora
+            permitir, o plano e a missão do dia aparecem aqui.
+          </p>
+          <Button asChild variant="primary" className="mt-5">
+            <Link href="/biblioteca">
+              <KeyRound />
+              Pedir acesso
+            </Link>
+          </Button>
+        </div>
       </>
     );
   return (
     <>
       {header}
       <div className="flex flex-col gap-5">
-        {PLANS.length > 1 && (
+        {plans.length > 1 && (
           <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
             <span className="text-[13px] font-medium text-fg-2">Plano ativo</span>
             <PlanSwitcher
-              plans={PLANS.map((p) => ({ id: p.id, label: p.name.replace(/^Plano de metas /, "") }))}
+              plans={plans.map((p) => ({ id: p.id, label: p.name.replace(/^Plano de metas /, "") }))}
               active={page.plan.id}
             />
             <span className="text-[12px] text-fg-3">Vale para este aparelho e muda a Missão do dia.</span>

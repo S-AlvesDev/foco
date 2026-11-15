@@ -8,6 +8,7 @@ import { dbErrorMessage } from "@/lib/errors";
 import { createClient } from "@/lib/supabase/server";
 import { isMissingSchema } from "@/features/questions/queries";
 import { getPlan, PLAN_COOKIE } from "./plans";
+import { getAllowedPlans } from "./queries";
 
 const schema = z.object({
   planId: z.string().max(60),
@@ -52,7 +53,8 @@ export async function setActivePlanAction(
   planId: string,
 ): Promise<{ ok: true } | { ok: false; message: string }> {
   await requireUser();
-  if (typeof planId !== "string" || !getPlan(planId)) return { ok: false, message: "Plano inválido." };
+  if (typeof planId !== "string" || !(await getAllowedPlans()).some((p) => p.id === planId))
+    return { ok: false, message: "Plano inválido." };
   (await cookies()).set(PLAN_COOKIE, planId, {
     path: "/",
     maxAge: 60 * 60 * 24 * 400,

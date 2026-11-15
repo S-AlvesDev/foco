@@ -1375,6 +1375,61 @@ export type Database = {
           },
         ];
       };
+      library_access: {
+        Row: {
+          contest_id: string;
+          decided_at: string | null;
+          decided_by: string | null;
+          extra_disciplines: string[];
+          message: string | null;
+          requested_at: string;
+          status: string;
+          user_id: string;
+        };
+        Insert: {
+          contest_id: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          extra_disciplines?: string[];
+          message?: string | null;
+          requested_at?: string;
+          status?: string;
+          user_id?: string;
+        };
+        Update: {
+          contest_id?: string;
+          decided_at?: string | null;
+          decided_by?: string | null;
+          extra_disciplines?: string[];
+          message?: string | null;
+          requested_at?: string;
+          status?: string;
+          user_id?: string;
+        };
+        Relationships: [
+          {
+            foreignKeyName: "library_access_contest_id_fkey";
+            columns: ["contest_id"];
+            isOneToOne: false;
+            referencedRelation: "library_contests";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "library_access_decided_by_fkey";
+            columns: ["decided_by"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+          {
+            foreignKeyName: "library_access_user_id_fkey";
+            columns: ["user_id"];
+            isOneToOne: false;
+            referencedRelation: "profiles";
+            referencedColumns: ["id"];
+          },
+        ];
+      };
       library_blocks: {
         Row: {
           anchor_text: string;
@@ -1996,6 +2051,31 @@ export type Database = {
       };
       library_archive: { Args: { p_kind: string; p_id: string; p_restore?: boolean }; Returns: undefined };
       library_can_read: { Args: never; Returns: boolean };
+      library_access_requests: {
+        Args: never;
+        Returns: {
+          user_id: string;
+          display_name: string;
+          email: string;
+          avatar_path: string;
+          contest_id: string;
+          contest_name: string;
+          status: string;
+          message: string;
+          requested_at: string;
+          decided_at: string;
+        }[];
+      };
+      library_cancel_request: { Args: { p_contest: string }; Returns: undefined };
+      library_decide_access: {
+        Args: { p_user: string; p_contest: string; p_status: string; p_extra?: string[] };
+        Returns: string;
+      };
+      library_full_access: { Args: never; Returns: boolean };
+      library_my_contests: { Args: never; Returns: string[] };
+      library_my_disciplines: { Args: never; Returns: string[] };
+      library_my_topics: { Args: never; Returns: string[] };
+      library_request_access: { Args: { p_contest: string; p_message?: string }; Returns: string };
       library_import_blocks: { Args: { p_topic: string; p_blocks: Json }; Returns: Json };
       library_import_structure: { Args: { p: Json; p_mode?: string }; Returns: Json };
       library_overview: {

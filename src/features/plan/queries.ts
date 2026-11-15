@@ -6,6 +6,7 @@ import { getProfile } from "@/lib/auth";
 import { localDateISO } from "@/lib/format";
 import { isMissingSchema } from "@/features/questions/queries";
 import { canReadLibrary } from "@/features/library/queries";
+import { getAccessState } from "@/features/library/access";
 import { getMemoryItems, MemoryNotInstalled } from "@/features/memory/queries";
 import {
   planState,
@@ -19,10 +20,21 @@ import { PLANS, PLAN_COOKIE, getPlan } from "./plans";
 
 export { PLANS, getPlan };
 
-/** Plano escolhido neste aparelho (cookie); sem escolha, o primeiro da lista. */
-export const getActivePlanId = cache(async (): Promise<string> => {
+/**
+ * Planos que a pessoa pode seguir: todos para quem tem acesso total à Biblioteca; para quem foi
+ * permitida em concursos específicos, só os planos desses concursos.
+ */
+export const getAllowedPlans = cache(async (): Promise<Plan[]> => {
+  const access = await getAccessState().catch(() => null);
+  if (!access || access.full || !access.installed) return PLANS;
+  return PLANS.filter((p) => p.contestId && access.allowed.has(p.contestId));
+});
+
+/** Plano escolhido neste aparelho (cookie); sem escolha, o primeiro permitido. `null` se nenhum. */
+export const getActivePlanId = cache(async (): Promise<string | null> => {
+  const allowed = await getAllowedPlans();
   const id = (await cookies()).get(PLAN_COOKIE)?.value;
-  return id && getPlan(id) ? id : PLANS[0].id;
+  return allowed.find((p) => p.id === id)?.id ?? allowed[0]?.id ?? null;
 });
 
 export type PlanPage = PlanState & {
@@ -34,7 +46,8 @@ export type PlanPage = PlanState & {
 
 /** Estado do plano para a pessoa logada. `null` quando a Biblioteca não está disponível para ela. */
 export const getPlanPage = cache(async (planId?: string): Promise<PlanPage | null> => {
-  const plan = getPlan(planId ?? (await getActivePlanId()));
+  const id = planId ?? (await getActivePlanId());
+  const plan = id ? (await getAllowedPlans()).find((p) => p.id === id) : undefined;
   if (!plan || !(await canReadLibrary())) return null;
   const profile = await getProfile();
   const tz = profile.timezone;
@@ -106,7 +119,8 @@ export const getPlanPage = cache(async (planId?: string): Promise<PlanPage | nul
 /** Plano ativo e as disciplinas da Biblioteca que ele usa (para a Biblioteca mostrar primeiro o que importa). */
 export const getActivePlanScope = cache(
   async (): Promise<{ plan: Plan; disciplineIds: Set<string> } | null> => {
-    const plan = getPlan(await getActivePlanId());
+    const id = await getActivePlanId();
+    const plan = id ? getPlan(id) : undefined;
     if (!plan) return null;
     const ids = [...new Set(plan.metas.flatMap((m) => (m.items ?? []).flatMap((i) => i.topics)))];
     if (!ids.length) return { plan, disciplineIds: new Set() };

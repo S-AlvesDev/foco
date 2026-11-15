@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArrowRight, BookMarked, NotebookPen, Star, Upload } from "lucide-react";
+import { ArrowRight, BookMarked, KeyRound, NotebookPen, Star, Upload, UserCheck } from "lucide-react";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
 import { plural } from "@/lib/format";
@@ -12,6 +12,7 @@ import { topicHref } from "@/features/library/components/toc";
 import { topicLabel } from "@/features/library/model";
 import { getContinue, getOverview, searchLibrary, type DisciplineSummary } from "@/features/library/queries";
 import { getActivePlanScope } from "@/features/plan/queries";
+import { countPendingRequests, getAccessState } from "@/features/library/access";
 import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Biblioteca" };
@@ -29,7 +30,13 @@ export default function LibraryPage({ searchParams }: PageProps<"/biblioteca">) 
 async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca">["searchParams"] }) {
   const sp = await searchParams;
   const q = typeof sp.q === "string" ? sp.q.trim().slice(0, 120) : "";
-  const [gate, admin] = await Promise.all([libraryGate(), isQuestionAdmin().catch(() => false)]);
+  const [gate, admin, access] = await Promise.all([
+    libraryGate(),
+    isQuestionAdmin().catch(() => false),
+    getAccessState().catch(() => null),
+  ]);
+  const partial = !!access && access.installed && !access.full;
+  const pendingCount = admin && access?.installed ? await countPendingRequests() : 0;
   const header = (
     <PageHeader
       title="Biblioteca"
@@ -50,6 +57,30 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
                 <span className="hidden sm:inline">Marcações e anotações</span>
               </Link>
             </Button>
+            {partial && (
+              <Button asChild variant="ghost">
+                <Link href="/biblioteca/acesso">
+                  <KeyRound />
+                  Outros concursos
+                </Link>
+              </Button>
+            )}
+            {admin && access?.installed && (
+              <Button asChild variant="ghost">
+                <Link href="/biblioteca/solicitacoes">
+                  <UserCheck />
+                  <span className="hidden sm:inline">Solicitações</span>
+                  {pendingCount > 0 && (
+                    <span
+                      className="ml-0.5 inline-flex min-w-5 items-center justify-center rounded-full bg-accent px-1.5 text-[11px] leading-5 font-semibold text-accent-fg tabular-nums"
+                      aria-label={`${pendingCount} aguardando`}
+                    >
+                      {pendingCount}
+                    </span>
+                  )}
+                </Link>
+              </Button>
+            )}
             {admin && (
               <Button asChild variant="secondary">
                 <Link href="/biblioteca/importar">
@@ -102,8 +133,12 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
       </>
     );
 
+  // Quem tem acesso só a alguns concursos vê esses agrupados; as disciplinas extras liberadas pelo
+  // plano (de outros concursos) aparecem à parte, em "Também usadas no plano".
+  const visible = partial ? overview.filter((d) => access.allowed.has(d.contestId)) : overview;
+  const extras = partial ? overview.filter((d) => !access.allowed.has(d.contestId)) : [];
   const contests = new Map<string, { name: string; items: DisciplineSummary[] }>();
-  for (const d of overview) {
+  for (const d of visible) {
     const c = contests.get(d.contestId) ?? { name: d.contestName, items: [] };
     c.items.push(d);
     contests.set(d.contestId, c);
@@ -117,8 +152,9 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
   const cParam = typeof sp.c === "string" ? sp.c : null;
   const selected = cParam && (cParam === "todos" || contests.has(cParam)) ? cParam : (planContest ?? "todos");
   const shown = selected === "todos" ? ordered : ordered.filter(([id]) => id === selected);
-  const alsoInPlan =
-    scope && selected !== "todos" && selected === planContest
+  const alsoInPlan = partial
+    ? extras
+    : scope && selected !== "todos" && selected === planContest
       ? overview.filter((d) => d.contestId !== selected && scope.disciplineIds.has(d.id))
       : [];
   const contestOf = new Map(overview.map((d) => [d.id, d.contestName]));
@@ -207,10 +243,10 @@ async function Library({ searchParams }: { searchParams: PageProps<"/biblioteca"
               </div>
             </section>
           ))}
-          {alsoInPlan.length > 0 && scope && (
+          {alsoInPlan.length > 0 && (scope || partial) && (
             <section aria-labelledby="also-plan" className="mt-9">
               <h2 id="also-plan" className="text-[13px] font-semibold tracking-[0.02em] text-fg-3">
-                Também usadas no {scope.plan.name}
+                {scope ? `Também usadas no ${scope.plan.name}` : "Também usadas no seu plano"}
               </h2>
               <p className="mt-1 mb-3 text-[12.5px] text-fg-3">
                 Apostilas de outros concursos que cobrem assuntos do seu edital.
