@@ -3,6 +3,8 @@ import {
   CalendarClock,
   ChartColumn,
   CalendarDays,
+  Coffee,
+  Medal,
   HeartHandshake,
   LibraryBig,
   History,
@@ -29,6 +31,8 @@ export const PRIMARY_NAV: NavItem[] = [
   { href: "/sessoes", label: "Sessões", icon: History },
   { href: "/materias", label: "Matérias", icon: BookOpen },
   { href: "/revisoes", label: "Revisões", icon: CalendarClock },
+  { href: "/cafe-com-lei", label: "Café com Lei", icon: Coffee, short: "Café" },
+  { href: "/desafio-7-dias", label: "Desafio 7 dias", icon: Medal, short: "Desafio" },
   { href: "/calendario", label: "Calendário", icon: CalendarDays },
   { href: "/metas", label: "Metas", icon: Target },
   { href: "/anotacoes", label: "Anotações", icon: NotebookPen },
@@ -53,9 +57,9 @@ const pick = (...hrefs: string[]) => hrefs.map((h) => PRIMARY_NAV.find((i) => i.
 export const NAV_GROUPS: NavGroup[] = [
   {
     label: "Estudo",
-    items: pick("/painel", "/questoes", "/biblioteca", "/sessoes", "/materias", "/revisoes"),
+    items: pick("/painel", "/questoes", "/biblioteca", "/cafe-com-lei", "/sessoes", "/materias", "/revisoes"),
   },
-  { label: "Planejamento", items: pick("/calendario", "/metas") },
+  { label: "Planejamento", items: pick("/calendario", "/metas", "/desafio-7-dias") },
   { label: "Registros", items: pick("/anotacoes", "/diario") },
   { label: "Análise", items: pick("/desempenho", "/jornada") },
 ];
