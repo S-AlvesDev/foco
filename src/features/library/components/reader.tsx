@@ -420,6 +420,7 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
   );
   const articles = useMemo(() => findArticles(laid.map((l) => ({ id: l.block.id, text: l.anchor }))), [laid]);
   const hasNav = outline.length > 1 || articles.length > 2;
+  const hasSources = laid.some((l) => l.block.sources.length > 0);
 
   return (
     <div className="mx-auto w-full max-w-[1180px] px-4 pt-4 pb-16 sm:px-8 sm:pt-6 xl:grid xl:grid-cols-[256px_minmax(0,1fr)] xl:gap-12 2xl:max-w-[1440px] 2xl:grid-cols-[272px_minmax(0,1fr)_216px]">
@@ -473,16 +474,18 @@ export function Reader({ page, memory }: { page: TopicPage; memory?: React.React
               <span className="hidden sm:inline">Neste tópico</span>
             </Button>
           )}
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={toggleSources}
-            aria-pressed={showSources}
-            title="Mostrar as páginas dos PDFs de origem"
-          >
-            <FileText />
-            <span className="hidden sm:inline">Fontes</span>
-          </Button>
+          {hasSources && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={toggleSources}
+              aria-pressed={showSources}
+              title="Mostrar as páginas dos PDFs de origem"
+            >
+              <FileText />
+              <span className="hidden sm:inline">Fontes</span>
+            </Button>
+          )}
           <Button
             variant="ghost"
             size="sm"

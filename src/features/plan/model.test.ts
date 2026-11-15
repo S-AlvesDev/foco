@@ -138,6 +138,15 @@ describe("plano da PMPE", () => {
         if (!i.topics.length) expect(i.note).toBeTruthy();
       }
   });
+
+  it("usa só apostilas da PMPE e todo item tem apostila", () => {
+    for (const m of PMPE_PLAN.metas)
+      for (const i of m.items ?? []) {
+        expect(i.disciplineId).toMatch(/^pmpe-/);
+        expect(i.topics.length).toBeGreaterThan(0);
+        for (const t of i.topics) expect(t).toMatch(/^pmpe-/);
+      }
+  });
 });
 
 describe("plano da PC-RN", () => {
