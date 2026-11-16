@@ -196,7 +196,6 @@ export const PMPE_PLAN: Plan = {
         item("pmpe-direito-constitucional", "Constitucional", "Nacionalidade e direitos políticos", [
           "pmpe-const.c02.t04",
           "pmpe-const.c02.t05",
-          "pmpe-const.c02.t08",
         ]),
         item(
           "pmpe-direitos-humanos-legislacao",
@@ -257,8 +256,6 @@ export const PMPE_PLAN: Plan = {
         item("pmpe-lingua-portuguesa", "Português", "Sintaxe da oração e do período", [
           "pmpe-lp.c03.t01",
           "pmpe-lp.c03.t02",
-          "pmpe-lp.c03.t06",
-          "pmpe-lp.c03.t07",
         ]),
       ],
     },
@@ -427,10 +424,7 @@ export const PMPE_PLAN: Plan = {
       id: "40",
       items: [
         item("pmpe-lingua-portuguesa", "Português", "Colocação pronominal", ["pmpe-lp.c04.t03"]),
-        item("pmpe-raciocinio-logico", "Raciocínio Lógico", "Probabilidade", [
-          "pmpe-rlm.c04.t03",
-          "pmpe-rlm.c04.t05",
-        ]),
+        item("pmpe-raciocinio-logico", "Raciocínio Lógico", "Probabilidade", ["pmpe-rlm.c04.t03"]),
       ],
     },
     {
@@ -473,8 +467,9 @@ export const PMPE_PLAN: Plan = {
       id: "45",
       items: [
         item("pmpe-lingua-portuguesa", "Português", "Mecanismos de coesão textual", ["pmpe-lp.c04.t05"]),
-        item("pmpe-raciocinio-logico", "Raciocínio Lógico", "Bloco de questões comentadas", [
-          "pmpe-rlm.c05.t01",
+        item("pmpe-raciocinio-logico", "Raciocínio Lógico", "Questões: tabela-verdade e argumentos", [
+          "pmpe-rlm.c01.t04",
+          "pmpe-rlm.c02.t01",
         ]),
       ],
     },
