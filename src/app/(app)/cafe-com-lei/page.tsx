@@ -12,8 +12,7 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Café com Lei" };
 
-export default async function CafePage({ searchParams }: PageProps<"/cafe-com-lei">) {
-  const empty = (await searchParams).surpresa === "vazia";
+export default function CafePage({ searchParams }: PageProps<"/cafe-com-lei">) {
   return (
     <Page>
       <PageHeader
@@ -21,13 +20,14 @@ export default async function CafePage({ searchParams }: PageProps<"/cafe-com-le
         description="Uma dose curta de lei seca por dia, com o que mais cai e três itens para fixar."
       />
       <Suspense fallback={<div aria-hidden className="h-64 animate-pulse rounded-2xl bg-surface-2/40" />}>
-        <Cafe empty={empty} />
+        <Cafe searchParams={searchParams} />
       </Suspense>
     </Page>
   );
 }
 
-async function Cafe({ empty }: { empty: boolean }) {
+async function Cafe({ searchParams }: { searchParams: PageProps<"/cafe-com-lei">["searchParams"] }) {
+  const empty = (await searchParams).surpresa === "vazia";
   const t = await getTrackMarks(CAFE_PLAN_ID);
   const doneDay = (id: string) => t.marks.get(`${id}:0`);
   const done = CAFE_DAYS.filter((d) => doneDay(d.id)).length;
