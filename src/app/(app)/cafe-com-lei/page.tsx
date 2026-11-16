@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { Suspense } from "react";
-import { ArrowRight, CircleCheck, Coffee, Flame } from "lucide-react";
+import { ArrowRight, CircleCheck, Coffee, Flame, Shuffle } from "lucide-react";
 import { Page, PageHeader } from "@/components/layout/page";
 import { Button } from "@/components/ui/button";
 import { Notice } from "@/components/ui/notice";
@@ -12,7 +12,8 @@ import { cn } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Café com Lei" };
 
-export default function CafePage() {
+export default async function CafePage({ searchParams }: PageProps<"/cafe-com-lei">) {
+  const empty = (await searchParams).surpresa === "vazia";
   return (
     <Page>
       <PageHeader
@@ -20,13 +21,13 @@ export default function CafePage() {
         description="Uma dose curta de lei seca por dia, com o que mais cai e três itens para fixar."
       />
       <Suspense fallback={<div aria-hidden className="h-64 animate-pulse rounded-2xl bg-surface-2/40" />}>
-        <Cafe />
+        <Cafe empty={empty} />
       </Suspense>
     </Page>
   );
 }
 
-async function Cafe() {
+async function Cafe({ empty }: { empty: boolean }) {
   const t = await getTrackMarks(CAFE_PLAN_ID);
   const doneDay = (id: string) => t.marks.get(`${id}:0`);
   const done = CAFE_DAYS.filter((d) => doneDay(d.id)).length;
@@ -71,6 +72,35 @@ async function Cafe() {
           </Link>
         </Button>
       </section>
+
+      <section
+        aria-labelledby="cafe-surpresa"
+        className="flex flex-col gap-4 rounded-2xl border border-border bg-surface-1 p-5 sm:flex-row sm:items-center sm:p-6"
+      >
+        <span className="flex size-11 shrink-0 items-center justify-center rounded-2xl bg-surface-2 text-fg-2">
+          <Shuffle className="size-5" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <h2 id="cafe-surpresa" className="text-[16px] font-semibold text-fg">
+            Dose surpresa
+          </h2>
+          <p className="mt-1 text-[13.5px] text-fg-2">
+            Sem limite de dias: cada clique abre um trecho de lei seca da Biblioteca (Vade Mecum PRF, Constituição,
+            Estatuto da PMPE e leis especiais), dando preferência ao que você ainda não concluiu.
+          </p>
+        </div>
+        <Button asChild variant="secondary" className="w-full sm:w-auto">
+          <Link href="/cafe-com-lei/lei-seca" prefetch={false}>
+            Ler um trecho aleatório
+            <ArrowRight />
+          </Link>
+        </Button>
+      </section>
+      {empty && (
+        <Notice tone="warning">
+          Ainda não há lei seca na Biblioteca para sortear. Importe o Vade Mecum PRF em Biblioteca › Importar.
+        </Notice>
+      )}
 
       <dl className="grid grid-cols-2 gap-3 sm:max-w-md">
         <div className="rounded-2xl border border-border bg-surface-1 p-4">
